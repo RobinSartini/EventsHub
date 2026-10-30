@@ -2,6 +2,8 @@
 
 Merci de l'intérêt que vous portez à EventHub ! Ce guide décrit comment proposer un changement : de la branche à la pull request.
 
+English version: [CONTRIBUTING.en.md](./CONTRIBUTING.en.md). Si vous utilisez un assistant IA, lisez aussi la [politique de contribution IA](./CONTRIBUTING.ai.md) (en anglais).
+
 ## Sommaire
 
 - [Charte de contribution](#charte-de-contribution)
@@ -182,7 +184,7 @@ Review :
 
 ## Assistants IA et fichiers générés
 
-Le projet a été généré avec [Better Fullstack](https://github.com/Marve10s/Better-Fullstack) (`bts.jsonc`). Les instructions pour assistants IA vivent dans `CLAUDE.md` / `AGENTS.md`, issus de `.ruler/` : modifiez la source dans `.ruler/`, pas les copies générées. Mettez `CLAUDE.md` à jour si vous ajoutez une dépendance, un service ou changez la structure du projet. Relisez attentivement tout code produit par un assistant avant de le soumettre : vous en restez responsable.
+Le projet a été généré avec [Better Fullstack](https://github.com/Marve10s/Better-Fullstack) (`bts.jsonc`). Les instructions pour assistants IA vivent dans `CLAUDE.md` / `AGENTS.md`, issus de `.ruler/` : modifiez la source dans `.ruler/`, pas les copies générées. Mettez `CLAUDE.md` à jour si vous ajoutez une dépendance, un service ou changez la structure du projet. Relisez attentivement tout code produit par un assistant avant de le soumettre : vous en restez responsable. Voir la [politique de contribution IA](./CONTRIBUTING.ai.md).
 
 ## Signaler un bug ou une faille
 
