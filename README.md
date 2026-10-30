@@ -22,12 +22,12 @@ On en avait marre des événements mal organisés. C'est pourquoi nous avons cr�
 
 ## ✨ Fonctionnalités principales
 
-| Fonctionnalité | Description |
-| --- | --- |
-| 🔍 **Recherche d'événements** | Catalogue filtrable (titre, catégorie, date, lieu). |
-| ➕ **Création d'événements** | Espace organisateur pour publier et gérer ses événements. |
+| Fonctionnalité                | Description                                                   |
+| ----------------------------- | ------------------------------------------------------------- |
+| 🔍 **Recherche d'événements** | Catalogue filtrable (titre, catégorie, date, lieu).           |
+| ➕ **Création d'événements**  | Espace organisateur pour publier et gérer ses événements.     |
 | 📍 **Événements à proximité** | Suggestions géolocalisées avec vue sur carte (OpenStreetMap). |
-| ⭐ **Favoris** | Sauvegarde des événements qui nous intéressent. |
+| ⭐ **Favoris**                | Sauvegarde des événements qui nous intéressent.               |
 
 ### Fonctionnalités de coordination (prévues)
 
@@ -40,16 +40,16 @@ On en avait marre des événements mal organisés. C'est pourquoi nous avons cr�
 
 ## 🧱 Stack technique
 
-| Couche | Technologies |
-| --- | --- |
-| **Web (front)** | React, React Router v8, Zod, Zustand, shadcn/ui, DevIcon, TailwindCSS |
-| **Back** | Node.js, Hono, Zod, Better Auth (authentification) |
-| **Services tiers (back)** | Upstash Redis (+ rate limiting), Stripe (paiements), Anthropic API (IA) |
-| **Mobile** | SwiftUI (`apps/native`) |
-| **Base de données** | PostgreSQL (`packages/db`) |
-| **Services externes** | OpenStreetMap |
-| **Outillage** | Bun, Vite+, Docker Compose, Dev Container, GitHub Actions, Gitleaks, Fumadocs, Ruler |
-| **Pistes à confirmer** | Usage exact de Redis (verrous de places, cache), service d'emails |
+| Couche                    | Technologies                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------------ |
+| **Web (front)**           | React, React Router v8, Zod, Zustand, shadcn/ui, DevIcon, TailwindCSS                |
+| **Back**                  | Node.js, Hono, Zod, Better Auth (authentification)                                   |
+| **Services tiers (back)** | Upstash Redis (+ rate limiting), Stripe (paiements), Anthropic API (IA)              |
+| **Mobile**                | SwiftUI (`apps/native`)                                                              |
+| **Base de données**       | PostgreSQL (`packages/db`)                                                           |
+| **Services externes**     | OpenStreetMap                                                                        |
+| **Outillage**             | Bun, Vite+, Docker Compose, Dev Container, GitHub Actions, Gitleaks, Fumadocs, Ruler |
+| **Pistes à confirmer**    | Usage exact de Redis (verrous de places, cache), service d'emails                    |
 
 > Les dépendances `better-auth`, `stripe`, `@upstash/redis`, `@upstash/ratelimit` et `@anthropic-ai/sdk` sont déclarées dans `apps/server`, et leurs variables d'environnement sont validées dans `packages/env`. Leur rôle fonctionnel dans EventHub reste à préciser.
 
@@ -210,29 +210,29 @@ flowchart LR
 
 > Les flèches en pointillés sont des services externes ou à confirmer (`/geocode` → OpenStreetMap, email → service d'emails).
 
-| ID | User story | Écran (front) | Endpoint(s) (back) |
-| --- | --- | --- | --- |
-| US-01 | Créer un compte, se connecter, se déconnecter | Pages « Register » et « Login » | `POST /api/auth/sign-up/email`, `POST /api/auth/sign-in/email`, `POST /api/auth/sign-out`, `GET /api/auth/get-session` |
-| US-02 | Parcourir les événements à l'accueil | Page `/` | `GET /events` |
-| US-03 | *(Admin)* Gérer les utilisateurs | Page `/admin/users` | `GET /admin/users`, `PATCH /admin/users/:id` |
-| US-04 | *(Admin)* Modérer les événements | Page `/admin/events` | `GET /admin/events`, `PATCH /admin/events/:id`, `DELETE /admin/events/:id` |
-| US-05 | Rechercher un événement par mot-clé | Barre de recherche (header), page `/search` | `GET /events?q=` |
-| US-06 | Filtrer par catégorie, dates et ville | Page `/search` (panneau filtres) | `GET /events?category=&from=&to=&city=`, `GET /categories` |
-| US-07 | Consulter la fiche d'un événement | Page `/events/:id` | `GET /events/:id` |
-| US-08 | Voir les événements proches de moi (liste) | Page `/nearby` (vue liste) | `GET /events/nearby?lat=&lng=&radius=` |
-| US-09 | Voir les événements sur une carte | Page `/nearby` (vue carte) | `GET /events/map?bbox=` |
-| US-10 | Ajuster le rayon de recherche | Page `/nearby` (curseur rayon) | `GET /events/nearby?radius=` (même endpoint) |
-| US-11 | Ajouter un événement aux favoris | Bouton favori (carte + fiche) | `POST /me/favorites/:eventId` |
-| US-12 | Retirer un événement des favoris | Bouton favori, page `/favorites` | `DELETE /me/favorites/:eventId` |
-| US-13 | Consulter mes favoris | Page `/favorites` | `GET /me/favorites` |
-| US-14 | Créer un événement | Page `/events/new` | `POST /events`, `GET /categories` |
-| US-15 | Choisir le lieu de l'événement | Page `/events/new` (sélecteur de lieu) | `GET /geocode?q=` |
-| US-16 | Modifier ou annuler mon événement | Page `/events/:id/edit` | `PATCH /events/:id`, `POST /events/:id/cancel` |
-| US-17 | Voir et exporter la liste des inscrits | Page `/events/:id/attendees` | `GET /events/:id/registrations`, `GET /events/:id/registrations/export` (CSV) |
-| US-18 | S'inscrire, se désinscrire, voir mes inscriptions | Bouton « S'inscrire » (fiche), page `/me/registrations` | `POST /events/:id/registrations`, `DELETE /registrations/:id`, `GET /me/registrations` |
-| US-19 | Obtenir et faire scanner mon billet QR code | Page `/tickets/:id` | `GET /tickets/:id`, `GET /tickets/:id/pdf`, `POST /tickets/:id/scan` |
-| US-20 | *(Système)* Envoyer un email de confirmation | Aucun (email) | Déclenché par `POST /events/:id/registrations` |
-| US-21 | *(Système)* Empêcher doublons et dépassement de quota | Aucun (règle back) | `POST /events/:id/registrations` (contrainte unique + verrou de capacité) |
+| ID    | User story                                            | Écran (front)                                           | Endpoint(s) (back)                                                                                                     |
+| ----- | ----------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| US-01 | Créer un compte, se connecter, se déconnecter         | Pages « Register » et « Login »                         | `POST /api/auth/sign-up/email`, `POST /api/auth/sign-in/email`, `POST /api/auth/sign-out`, `GET /api/auth/get-session` |
+| US-02 | Parcourir les événements à l'accueil                  | Page `/`                                                | `GET /events`                                                                                                          |
+| US-03 | _(Admin)_ Gérer les utilisateurs                      | Page `/admin/users`                                     | `GET /admin/users`, `PATCH /admin/users/:id`                                                                           |
+| US-04 | _(Admin)_ Modérer les événements                      | Page `/admin/events`                                    | `GET /admin/events`, `PATCH /admin/events/:id`, `DELETE /admin/events/:id`                                             |
+| US-05 | Rechercher un événement par mot-clé                   | Barre de recherche (header), page `/search`             | `GET /events?q=`                                                                                                       |
+| US-06 | Filtrer par catégorie, dates et ville                 | Page `/search` (panneau filtres)                        | `GET /events?category=&from=&to=&city=`, `GET /categories`                                                             |
+| US-07 | Consulter la fiche d'un événement                     | Page `/events/:id`                                      | `GET /events/:id`                                                                                                      |
+| US-08 | Voir les événements proches de moi (liste)            | Page `/nearby` (vue liste)                              | `GET /events/nearby?lat=&lng=&radius=`                                                                                 |
+| US-09 | Voir les événements sur une carte                     | Page `/nearby` (vue carte)                              | `GET /events/map?bbox=`                                                                                                |
+| US-10 | Ajuster le rayon de recherche                         | Page `/nearby` (curseur rayon)                          | `GET /events/nearby?radius=` (même endpoint)                                                                           |
+| US-11 | Ajouter un événement aux favoris                      | Bouton favori (carte + fiche)                           | `POST /me/favorites/:eventId`                                                                                          |
+| US-12 | Retirer un événement des favoris                      | Bouton favori, page `/favorites`                        | `DELETE /me/favorites/:eventId`                                                                                        |
+| US-13 | Consulter mes favoris                                 | Page `/favorites`                                       | `GET /me/favorites`                                                                                                    |
+| US-14 | Créer un événement                                    | Page `/events/new`                                      | `POST /events`, `GET /categories`                                                                                      |
+| US-15 | Choisir le lieu de l'événement                        | Page `/events/new` (sélecteur de lieu)                  | `GET /geocode?q=`                                                                                                      |
+| US-16 | Modifier ou annuler mon événement                     | Page `/events/:id/edit`                                 | `PATCH /events/:id`, `POST /events/:id/cancel`                                                                         |
+| US-17 | Voir et exporter la liste des inscrits                | Page `/events/:id/attendees`                            | `GET /events/:id/registrations`, `GET /events/:id/registrations/export` (CSV)                                          |
+| US-18 | S'inscrire, se désinscrire, voir mes inscriptions     | Bouton « S'inscrire » (fiche), page `/me/registrations` | `POST /events/:id/registrations`, `DELETE /registrations/:id`, `GET /me/registrations`                                 |
+| US-19 | Obtenir et faire scanner mon billet QR code           | Page `/tickets/:id`                                     | `GET /tickets/:id`, `GET /tickets/:id/pdf`, `POST /tickets/:id/scan`                                                   |
+| US-20 | _(Système)_ Envoyer un email de confirmation          | Aucun (email)                                           | Déclenché par `POST /events/:id/registrations`                                                                         |
+| US-21 | _(Système)_ Empêcher doublons et dépassement de quota | Aucun (règle back)                                      | `POST /events/:id/registrations` (contrainte unique + verrou de capacité)                                              |
 
 ---
 
@@ -344,7 +344,7 @@ eventhub/
 
 ## 🤝 Contribuer
 
-Les contributions sont les bienvenues. Ouvrez une *issue* pour discuter d'un changement, puis soumettez une *pull request*.
+Les contributions sont les bienvenues. Ouvrez une _issue_ pour discuter d'un changement, puis soumettez une _pull request_.
 
 ## 🙏 Crédits
 
