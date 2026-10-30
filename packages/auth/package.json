@@ -1,0 +1,34 @@
+{
+  "name": "@EventsHub/auth",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "lint": "vp lint --no-error-on-unmatched-pattern",
+    "format": "vp fmt",
+    "check": "vp check --no-error-on-unmatched-pattern"
+  },
+  "dependencies": {
+    "@EventsHub/db": "workspace:*",
+    "@EventsHub/env": "workspace:*",
+    "@better-auth/core": "1.6.22",
+    "@better-auth/prisma-adapter": "1.6.22",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "stripe": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@EventsHub/config": "workspace:*",
+    "typescript": "^6.0.3"
+  }
+}

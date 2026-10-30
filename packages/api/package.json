@@ -1,0 +1,39 @@
+{
+  "name": "@EventsHub/api",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "lint": "vp lint --no-error-on-unmatched-pattern",
+    "format": "vp fmt",
+    "check": "vp check --no-error-on-unmatched-pattern"
+  },
+  "dependencies": {
+    "@EventsHub/auth": "workspace:*",
+    "@EventsHub/db": "workspace:*",
+    "@EventsHub/env": "workspace:*",
+    "@trpc/client": "catalog:",
+    "@trpc/server": "catalog:",
+    "dotenv": "catalog:",
+    "hono": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@EventsHub/config": "workspace:*",
+    "@playwright/test": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
+    "jsdom": "catalog:",
+    "playwright": "catalog:",
+    "typescript": "^6.0.3",
+    "vitest": "catalog:"
+  }
+}

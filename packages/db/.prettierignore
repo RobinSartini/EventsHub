@@ -1,0 +1,13 @@
+dist
+build
+out
+.next
+.nuxt
+.output
+.vercel
+.nitro
+.svelte-kit
+.astro
+.expo
+.turbo
+*.gen.ts
