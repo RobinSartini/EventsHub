@@ -11,3 +11,4 @@ out
 .expo
 .turbo
 *.gen.ts
+.source
