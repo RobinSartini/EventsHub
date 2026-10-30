@@ -51,3 +51,6 @@ temp
 # Better Fullstack recovery snapshots
 .bts/recovery
 .vite-hooks/_
+
+# Fumadocs (généré)
+.source
