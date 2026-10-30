@@ -43,12 +43,15 @@ On en avait marre des événements mal organisés. C'est pourquoi nous avons cr�
 | Couche | Technologies |
 | --- | --- |
 | **Web (front)** | React, React Router v8, Zod, Zustand, shadcn/ui, DevIcon, TailwindCSS |
-| **Back** | Node.js, Hono, Zod |
+| **Back** | Node.js, Hono, Zod, Better Auth (authentification) |
+| **Services tiers (back)** | Upstash Redis (+ rate limiting), Stripe (paiements), Anthropic API (IA) |
 | **Mobile** | SwiftUI (`apps/native`) |
 | **Base de données** | PostgreSQL (`packages/db`) |
 | **Services externes** | OpenStreetMap |
 | **Outillage** | Bun, Vite+, Docker Compose, Dev Container, GitHub Actions, Gitleaks, Fumadocs, Ruler |
-| **Pistes à confirmer** | Redis (verrous de places / cache), service d'emails |
+| **Pistes à confirmer** | Usage exact de Redis (verrous de places, cache), service d'emails |
+
+> Les dépendances `better-auth`, `stripe`, `@upstash/redis`, `@upstash/ratelimit` et `@anthropic-ai/sdk` sont déclarées dans `apps/server`, et leurs variables d'environnement sont validées dans `packages/env`. Leur rôle fonctionnel dans EventHub reste à préciser.
 
 ---
 
@@ -70,10 +73,12 @@ flowchart LR
 
     subgraph Externe["Services externes"]
         OSM["🗺️ OpenStreetMap"]
+        REDIS[("Upstash Redis")]
+        STRIPE["💳 Stripe"]
+        AI["🤖 Anthropic API"]
     end
 
     subgraph Prevu["Pistes à confirmer"]
-        REDIS[("Redis")]
         MAIL["✉️ Service d'emails"]
     end
 
@@ -82,7 +87,9 @@ flowchart LR
     WEB -- "tuiles de carte" --> OSM
     MOB -- "tuiles de carte" --> OSM
     API --> DB
-    API -.-> REDIS
+    API --> REDIS
+    API --> STRIPE
+    API --> AI
     API -.-> MAIL
 ```
 
@@ -110,11 +117,15 @@ flowchart TD
 flowchart TD
     API["API Hono (Node.js)"] --> HONO["Hono<br/>routage HTTP"]
     API --> ZODB["Zod<br/>validation des entrées"]
+    API --> AUTH["Better Auth<br/>email + mot de passe, sessions<br/>/api/auth/*"]
     HONO --> ROUTES["Routes"]
-    ROUTES --> EV["/events<br/>recherche, création"]
-    ROUTES --> FAV["/favorites<br/>favoris"]
-    ROUTES --> NEAR["/events/nearby<br/>proximité"]
-    NEAR -.-> OSMB["OpenStreetMap<br/>géocodage"]
+    ROUTES --> EV["/events, /categories<br/>recherche, création"]
+    ROUTES --> FAV["/me/favorites<br/>favoris"]
+    ROUTES --> NEAR["/events/nearby, /events/map<br/>proximité"]
+    ROUTES --> REG["/events/:id/registrations, /tickets<br/>inscriptions, billets"]
+    ROUTES --> ADM["/admin/*<br/>administration"]
+    ROUTES --> GEO["/geocode"]
+    GEO -.-> OSMB["OpenStreetMap<br/>géocodage"]
 ```
 
 ### Schéma partagé (Zod)
@@ -129,88 +140,99 @@ flowchart LR
 
 ### Carte User story → Écran → Endpoint
 
-> Les écrans et endpoints ci-dessous sont une **proposition de conception** : ils ne correspondent pas encore à du code existant. Les écrans valent pour le web (React Router) et le mobile (SwiftUI).
+> Les écrans valent pour le web (React Router) et le mobile (SwiftUI). Les endpoints sont une **proposition de conception** : seule l'authentification (`/api/auth/*`, gérée par Better Auth avec email + mot de passe) existe déjà dans `apps/server`. Le serveur expose aussi un routeur tRPC sur `/trpc/*`, à arbitrer avec cette API REST.
+>
+> Les rôles `admin` et `organisateur` ne sont pas encore modélisés dans le schéma Prisma : les pages `/admin/*` supposent d'ajouter un champ `role` (ou le plugin `admin` de Better Auth).
 
 ```mermaid
 flowchart LR
-    subgraph US["👥 User stories"]
-        US1["US-01 Rechercher"]
-        US2["US-02 Filtrer"]
-        US3["US-03 Voir une fiche"]
-        US4["US-04 Voir autour de moi"]
-        US5["US-05 Voir sur une carte"]
-        US6["US-06 Gérer ses favoris"]
-        US7["US-07 Créer un événement"]
-        US8["US-08 Modifier / annuler"]
-        US9["US-09 Voir les inscrits"]
-        US10["US-10 S'inscrire"]
-        US11["US-11 Recevoir un billet"]
-        US12["US-12 Créer un compte / se connecter"]
-    end
-
     subgraph FRONT["🖥️ Écrans (front)"]
-        S1["Catalogue / Accueil"]
-        S2["Fiche événement"]
-        S3["Carte"]
-        S4["Mes favoris"]
-        S5["Formulaire événement"]
-        S6["Espace organisateur"]
-        S7["Mes billets"]
-        S8["Connexion / Inscription"]
+        S1["/register · /login"]
+        S2["/ (accueil)"]
+        S3["/search + filtres"]
+        S4["/events/:id"]
+        S5["/nearby (liste · carte · rayon)"]
+        S6["/favorites"]
+        S7["/events/new · /events/:id/edit"]
+        S8["/events/:id/attendees"]
+        S9["/me/registrations"]
+        S10["/tickets/:id"]
+        S11["/admin/users"]
+        S12["/admin/events"]
     end
 
     subgraph BACK["⚙️ Endpoints (back)"]
-        E1["GET /events"]
-        E2["GET /events/:id"]
-        E3["GET /events/nearby"]
-        E4["GET · PUT · DELETE /favorites"]
-        E5["POST /events"]
-        E6["PATCH · DELETE /events/:id"]
-        E7["GET /events/:id/registrations"]
-        E8["POST /events/:id/registrations"]
-        E9["GET /tickets"]
-        E10["POST /auth/*"]
+        E1["POST /api/auth/sign-up/email<br/>POST /api/auth/sign-in/email<br/>POST /api/auth/sign-out"]
+        E2["GET /events"]
+        E3["GET /categories"]
+        E4["GET /events/:id"]
+        E5["GET /events/nearby · /events/map"]
+        E6["POST · DELETE · GET /me/favorites"]
+        E7["POST /events · PATCH /events/:id<br/>POST /events/:id/cancel"]
+        E8["GET /geocode"]
+        E9["GET /events/:id/registrations (+ export CSV)"]
+        E10["POST /events/:id/registrations<br/>DELETE /registrations/:id<br/>GET /me/registrations"]
+        E11["GET · POST /tickets/:id (+ pdf, scan)"]
+        E12["GET · PATCH /admin/users"]
+        E13["GET · PATCH · DELETE /admin/events"]
     end
 
     subgraph DATA["🗄️ Données & services"]
-        D1[("events")]
-        D2[("favorites")]
-        D3[("registrations")]
-        D4[("tickets")]
-        D5[("users")]
+        D1[("users")]
+        D2[("events")]
+        D3[("categories")]
+        D4[("favorites")]
+        D5[("registrations")]
+        D6[("tickets")]
         OSM["OpenStreetMap"]
+        MAIL["✉️ Email"]
     end
 
-    US1 & US2 --> S1 --> E1 --> D1
-    US3 --> S2 --> E2 --> D1
-    US4 --> S3 --> E3 --> D1
-    US5 --> S3
-    S3 -.-> OSM
-    US6 --> S4 --> E4 --> D2
-    US7 --> S5 --> E5 --> D1
-    US8 --> S5 --> E6 --> D1
-    US9 --> S6 --> E7 --> D3
-    US10 --> S2 --> E8 --> D3
-    US11 --> S7 --> E9 --> D4
-    US12 --> S8 --> E10 --> D5
+    S1 --> E1 --> D1
+    S2 --> E2 --> D2
+    S3 --> E2
+    S3 --> E3 --> D3
+    S4 --> E4 --> D2
+    S4 --> E6
+    S4 --> E10
+    S5 --> E5 --> D2
+    S6 --> E6 --> D4
+    S7 --> E7 --> D2
+    S7 --> E3
+    S7 --> E8 -.-> OSM
+    S8 --> E9 --> D5
+    S9 --> E10 --> D5
+    S10 --> E11 --> D6
+    S11 --> E12 --> D1
+    S12 --> E13 --> D2
+    E10 -.-> MAIL
 ```
 
-| ID | User story | Écran (front) | Endpoint (back) | Données |
-| --- | --- | --- | --- | --- |
-| US-01 | Rechercher un événement par mot-clé | Catalogue / Accueil | `GET /events?q=` | `events` |
-| US-02 | Filtrer par catégorie, date, lieu | Catalogue / Accueil | `GET /events?category=&date=&city=` | `events` |
-| US-03 | Consulter la fiche d'un événement | Fiche événement | `GET /events/:id` | `events` |
-| US-04 | Voir les événements proches de moi | Carte | `GET /events/nearby?lat=&lng=&radius=` | `events` |
-| US-05 | Afficher les événements sur une carte | Carte | `GET /events/nearby` + tuiles OpenStreetMap | `events` |
-| US-06 | Ajouter, retirer, consulter ses favoris | Mes favoris (+ bouton ⭐ sur la fiche) | `GET /favorites`, `PUT /favorites/:eventId`, `DELETE /favorites/:eventId` | `favorites` |
-| US-07 | Créer un événement | Formulaire événement | `POST /events` | `events` |
-| US-08 | Modifier ou annuler son événement | Formulaire événement | `PATCH /events/:id`, `DELETE /events/:id` | `events` |
-| US-09 | Voir la liste des inscrits | Espace organisateur | `GET /events/:id/registrations` | `registrations` |
-| US-10 | S'inscrire à un événement *(prévu)* | Fiche événement | `POST /events/:id/registrations` | `registrations`, `events` (quota) |
-| US-11 | Recevoir un billet QR code *(prévu)* | Mes billets | `GET /tickets`, `GET /tickets/:id` | `tickets` |
-| US-12 | Créer un compte et se connecter | Connexion / Inscription | `POST /auth/*` | `users` |
+> Les flèches en pointillés sont des services externes ou à confirmer (`/geocode` → OpenStreetMap, email → service d'emails).
 
-**Règles transverses côté back** : toute écriture (`POST`, `PATCH`, `PUT`, `DELETE`) exige un utilisateur connecté ; `PATCH`/`DELETE /events/:id` et `GET /events/:id/registrations` sont réservés à l'organisateur de l'événement ; `POST /events/:id/registrations` vérifie le quota et refuse les doublons (contrainte d'unicité `user + event`).
+| ID | User story | Écran (front) | Endpoint(s) (back) |
+| --- | --- | --- | --- |
+| US-01 | Créer un compte, se connecter, se déconnecter | Pages « Register » et « Login » | `POST /api/auth/sign-up/email`, `POST /api/auth/sign-in/email`, `POST /api/auth/sign-out`, `GET /api/auth/get-session` |
+| US-02 | Parcourir les événements à l'accueil | Page `/` | `GET /events` |
+| US-03 | *(Admin)* Gérer les utilisateurs | Page `/admin/users` | `GET /admin/users`, `PATCH /admin/users/:id` |
+| US-04 | *(Admin)* Modérer les événements | Page `/admin/events` | `GET /admin/events`, `PATCH /admin/events/:id`, `DELETE /admin/events/:id` |
+| US-05 | Rechercher un événement par mot-clé | Barre de recherche (header), page `/search` | `GET /events?q=` |
+| US-06 | Filtrer par catégorie, dates et ville | Page `/search` (panneau filtres) | `GET /events?category=&from=&to=&city=`, `GET /categories` |
+| US-07 | Consulter la fiche d'un événement | Page `/events/:id` | `GET /events/:id` |
+| US-08 | Voir les événements proches de moi (liste) | Page `/nearby` (vue liste) | `GET /events/nearby?lat=&lng=&radius=` |
+| US-09 | Voir les événements sur une carte | Page `/nearby` (vue carte) | `GET /events/map?bbox=` |
+| US-10 | Ajuster le rayon de recherche | Page `/nearby` (curseur rayon) | `GET /events/nearby?radius=` (même endpoint) |
+| US-11 | Ajouter un événement aux favoris | Bouton favori (carte + fiche) | `POST /me/favorites/:eventId` |
+| US-12 | Retirer un événement des favoris | Bouton favori, page `/favorites` | `DELETE /me/favorites/:eventId` |
+| US-13 | Consulter mes favoris | Page `/favorites` | `GET /me/favorites` |
+| US-14 | Créer un événement | Page `/events/new` | `POST /events`, `GET /categories` |
+| US-15 | Choisir le lieu de l'événement | Page `/events/new` (sélecteur de lieu) | `GET /geocode?q=` |
+| US-16 | Modifier ou annuler mon événement | Page `/events/:id/edit` | `PATCH /events/:id`, `POST /events/:id/cancel` |
+| US-17 | Voir et exporter la liste des inscrits | Page `/events/:id/attendees` | `GET /events/:id/registrations`, `GET /events/:id/registrations/export` (CSV) |
+| US-18 | S'inscrire, se désinscrire, voir mes inscriptions | Bouton « S'inscrire » (fiche), page `/me/registrations` | `POST /events/:id/registrations`, `DELETE /registrations/:id`, `GET /me/registrations` |
+| US-19 | Obtenir et faire scanner mon billet QR code | Page `/tickets/:id` | `GET /tickets/:id`, `GET /tickets/:id/pdf`, `POST /tickets/:id/scan` |
+| US-20 | *(Système)* Envoyer un email de confirmation | Aucun (email) | Déclenché par `POST /events/:id/registrations` |
+| US-21 | *(Système)* Empêcher doublons et dépassement de quota | Aucun (règle back) | `POST /events/:id/registrations` (contrainte unique + verrou de capacité) |
 
 ---
 
@@ -247,6 +269,11 @@ flowchart LR
 - En tant que **participant**, je veux recevoir un billet avec QR code afin de l'utiliser à l'entrée.
 - En tant que **participant**, je veux recevoir un email de confirmation afin d'avoir une trace de mon inscription.
 - En tant que **système**, je veux empêcher les doubles réservations et le dépassement de quota afin de garantir l'intégrité des places.
+
+### 🛠️ Administration
+
+- En tant qu'**administrateur**, je veux gérer les utilisateurs afin de contrôler les accès à la plateforme.
+- En tant qu'**administrateur**, je veux modérer les événements (modifier, supprimer) afin de garder un catalogue de qualité.
 
 ### 👤 Compte
 
