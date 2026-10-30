@@ -1,14 +1,23 @@
 ## Contexte
 
-<!-- Pourquoi cette PR ? Issue liée : Closes #n -->
+Pourquoi cette PR ? Décrivez le problème ou le besoin en une ou deux phrases.
+
+Issue liée : Closes #
 
 ## Ce qui change
 
-<!-- Résumé des changements -->
+- Changement 1 :
+- Changement 2 :
+
+Contrat d'API touché : oui / non (si oui, issue `api-contract` : #)
 
 ## Comment tester
 
-<!-- Étapes de vérification manuelle ; captures pour tout changement visuel -->
+1. Lancer `bun dev`
+2. Aller sur la page ou l'endpoint concerné
+3. Résultat attendu :
+
+Captures d'écran (pour tout changement visuel) : avant / après
 
 ## Checklist
 
@@ -25,4 +34,6 @@
 
 ## Notes
 
-<!-- Taille > 800 lignes, usage d'une IA, points à surveiller en review -->
+- Taille supérieure à 800 lignes, justification : sans objet
+- Usage d'une IA (outil et usage) : aucun
+- Points à surveiller en review :

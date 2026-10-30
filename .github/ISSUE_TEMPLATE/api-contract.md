@@ -6,9 +6,11 @@ labels: api-contract
 
 ## Contrat actuel
 
-<!-- Procédure, schémas Zod d'entrée et de sortie, erreurs. "Aucun" pour une nouvelle procédure. -->
+Procédure, schémas Zod d'entrée et de sortie, erreurs. Écrire « Aucun » pour une nouvelle procédure.
 
 ## Contrat proposé
+
+Nom de la procédure (`query` ou `mutation`, publique ou protégée), schéma d'entrée, schéma de sortie, erreurs possibles.
 
 ## Changement cassant ?
 
@@ -24,4 +26,4 @@ labels: api-contract
 
 ## Consommateurs à mentionner
 
-<!-- @personne qui maintient le web / le mobile -->
+Mentionnez avec @ la personne qui maintient le web et celle qui maintient le mobile.
