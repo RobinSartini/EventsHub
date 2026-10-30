@@ -1,0 +1,13 @@
+# Relecteurs désignés automatiquement selon les dossiers modifiés.
+# Une PR est approuvée par un propriétaire des fichiers qu'elle touche.
+
+*                    @RobinSartini @A-Fevre
+
+# Contrat d'API et base de données : approbation explicite d'un mainteneur
+/packages/api/       @RobinSartini @A-Fevre
+/packages/db/        @RobinSartini @A-Fevre
+/packages/env/       @RobinSartini @A-Fevre
+
+# CI et règles de contribution
+/.github/            @RobinSartini @A-Fevre
+/CONTRIBUTING*.md    @RobinSartini @A-Fevre
