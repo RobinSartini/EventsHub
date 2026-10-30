@@ -344,7 +344,7 @@ eventhub/
 
 ## 🤝 Contribuer
 
-Les contributions sont les bienvenues. Ouvrez une _issue_ pour discuter d'un changement, puis soumettez une _pull request_.
+Les contributions sont les bienvenues. Ouvrez une _issue_ pour discuter d'un changement, puis soumettez une _pull request_. Consultez le [guide de contribution](CONTRIBUTING.md) pour les conventions de branches, de commits et d'API.
 
 ## 🙏 Crédits
 
