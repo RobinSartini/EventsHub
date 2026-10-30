@@ -199,7 +199,7 @@ export async function getCollection(collectionName: string): Promise<CollectionS
 export async function updateCollectionSchema(
   collectionName: string,
   updates: CollectionUpdateSchema,
-): Promise<CollectionSchema> {
+): Promise<CollectionUpdateSchema> {
   return searchClient.collections(collectionName).update(updates);
 }
 
