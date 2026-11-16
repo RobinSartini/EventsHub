@@ -3,10 +3,12 @@ options:
   bundleIdPrefix: com.sugow.eventshub
   deploymentTarget:
     iOS: "27.0"
+configFiles:
+  Debug: Config/Shared.xcconfig
+  Release: Config/Shared.xcconfig
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    DEVELOPMENT_TEAM: LARK4DRRVG
 targets:
   EventsHub:
     type: application
