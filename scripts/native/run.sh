@@ -26,7 +26,7 @@ xcrun simctl boot "$UDID" 2>/dev/null || true
 open -b com.apple.iphonesimulator 2>/dev/null || true
 
 echo "→ Building $SCHEME"
-xcodebuild -scheme "$SCHEME" -sdk iphonesimulator \
+xcodebuild -project EventsHub.xcodeproj -scheme "$SCHEME" -sdk iphonesimulator \
   -destination "id=$UDID" -derivedDataPath "$DERIVED" -quiet build
 
 echo "→ Installing and launching"
