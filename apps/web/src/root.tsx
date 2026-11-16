@@ -1,6 +1,9 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
+import "@fontsource-variable/jetbrains-mono";
+import "@fontsource-variable/nunito-sans";
+import "@fontsource-variable/unbounded";
 import "./index.css";
 import {
   isRouteErrorResponse,
