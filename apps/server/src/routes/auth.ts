@@ -6,18 +6,8 @@ import { createMiddleware } from "hono/factory";
 import { z } from "zod";
 
 import { requireSession } from "../middleware/require-session";
+import { signInBody, signUpBody } from "../types/auth";
 import { ApiError } from "../utils/api-response";
-
-const signUpBody = z.object({
-  name: z.string().trim().min(2),
-  email: z.email(),
-  password: z.string().min(8).max(128),
-});
-
-const signInBody = z.object({
-  email: z.email(),
-  password: z.string().min(1),
-});
 
 function validateBody(schema: z.ZodType) {
   return createMiddleware(async (c, next) => {

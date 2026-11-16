@@ -1,6 +1,8 @@
 import { memoryAdapter } from "better-auth/adapters/memory";
 import { describe, expect, test, vi } from "vitest";
 
+import type { GetSessionResponse, SignUpResponse } from "./types/auth";
+
 import app from "./index";
 
 const authPrismaAdapter = await vi.hoisted(async () => {
@@ -28,10 +30,8 @@ function getSession(cookie: string) {
   return app.request("/api/auth/get-session", { headers: { Origin: origin, Cookie: cookie } });
 }
 
-type SessionBody = { user: { email: string; name: string } } | null;
-
-async function body(res: Response) {
-  return (await res.json()) as SessionBody;
+async function body<T>(res: Response) {
+  return (await res.json()) as T;
 }
 
 function cookieOf(res: Response) {
@@ -48,7 +48,10 @@ describe("US-01 auth endpoints", () => {
     const res = await post("/api/auth/sign-up/email", user);
 
     expect(res.status).toBe(200);
-    expect((await body(res))?.user).toMatchObject({ email: user.email, name: user.name });
+    expect((await body<SignUpResponse>(res)).user).toMatchObject({
+      email: user.email,
+      name: user.name,
+    });
   });
 
   test("rejects an invalid sign-up body with 400", async () => {
@@ -87,7 +90,7 @@ describe("US-01 auth endpoints", () => {
     const cookie = cookieOf(signIn);
 
     const session = await getSession(cookie);
-    expect((await body(session))?.user.email).toBe(user.email);
+    expect((await body<GetSessionResponse>(session))?.user.email).toBe(user.email);
 
     const signOut = await post("/api/auth/sign-out", {}, cookie);
     expect(signOut.status).toBe(200);
