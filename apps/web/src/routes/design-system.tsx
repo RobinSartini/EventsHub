@@ -3,6 +3,7 @@ import { type ReactNode, useState } from "react";
 import { ArrowRightIcon, PlusIcon, SearchIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { CheckboxField, CheckboxGroup } from "@/components/ui/checkbox";
 import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
 import { DateBadge } from "@/components/ui/date-badge";
 import { LiveBadge } from "@/components/ui/live-badge";
@@ -29,15 +30,19 @@ function Section({
   );
 }
 
+function useToggleList(initial: string[]) {
+  const [items, setItems] = useState(initial);
+
+  const toggle = (item: string, isOn: boolean) =>
+    setItems((current) => (isOn ? [...current, item] : current.filter((i) => i !== item)));
+
+  return [items, toggle] as const;
+}
+
 const CATEGORIES = ["Musique", "Théâtre", "Sport", "Expo"];
 
 function ChipDemo() {
-  const [selected, setSelected] = useState<string[]>(["Musique"]);
-
-  const toggle = (category: string, isSelected: boolean) =>
-    setSelected((current) =>
-      isSelected ? [...current, category] : current.filter((c) => c !== category),
-    );
+  const [selected, toggle] = useToggleList(["Musique"]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -93,6 +98,30 @@ function SwitchDemo() {
   );
 }
 
+const CATEGORY_COUNTS = [
+  { label: "Musique", count: 128 },
+  { label: "Théâtre", count: 42 },
+  { label: "Sport", count: 67 },
+];
+
+function CheckboxDemo() {
+  const [checked, toggle] = useToggleList(["Musique"]);
+
+  return (
+    <CheckboxGroup legend="Catégories" className="w-full max-w-xs">
+      {CATEGORY_COUNTS.map(({ label, count }) => (
+        <CheckboxField
+          key={label}
+          label={label}
+          count={count}
+          checked={checked.includes(label)}
+          onCheckedChange={(isChecked) => toggle(label, isChecked)}
+        />
+      ))}
+    </CheckboxGroup>
+  );
+}
+
 export default function DesignSystem() {
   return (
     <main className="mx-auto w-full max-w-[1360px] px-4 py-10 sm:px-6 lg:px-10">
@@ -140,6 +169,13 @@ export default function DesignSystem() {
         description="Pour ce qui s'applique tout de suite : un filtre, un rappel. Le libellé allume aussi l'interrupteur."
       >
         <SwitchDemo />
+      </Section>
+
+      <Section
+        title="Checkbox"
+        description="La case à cocher teintée de bleu roi, avec un compteur pour savoir où il y a du monde."
+      >
+        <CheckboxDemo />
       </Section>
 
       <Section
