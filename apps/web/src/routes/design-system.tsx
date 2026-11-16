@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
+import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
 import { DateBadge } from "@/components/ui/date-badge";
 import { LiveBadge } from "@/components/ui/live-badge";
 
@@ -20,6 +21,39 @@ function Section({
       </div>
       <div className="flex flex-wrap items-center gap-4">{children}</div>
     </section>
+  );
+}
+
+const CATEGORIES = ["Musique", "Théâtre", "Sport", "Expo"];
+
+function ChipDemo() {
+  const [selected, setSelected] = useState<string[]>(["Musique"]);
+
+  const toggle = (category: string, isSelected: boolean) =>
+    setSelected((current) =>
+      isSelected ? [...current, category] : current.filter((c) => c !== category),
+    );
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-2">
+        {CATEGORIES.map((category) => (
+          <Chip
+            key={category}
+            selected={selected.includes(category)}
+            onSelectedChange={(isSelected) => toggle(category, isSelected)}
+          >
+            {category}
+          </Chip>
+        ))}
+      </div>
+      <div className="flex min-h-9 flex-wrap items-center gap-2">
+        {selected.map((category) => (
+          <RemovableChip key={category} label={category} onRemove={() => toggle(category, false)} />
+        ))}
+        <SoftChip>Gratuit</SoftChip>
+      </div>
+    </div>
   );
 }
 
@@ -47,6 +81,13 @@ export default function DesignSystem() {
       <Section title="LiveBadge" description="Signale un événement en cours.">
         <LiveBadge />
         <LiveBadge detail="128 inscrits" />
+      </Section>
+
+      <Section
+        title="Chip"
+        description="Les petites pilules qui trient la ville : une catégorie à choisir, un filtre à retirer, une info douce."
+      >
+        <ChipDemo />
       </Section>
 
       <Section
