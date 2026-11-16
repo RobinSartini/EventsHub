@@ -23,6 +23,7 @@ model Event {
   startDate     DateTime
   endDate       DateTime?
   location      String
+  city          String
   latitude      Float?
   longitude     Float?
   capacity      Int?
@@ -38,7 +39,7 @@ model Event {
   @@index([startDate])
   @@index([categoryId])
   @@index([organizerId])
-  @@index([location])
+  @@index([city])
   @@map("event")
 }
 
