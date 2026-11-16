@@ -33,7 +33,7 @@ RUN bun -e 'const fs = require("fs"); \
     for (const name of ["preinstall", "install", "postinstall", "preprepare", "prepare", "postprepare"]) delete pkg.scripts?.[name]; \
     fs.writeFileSync(file, JSON.stringify(pkg, null, 2)); \
   }'
-RUN if [ -f bun.lock ]; then bun install --production --frozen-lockfile --filter server; else bun install --production --filter server; fi
+RUN if [ -f bun.lock ]; then bun install --production --omit=peer --frozen-lockfile --filter server; else bun install --production --omit=peer --filter server; fi
 # Hoisting package managers may leave this empty; the runner copies it either way.
 RUN mkdir -p apps/server/node_modules
 

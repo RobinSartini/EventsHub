@@ -32,15 +32,24 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/EventsHub
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      # Rate limiting speaks Upstash REST; the srh bridge serves it from the local redis.
+      - UPSTASH_REDIS_REST_URL=http://srh:80
+      - UPSTASH_REDIS_REST_TOKEN=local-srh-token
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      srh:
+        condition: service_started
     networks:
       - EventsHub-network
 
   postgres:
-    image: postgres
+    image: postgres:18-alpine
     container_name: EventsHub-postgres
     environment:
       POSTGRES_DB: EventsHub
@@ -59,9 +68,40 @@ services:
     networks:
       - EventsHub-network
 
+  redis:
+    image: redis:8-alpine
+    container_name: EventsHub-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - EventsHub_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - EventsHub-network
+
+  srh:
+    image: hiett/serverless-redis-http:latest
+    container_name: EventsHub-srh
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: local-srh-token
+      SRH_CONNECTION_STRING: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - EventsHub-network
+
 networks:
   EventsHub-network:
     driver: bridge
 
 volumes:
   EventsHub_postgres_data:
+  EventsHub_redis_data:
