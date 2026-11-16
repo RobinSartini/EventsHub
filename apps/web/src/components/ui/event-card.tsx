@@ -47,7 +47,7 @@ function EventCard({ event, isFavorite, onToggleFavorite, className }: Readonly<
   const theme = mediaTheme(event.id);
   const price =
     event.price === undefined ? null : (
-      <span className="ml-auto font-mono text-sm font-bold whitespace-nowrap">
+      <span className="font-mono text-sm font-bold whitespace-nowrap">
         {formatPrice(event.price)}
       </span>
     );
@@ -98,7 +98,7 @@ function EventCard({ event, isFavorite, onToggleFavorite, className }: Readonly<
             {price}
           </CapacityBar>
         ) : (
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline justify-between gap-2">
             {event.status === "cancelled" ? (
               <span className="text-signal-text text-[13px] font-extrabold">Annulé</span>
             ) : null}
