@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
 import { DateBadge } from "@/components/ui/date-badge";
 import { LiveBadge } from "@/components/ui/live-badge";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 
 export function meta() {
   return [{ title: "Design system - EventsHub" }];
@@ -60,6 +61,24 @@ function ChipDemo() {
   );
 }
 
+const VIEWS = [
+  { value: "list", label: "Liste" },
+  { value: "map", label: "Carte" },
+] as const;
+
+function SegmentedControlDemo() {
+  const [view, setView] = useState<(typeof VIEWS)[number]["value"]>("list");
+
+  return (
+    <div className="flex flex-col gap-3">
+      <SegmentedControl label="Affichage" options={VIEWS} value={view} onValueChange={setView} />
+      <p className="text-muted-foreground text-sm">
+        Affichage : {view === "list" ? "la liste des événements" : "la carte"}
+      </p>
+    </div>
+  );
+}
+
 export default function DesignSystem() {
   return (
     <main className="mx-auto w-full max-w-[1360px] px-4 py-10 sm:px-6 lg:px-10">
@@ -93,6 +112,13 @@ export default function DesignSystem() {
           Réserver - 24 €
           <ArrowRightIcon data-icon="inline-end" />
         </Button>
+      </Section>
+
+      <Section
+        title="SegmentedControl"
+        description="Liste ou Carte, jamais les deux : une seule option active à la fois."
+      >
+        <SegmentedControlDemo />
       </Section>
 
       <Section
