@@ -7,6 +7,7 @@ import { CheckboxField, CheckboxGroup } from "@/components/ui/checkbox";
 import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
 import { DateBadge } from "@/components/ui/date-badge";
 import { LiveBadge } from "@/components/ui/live-badge";
+import { SearchBar, type SearchValues } from "@/components/ui/search-bar";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -136,6 +137,21 @@ function SelectDemo() {
   return <Select label="Trier par" options={SORTS} value={sort} onValueChange={setSort} />;
 }
 
+function SearchBarDemo() {
+  const [lastSearch, setLastSearch] = useState<SearchValues | null>(null);
+
+  return (
+    <div className="flex w-full flex-col gap-3">
+      <SearchBar defaultValues={{ city: "Lyon" }} onSearch={setLastSearch} />
+      <p className="text-muted-foreground font-mono text-xs">
+        {lastSearch
+          ? `onSearch(${JSON.stringify(lastSearch)})`
+          : "Lance une recherche pour voir ce qui est envoyé."}
+      </p>
+    </div>
+  );
+}
+
 export default function DesignSystem() {
   return (
     <main className="mx-auto w-full max-w-[1360px] px-4 py-10 sm:px-6 lg:px-10">
@@ -197,6 +213,13 @@ export default function DesignSystem() {
         description="Trier par date, distance, popularité ou prix, sans quitter la pilule."
       >
         <SelectDemo />
+      </Section>
+
+      <Section
+        title="SearchBar"
+        description="Quoi, où, quand : trois questions, un bouton, et la soirée commence. Sur téléphone, les champs s'empilent."
+      >
+        <SearchBarDemo />
       </Section>
 
       <Section
