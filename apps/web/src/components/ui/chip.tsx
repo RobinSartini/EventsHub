@@ -1,20 +1,17 @@
 import { XIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 
+import { focusRing } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
 const chipBase =
   "inline-flex items-center gap-1.5 rounded-full font-sans text-sm whitespace-nowrap transition-colors duration-240 ease-signature";
-
-const focusRing =
-  "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 type ChipProps = Omit<ComponentProps<"button">, "onClick"> & {
   selected: boolean;
   onSelectedChange?: (selected: boolean) => void;
 };
 
-/** Une catégorie à choisir. Choisie, elle passe en négatif. */
 function Chip({ selected, onSelectedChange, className, ...props }: Readonly<ChipProps>) {
   return (
     <button
@@ -39,7 +36,6 @@ type SoftChipProps = {
   className?: string;
 };
 
-/** Une info, comme Gratuit. Elle ne se clique pas. */
 function SoftChip({ children, className }: Readonly<SoftChipProps>) {
   return (
     <span
@@ -57,7 +53,6 @@ type RemovableChipProps = {
   className?: string;
 };
 
-/** Un filtre actif, avec sa croix. */
 function RemovableChip({ label, onRemove, className }: Readonly<RemovableChipProps>) {
   return (
     <button

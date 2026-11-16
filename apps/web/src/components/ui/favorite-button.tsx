@@ -2,11 +2,8 @@ import { HeartIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-// Composant réservé : API définitive, rendu final dans la PR 4 (#33).
-
 type FavoriteButtonProps = {
   isFavorite: boolean;
-  /** Sert à nommer le bouton : « Ajouter Concert X aux favoris ». */
   eventName: string;
   onToggle: () => void;
   size?: "default" | "lg";

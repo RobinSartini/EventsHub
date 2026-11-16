@@ -2,13 +2,8 @@ import { Link } from "react-router";
 
 import { cn } from "@/lib/utils";
 
-// Composant réservé : API définitive, rendu final dans la PR 4 (#33).
-// Les initiales (« Camille Bernard » donne « CB ») arrivent en TDD.
-
 type AvatarProps = {
-  /** Nom de la session : user.name. */
   name: string;
-  /** Avec un lien, l'avatar s'appelle « Mon profil ». */
   href?: string;
   className?: string;
 };

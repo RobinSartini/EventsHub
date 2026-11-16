@@ -1,6 +1,5 @@
+import { focusRing } from "@/lib/styles";
 import { cn } from "@/lib/utils";
-
-// Composant réservé : API définitive, rendu final dans la PR 3 (#33).
 
 type SegmentedOption<T extends string> = {
   value: T;
@@ -8,7 +7,6 @@ type SegmentedOption<T extends string> = {
 };
 
 type SegmentedControlProps<T extends string> = {
-  /** Nom du groupe pour les lecteurs d'écran, par exemple « Affichage ». */
   label: string;
   options: readonly SegmentedOption<T>[];
   value: T;
@@ -16,7 +14,6 @@ type SegmentedControlProps<T extends string> = {
   className?: string;
 };
 
-/** Une seule option active à la fois : sur Explorer, Liste OU Carte. */
 function SegmentedControl<T extends string>({
   label,
   options,
@@ -25,24 +22,32 @@ function SegmentedControl<T extends string>({
   className,
 }: Readonly<SegmentedControlProps<T>>) {
   return (
-    <div
-      role="group"
-      aria-label={label}
+    <fieldset
       data-slot="segmented-control"
-      className={cn("bg-secondary inline-flex rounded-full p-1", className)}
+      className={cn("bg-secondary inline-flex w-fit rounded-full p-1", className)}
     >
-      {options.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          aria-pressed={option.value === value}
-          onClick={() => onValueChange(option.value)}
-          className="aria-pressed:bg-card rounded-full px-3.5 py-1.5 text-sm font-bold"
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
+      <legend className="sr-only">{label}</legend>
+      {options.map((option) => {
+        const isSelected = option.value === value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            aria-pressed={isSelected}
+            onClick={() => {
+              if (!isSelected) onValueChange(option.value);
+            }}
+            className={cn(
+              focusRing,
+              "text-muted-foreground hover:text-foreground h-[38px] cursor-pointer rounded-full px-3.5 font-sans text-sm font-bold whitespace-nowrap transition-colors duration-240 ease-signature",
+              "aria-pressed:bg-card aria-pressed:text-foreground aria-pressed:font-extrabold aria-pressed:shadow-sm",
+            )}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </fieldset>
   );
 }
 

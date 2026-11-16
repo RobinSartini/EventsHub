@@ -3,9 +3,15 @@ import { type ReactNode, useState } from "react";
 import { ArrowRightIcon, PlusIcon, SearchIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { CheckboxField, CheckboxGroup } from "@/components/ui/checkbox";
 import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
 import { DateBadge } from "@/components/ui/date-badge";
 import { LiveBadge } from "@/components/ui/live-badge";
+import { QuantityStepper } from "@/components/ui/quantity-stepper";
+import { SearchBar, type SearchValues } from "@/components/ui/search-bar";
+import { SegmentedControl } from "@/components/ui/segmented-control";
+import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 export function meta() {
   return [{ title: "Design system - EventsHub" }];
@@ -27,15 +33,19 @@ function Section({
   );
 }
 
+function useToggleList(initial: string[]) {
+  const [items, setItems] = useState(initial);
+
+  const toggle = (item: string, isOn: boolean) =>
+    setItems((current) => (isOn ? [...current, item] : current.filter((i) => i !== item)));
+
+  return [items, toggle] as const;
+}
+
 const CATEGORIES = ["Musique", "Théâtre", "Sport", "Expo"];
 
 function ChipDemo() {
-  const [selected, setSelected] = useState<string[]>(["Musique"]);
-
-  const toggle = (category: string, isSelected: boolean) =>
-    setSelected((current) =>
-      isSelected ? [...current, category] : current.filter((c) => c !== category),
-    );
+  const [selected, toggle] = useToggleList(["Musique"]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -56,6 +66,114 @@ function ChipDemo() {
         ))}
         <SoftChip>Gratuit</SoftChip>
       </div>
+    </div>
+  );
+}
+
+const VIEWS = [
+  { value: "list", label: "Liste" },
+  { value: "map", label: "Carte" },
+] as const;
+
+function SegmentedControlDemo() {
+  const [view, setView] = useState<(typeof VIEWS)[number]["value"]>("list");
+
+  return (
+    <div className="flex flex-col gap-3">
+      <SegmentedControl label="Affichage" options={VIEWS} value={view} onValueChange={setView} />
+      <p className="text-muted-foreground text-sm">
+        Affichage : {view === "list" ? "la liste des événements" : "la carte"}
+      </p>
+    </div>
+  );
+}
+
+function SwitchDemo() {
+  const [accessible, setAccessible] = useState(true);
+  const [reminder, setReminder] = useState(false);
+
+  return (
+    <div className="flex w-full max-w-xs flex-col gap-4">
+      <Switch label="Accessible PMR" checked={accessible} onCheckedChange={setAccessible} />
+      <Switch label="Rappel une heure avant" checked={reminder} onCheckedChange={setReminder} />
+      <Switch label="Places disponibles" checked={false} onCheckedChange={() => {}} disabled />
+    </div>
+  );
+}
+
+const CATEGORY_COUNTS = [
+  { label: "Musique", count: 128 },
+  { label: "Théâtre", count: 42 },
+  { label: "Sport", count: 67 },
+];
+
+function CheckboxDemo() {
+  const [checked, toggle] = useToggleList(["Musique"]);
+
+  return (
+    <CheckboxGroup legend="Catégories" className="w-full max-w-xs">
+      {CATEGORY_COUNTS.map(({ label, count }) => (
+        <CheckboxField
+          key={label}
+          label={label}
+          count={count}
+          checked={checked.includes(label)}
+          onCheckedChange={(isChecked) => toggle(label, isChecked)}
+        />
+      ))}
+    </CheckboxGroup>
+  );
+}
+
+const SORTS = [
+  { value: "date", label: "Date" },
+  { value: "distance", label: "Distance" },
+  { value: "popularity", label: "Popularité" },
+  { value: "price", label: "Prix" },
+] as const;
+
+function SelectDemo() {
+  const [sort, setSort] = useState<(typeof SORTS)[number]["value"]>("date");
+
+  return <Select label="Trier par" options={SORTS} value={sort} onValueChange={setSort} />;
+}
+
+function SearchBarDemo() {
+  const [lastSearch, setLastSearch] = useState<SearchValues | null>(null);
+
+  return (
+    <div className="flex w-full flex-col gap-3">
+      <SearchBar defaultValues={{ city: "Lyon" }} onSearch={setLastSearch} />
+      <p className="text-muted-foreground font-mono text-xs">
+        {lastSearch
+          ? `onSearch(${JSON.stringify(lastSearch)})`
+          : "Lance une recherche pour voir ce qui est envoyé."}
+      </p>
+    </div>
+  );
+}
+
+const TICKETS = [
+  { label: "Standard", price: 24, max: 4 },
+  { label: "Étudiant", price: 12.5, max: 2 },
+  { label: "Solidaire", price: null, max: 2 },
+];
+
+function QuantityStepperDemo() {
+  const [quantities, setQuantities] = useState<Record<string, number>>({ Standard: 1 });
+
+  return (
+    <div className="flex w-full max-w-sm flex-col gap-4">
+      {TICKETS.map(({ label, price, max }) => (
+        <QuantityStepper
+          key={label}
+          label={label}
+          price={price}
+          max={max}
+          value={quantities[label] ?? 0}
+          onValueChange={(value) => setQuantities((current) => ({ ...current, [label]: value }))}
+        />
+      ))}
     </div>
   );
 }
@@ -93,6 +211,48 @@ export default function DesignSystem() {
           Réserver - 24 €
           <ArrowRightIcon data-icon="inline-end" />
         </Button>
+      </Section>
+
+      <Section
+        title="SegmentedControl"
+        description="Liste ou Carte, jamais les deux : une seule option active à la fois."
+      >
+        <SegmentedControlDemo />
+      </Section>
+
+      <Section
+        title="Switch"
+        description="Pour ce qui s'applique tout de suite : un filtre, un rappel. Le libellé allume aussi l'interrupteur."
+      >
+        <SwitchDemo />
+      </Section>
+
+      <Section
+        title="Checkbox"
+        description="La case à cocher teintée de bleu roi, avec un compteur pour savoir où il y a du monde."
+      >
+        <CheckboxDemo />
+      </Section>
+
+      <Section
+        title="Select"
+        description="Trier par date, distance, popularité ou prix, sans quitter la pilule."
+      >
+        <SelectDemo />
+      </Section>
+
+      <Section
+        title="SearchBar"
+        description="Quoi, où, quand : trois questions, un bouton, et la soirée commence. Sur téléphone, les champs s'empilent."
+      >
+        <SearchBarDemo />
+      </Section>
+
+      <Section
+        title="QuantityStepper"
+        description="Combien de places ? Moins, plus, et le compteur suit. Plus passe en bleu roi dès qu'un billet est choisi."
+      >
+        <QuantityStepperDemo />
       </Section>
 
       <Section
