@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
+import { adminUserRoutes } from "./routes/admin-users";
 import { authRoutes } from "./routes/auth";
 import { eventRoutes } from "./routes/events";
 import { errorHandler } from "./utils/error-handler";
@@ -19,7 +20,7 @@ app.use(
   "/*",
   cors({
     origin: env.CORS_ORIGIN,
-    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowMethods: ["GET", "POST", "PATCH", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   }),
@@ -27,6 +28,7 @@ app.use(
 
 app.route("/api/auth", authRoutes);
 app.route("/events", eventRoutes);
+app.route("/admin/users", adminUserRoutes);
 
 app.use(
   "/trpc/*",
