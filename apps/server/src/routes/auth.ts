@@ -21,7 +21,6 @@ const signInBody = z.object({
 
 function validateBody(schema: z.ZodType) {
   return createMiddleware(async (c, next) => {
-    // Read a clone: better-auth still needs the original body.
     const body = await c.req.raw
       .clone()
       .json()
@@ -34,7 +33,6 @@ function validateBody(schema: z.ZodType) {
   });
 }
 
-// better-auth keeps cookies, origin checks and password hashing.
 const forward = (c: Context) => auth.handler(c.req.raw);
 
 export const authRoutes = new Hono()

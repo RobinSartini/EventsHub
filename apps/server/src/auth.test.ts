@@ -3,8 +3,6 @@ import { describe, expect, test, vi } from "vitest";
 
 import app from "./index";
 
-// CI has no Postgres: keep the real auth config, swap only the storage.
-// @EventsHub/auth has its own better-auth copy, so mock the file it resolves.
 const authPrismaAdapter = await vi.hoisted(async () => {
   const { createRequire } = await import("node:module");
   return createRequire(import.meta.resolve("@EventsHub/auth")).resolve(
