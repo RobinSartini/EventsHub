@@ -7,6 +7,7 @@ import { CheckboxField, CheckboxGroup } from "@/components/ui/checkbox";
 import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
 import { DateBadge } from "@/components/ui/date-badge";
 import { LiveBadge } from "@/components/ui/live-badge";
+import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { SearchBar, type SearchValues } from "@/components/ui/search-bar";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Select } from "@/components/ui/select";
@@ -152,6 +153,31 @@ function SearchBarDemo() {
   );
 }
 
+const TICKETS = [
+  { label: "Standard", price: 24, max: 4 },
+  { label: "Étudiant", price: 12.5, max: 2 },
+  { label: "Solidaire", price: null, max: 2 },
+];
+
+function QuantityStepperDemo() {
+  const [quantities, setQuantities] = useState<Record<string, number>>({ Standard: 1 });
+
+  return (
+    <div className="flex w-full max-w-sm flex-col gap-4">
+      {TICKETS.map(({ label, price, max }) => (
+        <QuantityStepper
+          key={label}
+          label={label}
+          price={price}
+          max={max}
+          value={quantities[label] ?? 0}
+          onValueChange={(value) => setQuantities((current) => ({ ...current, [label]: value }))}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function DesignSystem() {
   return (
     <main className="mx-auto w-full max-w-[1360px] px-4 py-10 sm:px-6 lg:px-10">
@@ -220,6 +246,13 @@ export default function DesignSystem() {
         description="Quoi, où, quand : trois questions, un bouton, et la soirée commence. Sur téléphone, les champs s'empilent."
       >
         <SearchBarDemo />
+      </Section>
+
+      <Section
+        title="QuantityStepper"
+        description="Combien de places ? Moins, plus, et le compteur suit. Plus passe en bleu roi dès qu'un billet est choisi."
+      >
+        <QuantityStepperDemo />
       </Section>
 
       <Section

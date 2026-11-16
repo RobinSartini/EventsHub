@@ -1,4 +1,9 @@
+import { MinusIcon, PlusIcon } from "lucide-react";
+
+import { formatPrice } from "@/lib/format-price";
 import { cn } from "@/lib/utils";
+
+import { Button } from "./button";
 
 type QuantityStepperProps = {
   label: string;
@@ -20,30 +25,38 @@ function QuantityStepper({
   className,
 }: Readonly<QuantityStepperProps>) {
   return (
-    <div data-slot="quantity-stepper" className={cn("flex items-center gap-4", className)}>
-      <div className="flex-1">
-        <p className="font-bold">{label}</p>
-        <p className="text-muted-foreground text-sm">{price === null ? "Gratuit" : `${price} €`}</p>
+    <div data-slot="quantity-stepper" className={cn("flex items-center gap-3", className)}>
+      <div className="flex flex-1 flex-col gap-0.5">
+        <span className="font-sans text-[15px] font-extrabold">{label}</span>
+        <span className="text-muted-foreground font-mono text-sm font-bold">
+          {formatPrice(price)}
+        </span>
       </div>
-      <button
-        type="button"
+      <Button
+        variant="secondary"
+        size="icon"
         aria-label={`Retirer un billet ${label}`}
         disabled={value <= min}
         onClick={() => onValueChange(value - 1)}
-        className="bg-secondary size-9 rounded-full"
       >
-        -
-      </button>
-      <span aria-live="polite">{value}</span>
-      <button
-        type="button"
+        <MinusIcon aria-hidden="true" strokeWidth={3} />
+      </Button>
+      <span
+        role="status"
+        className="font-display min-w-[2ch] text-center text-lg font-extrabold tabular-nums"
+      >
+        {value}
+        <span className="sr-only">{` ${value > 1 ? "billets" : "billet"} ${label}`}</span>
+      </span>
+      <Button
+        variant={value > 0 ? "default" : "secondary"}
+        size="icon"
         aria-label={`Ajouter un billet ${label}`}
         disabled={value >= max}
         onClick={() => onValueChange(value + 1)}
-        className="bg-secondary size-9 rounded-full"
       >
-        +
-      </button>
+        <PlusIcon aria-hidden="true" strokeWidth={3} />
+      </Button>
     </div>
   );
 }
