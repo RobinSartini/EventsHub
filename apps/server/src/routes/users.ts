@@ -5,16 +5,19 @@ import { z } from "zod";
 import type { AdminVariables } from "../middleware/require-admin";
 
 import { requireAdmin } from "../middleware/require-admin";
-import { listUsersQuery, updateUserBody } from "../types/admin-users";
-import { ApiError, ApiResponse } from "../utils/api-response";
+import { listUsersQuery, updateUserBody } from "../types/users";
+import { ApiError } from "../utils/api-response";
 
-const adminUserSelect = {
+const userSelect = {
   id: true,
   name: true,
   email: true,
+  emailVerified: true,
+  image: true,
   role: true,
   status: true,
   createdAt: true,
+  updatedAt: true,
 } as const;
 
 function invalid(message: string, error: z.ZodError) {
@@ -22,11 +25,11 @@ function invalid(message: string, error: z.ZodError) {
   return new ApiError(400, message, { formErrors, fieldErrors });
 }
 
-export const adminUserRoutes = new Hono<{ Variables: AdminVariables }>();
+export const userRoutes = new Hono<{ Variables: AdminVariables }>();
 
-adminUserRoutes.use(requireAdmin);
+userRoutes.use(requireAdmin);
 
-adminUserRoutes.get("/", async (c) => {
+userRoutes.get("/", async (c) => {
   const parsed = listUsersQuery.safeParse(c.req.query());
   if (!parsed.success) {
     throw invalid("Invalid query", parsed.error);
@@ -38,17 +41,16 @@ adminUserRoutes.get("/", async (c) => {
       orderBy: [{ createdAt: "desc" }, { id: "asc" }],
       skip: (page - 1) * pageSize,
       take: pageSize,
-      select: adminUserSelect,
+      select: userSelect,
     }),
     prisma.user.count(),
   ]);
 
-  return c.json(
-    ApiResponse.ok({ items, page, pageSize, total, totalPages: Math.ceil(total / pageSize) }),
-  );
+  c.header("X-Total-Count", String(total));
+  return c.json(items);
 });
 
-adminUserRoutes.patch("/:id", async (c) => {
+userRoutes.patch("/:id", async (c) => {
   const id = c.req.param("id");
   const parsed = updateUserBody.safeParse(await c.req.json().catch(() => undefined));
   if (!parsed.success) {
@@ -66,11 +68,11 @@ adminUserRoutes.patch("/:id", async (c) => {
   const user = await prisma.user.update({
     where: { id },
     data: parsed.data,
-    select: adminUserSelect,
+    select: userSelect,
   });
   if (parsed.data.status === "suspended") {
     await prisma.session.deleteMany({ where: { userId: id } });
   }
 
-  return c.json(ApiResponse.ok(user));
+  return c.json(user);
 });

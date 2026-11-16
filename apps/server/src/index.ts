@@ -6,9 +6,9 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
-import { adminUserRoutes } from "./routes/admin-users";
 import { authRoutes } from "./routes/auth";
 import { eventRoutes } from "./routes/events";
+import { userRoutes } from "./routes/users";
 import { errorHandler } from "./utils/error-handler";
 
 const app = new Hono();
@@ -22,13 +22,14 @@ app.use(
     origin: env.CORS_ORIGIN,
     allowMethods: ["GET", "POST", "PATCH", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
+    exposeHeaders: ["X-Total-Count"],
     credentials: true,
   }),
 );
 
 app.route("/api/auth", authRoutes);
 app.route("/events", eventRoutes);
-app.route("/admin/users", adminUserRoutes);
+app.route("/users", userRoutes);
 
 app.use(
   "/trpc/*",

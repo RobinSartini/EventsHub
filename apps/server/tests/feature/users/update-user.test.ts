@@ -1,8 +1,7 @@
 import prisma from "@EventsHub/db";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import type { AdminUser } from "../../../src/types/admin-users";
-import type { ApiSuccess } from "../../../src/utils/api-response";
+import type { User } from "../../../src/types/users";
 
 import { json, patch, signInAs } from "../../helpers";
 
@@ -25,14 +24,14 @@ beforeEach(() => {
   update.mockImplementation((async ({ data }: { data: object }) => ({ ...bob, ...data })) as never);
 });
 
-describe("PATCH /admin/users/:id", () => {
+describe("PATCH /users/:id", () => {
   test("an admin changes the role of a user", async () => {
     const { cookie } = await signInAs("admin");
 
-    const res = await patch("/admin/users/u2", { role: "admin" }, cookie);
+    const res = await patch("/users/u2", { role: "admin" }, cookie);
 
     expect(res.status).toBe(200);
-    expect((await json<ApiSuccess<AdminUser>>(res)).data).toMatchObject({
+    expect(await json<User>(res)).toMatchObject({
       id: "u2",
       role: "admin",
     });
@@ -45,17 +44,17 @@ describe("PATCH /admin/users/:id", () => {
   test("suspending a user also signs them out everywhere", async () => {
     const { cookie } = await signInAs("admin");
 
-    const res = await patch("/admin/users/u2", { status: "suspended" }, cookie);
+    const res = await patch("/users/u2", { status: "suspended" }, cookie);
 
     expect(res.status).toBe(200);
-    expect((await json<ApiSuccess<AdminUser>>(res)).data.status).toBe("suspended");
+    expect((await json<User>(res)).status).toBe("suspended");
     expect(deleteSessions).toHaveBeenCalledWith({ where: { userId: "u2" } });
   });
 
   test("an admin reactivates a suspended user", async () => {
     const { cookie } = await signInAs("admin");
 
-    const res = await patch("/admin/users/u2", { status: "active" }, cookie);
+    const res = await patch("/users/u2", { status: "active" }, cookie);
 
     expect(res.status).toBe(200);
     expect(update).toHaveBeenCalledWith(expect.objectContaining({ data: { status: "active" } }));
@@ -65,7 +64,7 @@ describe("PATCH /admin/users/:id", () => {
     findUnique.mockResolvedValue(null);
     const { cookie } = await signInAs("admin");
 
-    const res = await patch("/admin/users/missing", { role: "admin" }, cookie);
+    const res = await patch("/users/missing", { role: "admin" }, cookie);
 
     expect(res.status).toBe(404);
     expect(update).not.toHaveBeenCalled();
@@ -79,7 +78,7 @@ describe("PATCH /admin/users/:id", () => {
   ])("an invalid body is rejected with 400 ($reason)", async ({ body }) => {
     const { cookie } = await signInAs("admin");
 
-    const res = await patch("/admin/users/u2", body, cookie);
+    const res = await patch("/users/u2", body, cookie);
 
     expect(res.status).toBe(400);
     expect(update).not.toHaveBeenCalled();
@@ -88,7 +87,7 @@ describe("PATCH /admin/users/:id", () => {
   test("an admin cannot change their own role or status", async () => {
     const { id, cookie } = await signInAs("admin");
 
-    const res = await patch(`/admin/users/${id}`, { role: "user" }, cookie);
+    const res = await patch(`/users/${id}`, { role: "user" }, cookie);
 
     expect(res.status).toBe(400);
     expect(update).not.toHaveBeenCalled();
@@ -97,14 +96,14 @@ describe("PATCH /admin/users/:id", () => {
   test("a non admin user is rejected with 403", async () => {
     const { cookie } = await signInAs("user");
 
-    const res = await patch("/admin/users/u2", { role: "admin" }, cookie);
+    const res = await patch("/users/u2", { role: "admin" }, cookie);
 
     expect(res.status).toBe(403);
     expect(update).not.toHaveBeenCalled();
   });
 
   test("a visitor is rejected with 401", async () => {
-    const res = await patch("/admin/users/u2", { role: "admin" });
+    const res = await patch("/users/u2", { role: "admin" });
 
     expect(res.status).toBe(401);
   });

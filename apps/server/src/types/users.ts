@@ -21,19 +21,14 @@ export const updateUserBody = z
 export type ListUsersQuery = z.infer<typeof listUsersQuery>;
 export type UpdateUserBody = z.infer<typeof updateUserBody>;
 
-export type AdminUser = {
+export type User = {
   id: string;
   name: string;
   email: string;
+  emailVerified: boolean;
+  image: string | null;
   role: (typeof userRoles)[number];
   status: (typeof userStatuses)[number];
   createdAt: string;
-};
-
-export type AdminUserListResponse = {
-  items: AdminUser[];
-  page: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
+  updatedAt: string;
 };
