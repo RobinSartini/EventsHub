@@ -1,0 +1,68 @@
+enum EventStatus {
+  published
+  cancelled
+}
+
+model Category {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  slug   String  @unique
+  events Event[]
+
+  @@map("category")
+}
+
+model Event {
+  id            String      @id @default(cuid())
+  name          String
+  description   String?
+  categoryId    String?
+  category      Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  organizerId   String
+  organizer     User        @relation("OrganizedEvents", fields: [organizerId], references: [id], onDelete: Cascade)
+  startDate     DateTime
+  endDate       DateTime?
+  location      String
+  latitude      Float?
+  longitude     Float?
+  capacity      Int?
+  status        EventStatus @default(published)
+  priceCents    Int         @default(0)
+  isAccessible  Boolean     @default(false)
+  isKidFriendly Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  tickets       Ticket[]
+  favorites     Favorite[]
+
+  @@index([startDate])
+  @@index([categoryId])
+  @@index([organizerId])
+  @@index([location])
+  @@map("event")
+}
+
+model Ticket {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+  @@index([userId])
+  @@map("ticket")
+}
+
+model Favorite {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, eventId])
+  @@index([eventId])
+  @@map("favorite")
+}
