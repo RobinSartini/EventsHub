@@ -5,6 +5,7 @@ name: EventsHub
 
 services:
   web:
+    platform: ${DOCKER_PLATFORM:-}
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -20,6 +21,7 @@ services:
       - EventsHub-network
 
   server:
+    platform: ${DOCKER_PLATFORM:-}
     build:
       context: .
       dockerfile: apps/server/Dockerfile
@@ -49,6 +51,7 @@ services:
       - EventsHub-network
 
   postgres:
+    platform: ${DOCKER_PLATFORM:-}
     image: postgres:18-alpine
     container_name: EventsHub-postgres
     environment:
@@ -69,6 +72,7 @@ services:
       - EventsHub-network
 
   redis:
+    platform: ${DOCKER_PLATFORM:-}
     image: redis:8-alpine
     container_name: EventsHub-redis
     ports:
@@ -85,6 +89,7 @@ services:
       - EventsHub-network
 
   srh:
+    platform: ${DOCKER_PLATFORM:-}
     image: hiett/serverless-redis-http:latest
     container_name: EventsHub-srh
     environment:
