@@ -3,6 +3,7 @@ import { type ReactNode, useState } from "react";
 import { ArrowRightIcon, PlusIcon, SearchIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { CapacityBar } from "@/components/ui/capacity-bar";
 import { CheckboxField, CheckboxGroup } from "@/components/ui/checkbox";
 import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
 import { DateBadge } from "@/components/ui/date-badge";
@@ -253,6 +254,17 @@ export default function DesignSystem() {
         description="Combien de places ? Moins, plus, et le compteur suit. Plus passe en bleu roi dès qu'un billet est choisi."
       >
         <QuantityStepperDemo />
+      </Section>
+
+      <Section
+        title="CapacityBar"
+        description="La jauge qui crée l'envie : on voit la salle se remplir. À partir de 75 %, elle passe au rouge."
+      >
+        <div className="grid w-full max-w-sm gap-5">
+          <CapacityBar taken={34} capacity={60} />
+          <CapacityBar taken={62} capacity={80} />
+          <CapacityBar taken={80} capacity={80} />
+        </div>
       </Section>
 
       <Section
