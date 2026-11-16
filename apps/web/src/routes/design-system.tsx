@@ -10,6 +10,7 @@ import { FavoriteButton } from "@/components/ui/favorite-button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
 import { DateBadge } from "@/components/ui/date-badge";
+import { EventCard, type EventCardEvent } from "@/components/ui/event-card";
 import { LiveBadge } from "@/components/ui/live-badge";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { SearchBar, type SearchValues } from "@/components/ui/search-bar";
@@ -202,6 +203,61 @@ function FavoriteButtonDemo() {
   );
 }
 
+const EVENTS: EventCardEvent[] = [
+  {
+    id: "nuit-fluo",
+    name: "Nuit Fluo",
+    startDate: "2026-11-14T20:00:00Z",
+    location: "Les Docks",
+    capacity: 80,
+    ticketsSold: 62,
+    price: 12,
+  },
+  {
+    id: "jam-session",
+    name: "Jam session acoustique",
+    startDate: "2026-11-13T19:30:00Z",
+    location: "Le Cargo",
+    capacity: 60,
+    ticketsSold: 34,
+    price: 8,
+  },
+  {
+    id: "expo-lumiere",
+    name: "Expo Lumière",
+    startDate: "2026-11-21T09:00:00Z",
+    location: "Halle Tony Garnier",
+    price: null,
+  },
+  {
+    id: "atelier-ceramique",
+    name: "Atelier céramique",
+    startDate: "2026-11-22T13:00:00Z",
+    location: "La Croix-Rousse",
+    capacity: 12,
+    ticketsSold: 5,
+    price: 35,
+    status: "cancelled",
+  },
+];
+
+function EventCardDemo() {
+  const [favorites, toggle] = useToggleList(["nuit-fluo"]);
+
+  return (
+    <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {EVENTS.map((event) => (
+        <EventCard
+          key={event.id}
+          event={event}
+          isFavorite={favorites.includes(event.id)}
+          onToggleFavorite={() => toggle(event.id, !favorites.includes(event.id))}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function DesignSystem() {
   return (
     <main className="mx-auto w-full max-w-[1360px] px-4 py-10 sm:px-6 lg:px-10">
@@ -288,6 +344,13 @@ export default function DesignSystem() {
           <CapacityBar taken={62} capacity={80} />
           <CapacityBar taken={80} capacity={80} />
         </div>
+      </Section>
+
+      <Section
+        title="EventCard"
+        description="La carte qui donne envie de sortir : un visuel qui bouge, une date, un cœur, et l'essentiel en trois lignes. La grille décide de sa largeur."
+      >
+        <EventCardDemo />
       </Section>
 
       <Section
