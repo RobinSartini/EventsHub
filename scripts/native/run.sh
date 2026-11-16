@@ -6,8 +6,8 @@ set -euo pipefail
 cd "$(dirname "$0")/../../apps/native"
 
 SIM="${SIM:-iPhone 17}"
-BUNDLE_ID="com.betterfullstack.app"
-SCHEME="BetterFullstackApp"
+BUNDLE_ID="com.eventsHub.app"
+SCHEME="EventsHub"
 DERIVED="build"
 
 # Resolve simulator UDID by name (first available match)
