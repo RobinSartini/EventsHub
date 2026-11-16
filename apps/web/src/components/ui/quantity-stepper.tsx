@@ -1,6 +1,7 @@
 import { MinusIcon, PlusIcon } from "lucide-react";
 
 import { formatPrice } from "@/lib/format-price";
+import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
 import { Button } from "./button";
@@ -46,7 +47,7 @@ function QuantityStepper({
         className="font-display min-w-[2ch] text-center text-lg font-extrabold tabular-nums"
       >
         {value}
-        <span className="sr-only">{` ${value > 1 ? "billets" : "billet"} ${label}`}</span>
+        <span className="sr-only">{` ${plural(value, "billet")} ${label}`}</span>
       </span>
       <Button
         variant={value > 0 ? "default" : "secondary"}
