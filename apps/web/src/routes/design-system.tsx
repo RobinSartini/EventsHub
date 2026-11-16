@@ -1,5 +1,8 @@
 import { type ReactNode, useState } from "react";
 
+import { ArrowRightIcon, PlusIcon, SearchIcon } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
 import { DateBadge } from "@/components/ui/date-badge";
 import { LiveBadge } from "@/components/ui/live-badge";
@@ -68,6 +71,29 @@ export default function DesignSystem() {
           bascule entre clair et sombre.
         </p>
       </header>
+
+      <Section
+        title="Button"
+        description="Une pilule pleine, un verbe, et c'est parti. L'icône se place avant le libellé pour créer, après pour avancer."
+      >
+        <Button>
+          <SearchIcon data-icon="inline-start" />
+          Rechercher
+        </Button>
+        <Button variant="accent">
+          <PlusIcon data-icon="inline-start" />
+          Créer un événement
+        </Button>
+        <Button variant="outline">Plus tard</Button>
+        <Button variant="surface" size="sm">
+          Voir la liste
+        </Button>
+        <Button disabled>Complet</Button>
+        <Button size="lg">
+          Réserver - 24 €
+          <ArrowRightIcon data-icon="inline-end" />
+        </Button>
+      </Section>
 
       <Section
         title="DateBadge"
