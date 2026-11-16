@@ -9,7 +9,11 @@ const authPrismaAdapter = await vi.hoisted(async () => {
 });
 
 vi.mock("@EventsHub/db", () => ({
-  default: { event: { findMany: vi.fn(), count: vi.fn() } },
+  default: {
+    event: { findMany: vi.fn(), count: vi.fn() },
+    user: { findMany: vi.fn(), count: vi.fn(), findUnique: vi.fn(), update: vi.fn() },
+    session: { deleteMany: vi.fn() },
+  },
 }));
 vi.mock(authPrismaAdapter, () => ({
   prismaAdapter: () =>

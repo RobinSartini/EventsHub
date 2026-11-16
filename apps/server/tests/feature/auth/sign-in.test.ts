@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import type { SignInResponse } from "../../../src/types/auth";
 
-import { json, post, signUp, user } from "../../helpers";
+import { json, post, setUserFields, signUp, user } from "../../helpers";
 
 describe("POST /api/auth/sign-in/email", () => {
   test("a user can sign in with email and password", async () => {
@@ -33,5 +33,19 @@ describe("POST /api/auth/sign-in/email", () => {
     const res = await post("/api/auth/sign-in/email", { email: "nope" });
 
     expect(res.status).toBe(400);
+  });
+
+  test("a suspended user cannot sign in", async () => {
+    const account = { ...user, email: "suspended@example.com" };
+    await signUp(account);
+    await setUserFields(account.email, { status: "suspended" });
+
+    const res = await post("/api/auth/sign-in/email", {
+      email: account.email,
+      password: account.password,
+    });
+
+    expect(res.status).toBe(403);
+    expect(res.headers.getSetCookie().join()).not.toContain("session_token");
   });
 });
