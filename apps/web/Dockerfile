@@ -12,12 +12,10 @@ RUN if [ -f bun.lock ]; then bun install --frozen-lockfile; else bun install; fi
 ARG VITE_SERVER_URL=http://localhost:3000
 ENV VITE_SERVER_URL=${VITE_SERVER_URL}
 RUN bun run --filter web build
-RUN sed -e "s|__SCRIPT_HASHES__|$(bun apps/web/scripts/csp-script-hashes.ts apps/web/build/client/index.html)|" \
-  -e "s|__API_ORIGIN__|${VITE_SERVER_URL}|" \
-  apps/web/nginx.conf > /app/nginx.conf
 
-FROM nginx:alpine AS runner
-COPY --from=builder /app/apps/web/build/client /usr/share/nginx/html
-COPY --from=builder /app/nginx.conf /etc/nginx/conf.d/default.conf
+FROM oven/bun:1.3.14-slim AS runner
+WORKDIR /app
+RUN bun add -g serve@14.2.8
+COPY --from=builder /app/apps/web/build/client ./
 EXPOSE 3000
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["serve", "--single", "--listen", "3000", "."]
