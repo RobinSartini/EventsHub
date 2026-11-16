@@ -1,5 +1,7 @@
 import { Link } from "react-router";
 
+import { formatTime } from "@/lib/format-date";
+import { formatPrice } from "@/lib/format-price";
 import { cn } from "@/lib/utils";
 
 import { CapacityBar } from "./capacity-bar";
@@ -16,6 +18,7 @@ type EventCardEvent = {
   capacity?: number | null;
   status?: "published" | "cancelled";
   ticketsSold?: number;
+  price?: number | null;
 };
 
 type EventCardProps = {
@@ -25,56 +28,52 @@ type EventCardProps = {
   className?: string;
 };
 
-const COVER_COMBOS = [
-  { bg: "bg-primary", ellipse1: "bg-signal", ellipse2: "bg-sky" },
-  { bg: "bg-signal-soft", ellipse1: "bg-primary", ellipse2: "bg-sky" },
-  { bg: "bg-sky", ellipse1: "bg-primary", ellipse2: "bg-signal-soft" },
-] as const;
+const MEDIA_THEMES = [
+  { media: "bg-primary", first: "bg-signal", second: "bg-sky" },
+  { media: "bg-sky", first: "bg-primary", second: "bg-signal" },
+  { media: "bg-signal", first: "bg-sky", second: "bg-primary" },
+];
 
-function idToComboIndex(id: string): number {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash += id.charCodeAt(i);
-  }
-  return hash % COVER_COMBOS.length;
+function mediaTheme(id: string) {
+  let sum = 0;
+  for (const char of id) sum += char.codePointAt(0) ?? 0;
+  return MEDIA_THEMES[sum % MEDIA_THEMES.length];
 }
 
-const timeFormatter = new Intl.DateTimeFormat("fr-FR", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "Europe/Paris",
-});
-
-function formatEventTime(isoDate: string): string {
-  return timeFormatter.format(new Date(isoDate));
-}
+const blob =
+  "animate-morph absolute rounded-[42%_58%_63%_37%/41%_44%_56%_59%] motion-reduce:animate-none";
 
 function EventCard({ event, isFavorite, onToggleFavorite, className }: Readonly<EventCardProps>) {
-  const cancelled = event.status === "cancelled";
-  const combo = COVER_COMBOS[idToComboIndex(event.id)];
+  const theme = mediaTheme(event.id);
+  const price =
+    event.price === undefined ? null : (
+      <span className="ml-auto font-mono text-sm font-bold whitespace-nowrap">
+        {formatPrice(event.price)}
+      </span>
+    );
+  const meta = [formatTime(event.startDate), event.location].filter(Boolean).join(" - ");
 
   return (
     <article
       data-slot="event-card"
       className={cn(
-        "bg-card flex flex-col overflow-hidden border border-border rounded-[var(--radius-card)_var(--radius-card)_var(--radius-card)_var(--radius-anchor)]",
+        "bg-card border-border has-[a:focus-visible]:ring-ring relative flex flex-col gap-3 rounded-card rounded-bl-anchor border p-2 has-[a:focus-visible]:ring-2",
         className,
       )}
     >
-      <div className={cn("relative h-[150px] overflow-hidden", combo.bg)}>
+      <div
+        className={cn("relative h-42 overflow-hidden rounded-[26px_26px_26px_6px]", theme.media)}
+      >
+        <div aria-hidden="true" className={cn(blob, theme.first, "-top-10 -right-12 size-45")} />
         <div
+          aria-hidden="true"
           className={cn(
-            "absolute -top-12 -right-10 size-[170px] rounded-full opacity-80",
-            combo.ellipse1,
+            blob,
+            theme.second,
+            "-bottom-15 -left-10 size-37.5 [animation-direction:reverse] [animation-duration:10s]",
           )}
         />
-        <div
-          className={cn(
-            "absolute top-16 -left-8 size-[130px] rounded-full opacity-70",
-            combo.ellipse2,
-          )}
-        />
-        <DateBadge date={event.startDate} className="absolute top-3 left-3 z-10" />
+        <DateBadge date={event.startDate} className="absolute bottom-3 left-3" />
         {onToggleFavorite ? (
           <FavoriteButton
             isFavorite={isFavorite ?? false}
@@ -83,22 +82,29 @@ function EventCard({ event, isFavorite, onToggleFavorite, className }: Readonly<
             className="absolute top-2 right-2 z-10"
           />
         ) : null}
-        <span className="absolute bottom-3 left-3 z-10 rounded-full bg-card/90 px-2.5 py-1 font-mono text-xs font-bold text-foreground backdrop-blur-sm">
-          {formatEventTime(event.startDate)}
-        </span>
       </div>
-
-      <div className="flex flex-col gap-2 p-4">
-        <h3 className="font-display font-bold leading-tight">
-          <Link to={`/events/${event.id}`} className="transition-colors hover:text-primary">
+      <div className="flex flex-col gap-2 px-2.5 pb-2.5">
+        <h3 className="font-display text-[17px] leading-tight font-semibold tracking-tight">
+          <Link
+            to={`/events/${event.id}`}
+            className="outline-none after:absolute after:inset-0 after:rounded-[inherit]"
+          >
             {event.name}
           </Link>
         </h3>
-        {event.location ? <p className="text-muted-foreground text-sm">{event.location}</p> : null}
-        {cancelled ? <p className="text-signal-text text-sm font-bold">Annulé</p> : null}
-        {!cancelled && event.capacity !== undefined && event.capacity !== null ? (
-          <CapacityBar taken={event.ticketsSold ?? 0} capacity={event.capacity} />
-        ) : null}
+        <span className="text-muted-foreground text-sm font-semibold">{meta}</span>
+        {event.status !== "cancelled" && event.capacity != null ? (
+          <CapacityBar taken={event.ticketsSold ?? 0} capacity={event.capacity}>
+            {price}
+          </CapacityBar>
+        ) : (
+          <div className="flex items-baseline gap-2">
+            {event.status === "cancelled" ? (
+              <span className="text-signal-text text-[13px] font-extrabold">Annulé</span>
+            ) : null}
+            {price}
+          </div>
+        )}
       </div>
     </article>
   );
