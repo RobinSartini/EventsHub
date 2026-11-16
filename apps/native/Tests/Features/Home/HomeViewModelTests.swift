@@ -27,3 +27,22 @@ private struct MockEventsAPI: EventsAPI {
     #expect(viewModel.error == nil)
     #expect(viewModel.isLoading == false)
 }
+
+/// API qui échoue : simule une coupure réseau.
+private struct FailingEventsAPI: EventsAPI {
+    func fetchEvents() async throws -> [Event] { throw URLError(.notConnectedToInternet) }
+}
+
+@MainActor
+@Test func homeExposesErrorWhenAPIFails() async {
+    // Arrange
+    let viewModel = HomeViewModel(api: FailingEventsAPI())
+
+    // Act
+    await viewModel.load()
+
+    // Assert
+    #expect(viewModel.error != nil)
+    #expect(viewModel.events.isEmpty)
+    #expect(viewModel.isLoading == false)
+}

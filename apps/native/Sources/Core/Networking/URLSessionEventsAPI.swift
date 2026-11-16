@@ -29,7 +29,7 @@ struct URLSessionEventsAPI: EventsAPI {
         #endif
     }
 
-    private static var decoder: JSONDecoder {
+    private static let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .custom { decoder in
             let raw = try decoder.singleValueContainer().decode(String.self)
@@ -41,5 +41,5 @@ struct URLSessionEventsAPI: EventsAPI {
             )
         }
         return decoder
-    }
+    }()
 }
