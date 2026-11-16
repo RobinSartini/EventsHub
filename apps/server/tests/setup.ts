@@ -10,5 +10,6 @@ const authPrismaAdapter = await vi.hoisted(async () => {
 
 vi.mock("@EventsHub/db", () => ({ default: {} }));
 vi.mock(authPrismaAdapter, () => ({
-  prismaAdapter: () => memoryAdapter({ user: [], session: [], account: [], verification: [] }),
+  prismaAdapter: () =>
+    memoryAdapter({ user: [], session: [], account: [], verification: [], jwks: [] }),
 }));

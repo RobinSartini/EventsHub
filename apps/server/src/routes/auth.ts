@@ -1,13 +1,15 @@
 import type { Context } from "hono";
 
-import { auth } from "@EventsHub/auth";
+import { ACCESS_TOKEN_TTL_SECONDS, auth } from "@EventsHub/auth";
 import { Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { z } from "zod";
 
 import { requireSession } from "../middleware/require-session";
+import type { RefreshResponse } from "../types/auth";
+
 import { signInBody, signUpBody } from "../types/auth";
-import { ApiError } from "../utils/api-response";
+import { ApiError, ApiResponse } from "../utils/api-response";
 
 function validateBody(schema: z.ZodType) {
   return createMiddleware(async (c, next) => {
@@ -30,4 +32,13 @@ export const authRoutes = new Hono()
   .post("/sign-in/email", validateBody(signInBody), forward)
   .post("/sign-out", requireSession, forward)
   .get("/get-session", forward)
+  .post("/refresh", requireSession, async (c) => {
+    const { token } = await auth.api.getToken({ headers: c.req.raw.headers });
+    const data: RefreshResponse = {
+      accessToken: token,
+      tokenType: "Bearer",
+      expiresIn: ACCESS_TOKEN_TTL_SECONDS,
+    };
+    return c.json(ApiResponse.ok(data));
+  })
   .on(["GET", "POST"], "/*", forward);

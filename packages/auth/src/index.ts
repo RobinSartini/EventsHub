@@ -2,6 +2,9 @@ import prisma from "@EventsHub/db";
 import { env } from "@EventsHub/env/server";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { jwt } from "better-auth/plugins/jwt";
+
+export const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -19,5 +22,5 @@ export const auth = betterAuth({
       httpOnly: true,
     },
   },
-  plugins: [],
+  plugins: [jwt({ jwt: { expirationTime: `${ACCESS_TOKEN_TTL_SECONDS}s` } })],
 });
