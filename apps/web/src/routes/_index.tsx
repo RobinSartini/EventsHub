@@ -253,7 +253,7 @@ export default function Home() {
           </aside>
 
           <main>
-            <div className="grid grid-cols-2 gap-4">
+            <div className={view === "list" ? "grid grid-cols-3 gap-4" : "grid grid-cols-2 gap-4"}>
               {MOCK_EVENTS.map((event) => (
                 <EventCard
                   key={event.id}
