@@ -7,6 +7,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
 import { authRoutes } from "./routes/auth";
+import { eventRoutes } from "./routes/events";
 import { errorHandler } from "./utils/error-handler";
 
 const app = new Hono();
@@ -25,6 +26,7 @@ app.use(
 );
 
 app.route("/api/auth", authRoutes);
+app.route("/events", eventRoutes);
 
 app.use(
   "/trpc/*",
