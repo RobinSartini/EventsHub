@@ -1,28 +1,20 @@
-# Dockerfile for EventsHub React Router app
-# Optimized multi-stage build for Docker deployment
-
-FROM oven/bun:1 AS builder
-
+FROM oven/bun:1.3.14 AS base
 WORKDIR /app
 
-COPY package.json bun.lock* ./
-RUN bun install --frozen-lockfile
-
+FROM base AS builder
+# react-router build must run on real Node: under the bun shim, react-dom/server lacks renderToPipeableStream.
+COPY --from=node:24-slim /usr/local/bin/node /usr/local/bin/node
+ARG DATABASE_URL="postgresql://build:build@localhost:5432/build"
 COPY . .
-RUN bun run build
+# Git hook setup needs git, which the image does not have.
+RUN bun pm pkg delete scripts.prepare
+RUN if [ -f bun.lock ]; then bun install --frozen-lockfile; else bun install; fi
+ARG VITE_SERVER_URL=http://localhost:3000
+ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+RUN bun run --filter web build
 
-FROM oven/bun:1-slim AS runner
-
-WORKDIR /app
-
-ENV NODE_ENV=production
-ENV PORT=3000
-
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/package.json ./
-
-RUN bun install --production --frozen-lockfile
-
+FROM nginx:alpine AS runner
+COPY --from=builder /app/apps/web/build/client /usr/share/nginx/html
+COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 3000
-
-CMD ["bun", "run", "./build/server/index.js"]
+CMD ["nginx", "-g", "daemon off;"]

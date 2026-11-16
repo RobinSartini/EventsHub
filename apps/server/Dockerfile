@@ -2,7 +2,7 @@
 # Build from the repository root so workspace packages resolve:
 #   docker build -f apps/server/Dockerfile .
 
-FROM oven/bun:1 AS base
+FROM oven/bun:1.3.14 AS base
 WORKDIR /app
 
 FROM base AS builder
@@ -11,6 +11,8 @@ FROM base AS builder
 # It exists only in this stage; the server reads the real value at run time.
 ARG DATABASE_URL="postgresql://build:build@localhost:5432/build"
 COPY . .
+# Git hook setup needs git, which the image does not have.
+RUN bun pm pkg delete scripts.prepare
 RUN if [ -f bun.lock ]; then bun install --frozen-lockfile; else bun install; fi
 RUN bun run --filter server build
 
@@ -35,7 +37,7 @@ RUN if [ -f bun.lock ]; then bun install --production --frozen-lockfile --filter
 # Hoisting package managers may leave this empty; the runner copies it either way.
 RUN mkdir -p apps/server/node_modules
 
-FROM oven/bun:1-slim AS runner
+FROM oven/bun:1.3.14-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
