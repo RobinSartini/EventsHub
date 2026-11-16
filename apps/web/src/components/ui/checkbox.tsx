@@ -24,18 +24,14 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
   );
 }
 
-// Composants réservés : API définitive, rendu final dans la PR 3 (#33).
-
 type CheckboxFieldProps = {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   label: string;
-  /** Nombre de résultats affiché à droite, par exemple 128. */
   count?: number;
   className?: string;
 };
 
-/** Une case avec son libellé cliquable, pour les filtres. */
 function CheckboxField({
   checked,
   onCheckedChange,
@@ -56,7 +52,6 @@ function CheckboxField({
 }
 
 type CheckboxGroupProps = {
-  /** Titre du groupe, lu par les lecteurs d'écran : « Catégories ». */
   legend: string;
   children: ReactNode;
   className?: string;

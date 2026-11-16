@@ -2,8 +2,6 @@ import { useId } from "react";
 
 import { cn } from "@/lib/utils";
 
-// Composant réservé : API définitive, rendu final dans la PR 3 (#33).
-
 type SwitchProps = {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;

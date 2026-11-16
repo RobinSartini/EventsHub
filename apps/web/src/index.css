@@ -4,7 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Design system EventsHub, thème clair */
 :root {
   --background: #f6f8fd;
   --foreground: #0b1533;
@@ -18,7 +17,6 @@
   --secondary-foreground: #0b1533;
   --muted: #e9eef8;
   --muted-foreground: #4d5878;
-  /* Fond de survol des menus shadcn : ce n'est pas la couleur d'accent de la marque (voir --signal) */
   --accent: #d9e1ff;
   --accent-foreground: #0b1533;
   --destructive: #c21a30;
@@ -53,7 +51,6 @@
   --radius: 0.45rem;
 }
 
-/* Design system EventsHub, thème sombre */
 .dark {
   --background: #070b1a;
   --foreground: #f3f5fc;
@@ -155,7 +152,6 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
-  /* Coin ancré : trois coins larges, le coin bas-gauche serré */
   --radius-card: 32px;
   --radius-anchor: 10px;
   --radius-panel: 40px;

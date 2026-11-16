@@ -2,8 +2,6 @@ import { useId } from "react";
 
 import { cn } from "@/lib/utils";
 
-// Composant réservé : API définitive, rendu final dans la PR 5 (#33).
-
 type RangeSliderProps = {
   label: string;
   min: number;
@@ -11,7 +9,6 @@ type RangeSliderProps = {
   step?: number;
   value: number;
   onValueChange: (value: number) => void;
-  /** Mise en forme de la valeur affichée et lue : 20 devient « 20 € ». */
   format?: (value: number) => string;
   className?: string;
 };

@@ -2,8 +2,6 @@ import { useId } from "react";
 
 import { cn } from "@/lib/utils";
 
-// Composant réservé : API définitive, rendu final dans la PR 3 (#33).
-
 type SelectOption<T extends string> = {
   value: T;
   label: string;

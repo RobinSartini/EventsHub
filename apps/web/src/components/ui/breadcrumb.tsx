@@ -2,11 +2,8 @@ import { Link } from "react-router";
 
 import { cn } from "@/lib/utils";
 
-// Composant réservé : API définitive, rendu final dans la PR 5 (#33).
-
 type BreadcrumbItem = {
   label: string;
-  /** Absent sur le dernier élément : c'est la page courante. */
   href?: string;
 };
 

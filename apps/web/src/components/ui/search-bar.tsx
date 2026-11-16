@@ -2,9 +2,6 @@ import type { FormEvent } from "react";
 
 import { cn } from "@/lib/utils";
 
-// Composant réservé : API définitive, rendu final dans la PR 3 (#33).
-
-/** Mêmes noms que les filtres de GET /events dans le contrat d'API. */
 type SearchValues = {
   q?: string;
   city?: string;
@@ -13,7 +10,6 @@ type SearchValues = {
 
 type SearchBarProps = {
   defaultValues?: SearchValues;
-  /** Reçoit seulement les champs remplis. */
   onSearch: (values: SearchValues) => void;
   className?: string;
 };

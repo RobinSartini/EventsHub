@@ -1,11 +1,7 @@
 import { cn } from "@/lib/utils";
 
-// Composant réservé : API définitive, rendu final dans la PR 3 (#33).
-
 type QuantityStepperProps = {
-  /** Nom du billet : « Standard ». Sert aussi à nommer les boutons. */
   label: string;
-  /** Prix unitaire en euros, null pour un billet gratuit. */
   price: number | null;
   value: number;
   min?: number;

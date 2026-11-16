@@ -4,9 +4,6 @@ import { cn } from "@/lib/utils";
 
 import { Avatar } from "./avatar";
 
-// Composant réservé : API définitive, rendu final dans la PR 5 (#33).
-// Remplacera header.tsx et user-menu.tsx.
-
 type NavBarLink = {
   to: string;
   label: string;
@@ -14,7 +11,6 @@ type NavBarLink = {
 
 type NavBarProps = {
   links: readonly NavBarLink[];
-  /** null quand personne n'est connecté : le lien Se connecter remplace l'avatar. */
   user: { name: string } | null;
   className?: string;
 };

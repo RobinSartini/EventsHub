@@ -2,10 +2,7 @@ import type { ComponentProps } from "react";
 
 import { cn } from "@/lib/utils";
 
-// Composant réservé : API définitive, rendu final dans la PR 4 (#33).
-
 type IconButtonProps = Omit<ComponentProps<"button">, "aria-label"> & {
-  /** Obligatoire : le bouton n'a pas de texte visible. */
   "aria-label": string;
   variant?: "default" | "outline" | "primary";
   size?: "default" | "lg";

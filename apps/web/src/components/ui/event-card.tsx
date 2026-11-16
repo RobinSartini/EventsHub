@@ -6,9 +6,6 @@ import { CapacityBar } from "./capacity-bar";
 import { DateBadge } from "./date-badge";
 import { FavoriteButton } from "./favorite-button";
 
-// Composant réservé : API définitive, rendu final dans la PR 4 (#33).
-
-/** Champs de l'événement utilisés par la carte, repris du schéma Event du contrat d'API. */
 type EventCardEvent = {
   id: string;
   name: string;
@@ -18,13 +15,11 @@ type EventCardEvent = {
   location?: string;
   capacity?: number | null;
   status?: "published" | "cancelled";
-  /** Billets vendus : pas encore dans le contrat, à confirmer avec le back. */
   ticketsSold?: number;
 };
 
 type EventCardProps = {
   event: EventCardEvent;
-  /** Sans ces deux props, le cœur n'est pas affiché. */
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
   className?: string;
