@@ -1,13 +1,17 @@
 import { createContext } from "@EventsHub/api/context";
 import { appRouter } from "@EventsHub/api/routers/index";
-import { auth } from "@EventsHub/auth";
 import { env } from "@EventsHub/env/server";
 import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
+import { authRoutes } from "./routes/auth";
+import { errorHandler } from "./utils/error-handler";
+
 const app = new Hono();
+
+app.onError(errorHandler);
 
 app.use(logger());
 app.use(
@@ -20,7 +24,7 @@ app.use(
   }),
 );
 
-app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
+app.route("/api/auth", authRoutes);
 
 app.use(
   "/trpc/*",
