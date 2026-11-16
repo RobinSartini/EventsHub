@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../../apps/native"
 
 SIM="${SIM:-iPhone 17}"
-BUNDLE_ID="com.eventsHub.app"
+BUNDLE_ID="com.sugow.eventshub.app"
 SCHEME="EventsHub"
 DERIVED="build"
 
