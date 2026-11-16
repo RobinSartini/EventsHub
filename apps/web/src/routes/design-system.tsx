@@ -7,6 +7,7 @@ import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
 import { DateBadge } from "@/components/ui/date-badge";
 import { LiveBadge } from "@/components/ui/live-badge";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { Switch } from "@/components/ui/switch";
 
 export function meta() {
   return [{ title: "Design system - EventsHub" }];
@@ -79,6 +80,19 @@ function SegmentedControlDemo() {
   );
 }
 
+function SwitchDemo() {
+  const [accessible, setAccessible] = useState(true);
+  const [reminder, setReminder] = useState(false);
+
+  return (
+    <div className="flex w-full max-w-xs flex-col gap-4">
+      <Switch label="Accessible PMR" checked={accessible} onCheckedChange={setAccessible} />
+      <Switch label="Rappel une heure avant" checked={reminder} onCheckedChange={setReminder} />
+      <Switch label="Places disponibles" checked={false} onCheckedChange={() => {}} disabled />
+    </div>
+  );
+}
+
 export default function DesignSystem() {
   return (
     <main className="mx-auto w-full max-w-[1360px] px-4 py-10 sm:px-6 lg:px-10">
@@ -119,6 +133,13 @@ export default function DesignSystem() {
         description="Liste ou Carte, jamais les deux : une seule option active à la fois."
       >
         <SegmentedControlDemo />
+      </Section>
+
+      <Section
+        title="Switch"
+        description="Pour ce qui s'applique tout de suite : un filtre, un rappel. Le libellé allume aussi l'interrupteur."
+      >
+        <SwitchDemo />
       </Section>
 
       <Section
