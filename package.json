@@ -47,6 +47,7 @@
     "ios:logs": "xcrun simctl spawn booted log stream --level debug --predicate 'subsystem CONTAINS \"com.eventsHub.app\" OR process == \"EventsHub\"'",
     "db:push": "vp run --fail-if-no-match --filter @EventsHub/db db:push",
     "db:studio": "vp run --fail-if-no-match --filter @EventsHub/db db:studio",
+    "db:seed": "vp run --fail-if-no-match --filter @EventsHub/db db:seed",
     "db:generate": "vp run --fail-if-no-match --filter @EventsHub/db db:generate",
     "db:migrate": "vp run --fail-if-no-match --filter @EventsHub/db db:migrate",
     "db:start": "vp run --fail-if-no-match --filter @EventsHub/db db:start",
