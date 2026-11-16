@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct BetterFullstackApp: App {
+struct EventHubApp: App {
     var body: some Scene {
         WindowGroup { ContentView() }
     }
