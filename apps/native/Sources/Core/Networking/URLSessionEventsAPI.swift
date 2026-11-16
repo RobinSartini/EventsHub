@@ -29,13 +29,15 @@ struct URLSessionEventsAPI: EventsAPI {
         #endif
     }
 
+    private static let isoWithFraction = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
+    private static let isoPlain = Date.ISO8601FormatStyle()
+
     private static let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .custom { decoder in
             let raw = try decoder.singleValueContainer().decode(String.self)
-            let withFraction = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
-            if let date = try? withFraction.parse(raw) { return date }
-            if let date = try? Date.ISO8601FormatStyle().parse(raw) { return date }
+            if let date = try? isoWithFraction.parse(raw) { return date }
+            if let date = try? isoPlain.parse(raw) { return date }
             throw DecodingError.dataCorrupted(
                 .init(codingPath: decoder.codingPath, debugDescription: "Date invalide : \(raw)")
             )
