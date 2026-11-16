@@ -53,6 +53,21 @@ describe("US-01 auth endpoints", () => {
     expect((await body(res))?.user).toMatchObject({ email: user.email, name: user.name });
   });
 
+  test("rejects an invalid sign-up body with 400", async () => {
+    const res = await post("/api/auth/sign-up/email", {
+      name: "A",
+      email: "nope",
+      password: "short",
+    });
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({
+      success: false,
+      error: "Invalid request body",
+      details: { name: expect.any(Array), email: expect.any(Array), password: expect.any(Array) },
+    });
+  });
+
   test("rejects a duplicate email and a too short password", async () => {
     const dup = await post("/api/auth/sign-up/email", user);
     const short = await post("/api/auth/sign-up/email", {
@@ -87,6 +102,12 @@ describe("US-01 auth endpoints", () => {
       email: user.email,
       password: "wrongpassword",
     });
+
+    expect(res.status).toBe(401);
+  });
+
+  test("sign-out without a session returns 401", async () => {
+    const res = await post("/api/auth/sign-out", {});
 
     expect(res.status).toBe(401);
   });
