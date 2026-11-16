@@ -7,5 +7,11 @@ struct Event: Identifiable, Equatable, Decodable, Sendable {
     let startDate: Date
     let location: String?
     let capacity: Int?
-    let status: String?
+    let status: EventStatus?
+}
+
+/// Enum `status` du schéma `Event` (contrat/openapi.yaml).
+enum EventStatus: String, Equatable, Decodable, Sendable {
+    case published
+    case cancelled
 }
