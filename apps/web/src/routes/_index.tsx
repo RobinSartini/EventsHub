@@ -12,6 +12,7 @@ import { SearchBar } from "@/components/ui/search-bar";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { formatPrice } from "@/lib/format-price";
 
 const MOCK_EVENTS: EventCardEvent[] = [
   {
@@ -95,12 +96,12 @@ const VIEW_OPTIONS = [
 type ViewValue = "list" | "list-map";
 
 const MOCK_MARKERS: MapMarker[] = [
-  { id: "1", lat: 44.937, lng: 4.882, label: "12 €" },
-  { id: "2", lat: 44.93, lng: 4.896, label: "8 €" },
-  { id: "3", lat: 44.928, lng: 4.904, label: "Gratuit", free: true },
-  { id: "4", lat: 44.935, lng: 4.912, label: "15 €" },
-  { id: "5", lat: 44.924, lng: 4.887, label: "Gratuit", free: true },
-  { id: "6", lat: 44.941, lng: 4.899, label: "Gratuit", free: true },
+  { id: "1", lat: 44.937, lng: 4.882, label: formatPrice(12) },
+  { id: "2", lat: 44.93, lng: 4.896, label: formatPrice(8) },
+  { id: "3", lat: 44.928, lng: 4.904, label: formatPrice(null), free: true },
+  { id: "4", lat: 44.935, lng: 4.912, label: formatPrice(15) },
+  { id: "5", lat: 44.924, lng: 4.887, label: formatPrice(null), free: true },
+  { id: "6", lat: 44.941, lng: 4.899, label: formatPrice(null), free: true },
 ];
 
 const CITY = "Valence";
@@ -200,13 +201,9 @@ export default function Home() {
             {activeFilters.map((filter) => (
               <RemovableChip key={filter.key} label={filter.label} onRemove={filter.onRemove} />
             ))}
-            <button
-              type="button"
-              onClick={clearAllFilters}
-              className="text-primary text-sm font-bold underline-offset-2 hover:underline"
-            >
+            <Button variant="link" size="sm" onClick={clearAllFilters}>
               Tout effacer
-            </button>
+            </Button>
           </div>
         )}
 
@@ -231,7 +228,7 @@ export default function Home() {
               step={1}
               value={priceMax}
               onValueChange={setPriceMax}
-              format={(v) => `${v} €`}
+              format={(v) => formatPrice(v === 0 ? null : v)}
             />
 
             <CheckboxField

@@ -1,6 +1,8 @@
 import { divIcon } from "leaflet";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 
+import { cn } from "@/lib/utils";
+
 import { Button } from "./button";
 
 export type MapMarker = {
@@ -36,7 +38,7 @@ function EventsMap({
   className,
 }: Readonly<EventsMapProps>) {
   return (
-    <div className={`relative ${className ?? ""}`}>
+    <div className={cn("relative", className)}>
       <MapContainer
         center={center}
         zoom={zoom}
