@@ -350,9 +350,9 @@ private struct FloatingTabBar: View {
     struct Sample: EventsAPI {
         func fetchEvents() async throws -> [Event] {
             [
-                Event(id: "1", name: "Nuit Fluo", startDate: .now,
+                Event(id: "1", name: "Nuit Fluo", organizerId: "org_1", startDate: .now,
                       location: "Valence centre", capacity: 18, status: .published),
-                Event(id: "2", name: "Afterwork jeux", startDate: .now,
+                Event(id: "2", name: "Afterwork jeux", organizerId: "org_1", startDate: .now,
                       location: "Le Comptoir", capacity: nil, status: .published),
             ]
         }
