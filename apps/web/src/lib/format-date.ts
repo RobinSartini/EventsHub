@@ -13,6 +13,16 @@ export function formatDateBadge(isoDate: string): string {
   return `${part("weekday")} ${part("day")} ${part("month")}`.toUpperCase();
 }
 
+const timeFormatter = new Intl.DateTimeFormat("fr-FR", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Europe/Paris",
+});
+
+export function formatTime(isoDate: string): string {
+  return timeFormatter.format(new Date(isoDate));
+}
+
 const dayLabelFormatter = new Intl.DateTimeFormat("fr-FR", {
   weekday: "short",
   day: "numeric",

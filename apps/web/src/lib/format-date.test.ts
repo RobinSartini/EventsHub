@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDateBadge, formatDayLabel, fromIsoDay, toIsoDay } from "./format-date";
+import { formatDateBadge, formatDayLabel, formatTime, fromIsoDay, toIsoDay } from "./format-date";
 
 describe("formatDateBadge", () => {
   it("affiche le jour, la date et le mois en capitales", () => {
@@ -41,5 +41,15 @@ describe("fromIsoDay", () => {
 describe("formatDayLabel", () => {
   it("affiche le jour choisi en court", () => {
     expect(formatDayLabel(new Date(2026, 11, 5))).toBe("sam. 5 déc.");
+  });
+});
+
+describe("formatTime", () => {
+  it("affiche l'heure de Paris pour une date UTC du contrat", () => {
+    expect(formatTime("2026-11-14T20:00:00Z")).toBe("21:00");
+  });
+
+  it("suit l'heure d'été", () => {
+    expect(formatTime("2026-07-14T19:30:00Z")).toBe("21:30");
   });
 });
