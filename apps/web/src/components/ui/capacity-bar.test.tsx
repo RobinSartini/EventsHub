@@ -10,6 +10,18 @@ describe("CapacityBar", () => {
     expect(screen.getByText("Plus que 18 places")).toBeInTheDocument();
   });
 
+  it("affiche un contenu à côté de la phrase", () => {
+    render(
+      <CapacityBar taken={62} capacity={80}>
+        <span>12 €</span>
+      </CapacityBar>,
+    );
+
+    expect(screen.getByText("12 €").parentElement).toContainElement(
+      screen.getByText("Plus que 18 places"),
+    );
+  });
+
   it("n'affiche rien sans capacité", () => {
     const { container } = render(<CapacityBar taken={12} capacity={null} />);
 

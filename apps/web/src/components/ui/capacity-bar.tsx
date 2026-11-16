@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { capacityStatus } from "@/lib/capacity";
 import { cn } from "@/lib/utils";
 
@@ -5,9 +7,10 @@ type CapacityBarProps = {
   taken: number;
   capacity: number | null;
   className?: string;
+  children?: ReactNode;
 };
 
-function CapacityBar({ taken, capacity, className }: Readonly<CapacityBarProps>) {
+function CapacityBar({ taken, capacity, className, children }: Readonly<CapacityBarProps>) {
   if (capacity === null) return null;
 
   const { level, hint } = capacityStatus(taken, capacity);
@@ -33,15 +36,18 @@ function CapacityBar({ taken, capacity, className }: Readonly<CapacityBarProps>)
           style={{ width: `${(filled / capacity) * 100}%` }}
         />
       </div>
-      <span
-        aria-hidden="true"
-        className={cn(
-          "font-sans text-[13px] font-extrabold",
-          isAlert ? "text-signal-text" : "text-muted-foreground",
-        )}
-      >
-        {hint}
-      </span>
+      <div className="flex items-baseline justify-between gap-2">
+        <span
+          aria-hidden="true"
+          className={cn(
+            "font-sans text-[13px] font-extrabold",
+            isAlert ? "text-signal-text" : "text-muted-foreground",
+          )}
+        >
+          {hint}
+        </span>
+        {children}
+      </div>
     </div>
   );
 }
