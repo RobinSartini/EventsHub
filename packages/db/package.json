@@ -22,8 +22,7 @@
     "db:down": "docker compose down",
     "lint": "vp lint --no-error-on-unmatched-pattern",
     "format": "vp fmt",
-    "check": "vp check --no-error-on-unmatched-pattern",
-    "test": "vitest run"
+    "check": "vp check --no-error-on-unmatched-pattern"
   },
   "dependencies": {
     "@EventsHub/env": "workspace:*",
@@ -37,7 +36,6 @@
     "@EventsHub/config": "workspace:*",
     "@types/pg": "^8.23.1",
     "prisma": "^7.10.0",
-    "typescript": "^6.0.3",
-    "vitest": "catalog:"
+    "typescript": "^6.0.3"
   }
 }
