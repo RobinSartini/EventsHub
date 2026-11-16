@@ -6,14 +6,13 @@ name: EventsHub
 services:
   web:
     build:
-      context: ./apps/web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_SERVER_URL: http://localhost:3001
     container_name: EventsHub-web
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - VITE_API_URL=http://server:3001
     restart: unless-stopped
     depends_on:
       - server
@@ -32,15 +31,16 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=postgresql://postgres:password@db:5432/EventsHub
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/EventsHub
     restart: unless-stopped
     depends_on:
-      - db
+      postgres:
+        condition: service_healthy
     networks:
       - EventsHub-network
 
-  db:
-    image: postgres:16-alpine
+  postgres:
+    image: postgres
     container_name: EventsHub-postgres
     environment:
       POSTGRES_DB: EventsHub
@@ -49,7 +49,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - EventsHub_postgres_data:/var/lib/postgresql/data
+      - EventsHub_postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
