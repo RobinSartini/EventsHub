@@ -6,12 +6,12 @@ set -euo pipefail
 cd "$(dirname "$0")/../../apps/native"
 
 SIM="${SIM:-iPhone 17}"
-BUNDLE_ID="com.eventsHub.app"
+BUNDLE_ID="com.sugow.eventshub.app"
 SCHEME="EventsHub"
 DERIVED="build"
 
 # Resolve simulator UDID by name (first available match)
-UDID=$(xcrun simctl list devices available | grep -F "    $SIM (" | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+UDID=$(xcrun simctl list devices available | grep -F "    $SIM (" | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/' || true)
 if [ -z "$UDID" ]; then
   echo "Simulator \"$SIM\" not found. Available:" >&2
   xcrun simctl list devices available | grep -E '^\s+iP' >&2

@@ -44,7 +44,7 @@
     "setup:part:mobile:swift:swiftui": "bash scripts/native/task-1.sh",
     "dev:part:mobile:swift:swiftui": "bash scripts/native/task-2.sh",
     "ios": "bash scripts/native/run.sh",
-    "ios:logs": "xcrun simctl spawn booted log stream --level debug --predicate 'subsystem CONTAINS \"com.eventsHub.app\" OR process == \"EventsHub\"'",
+    "ios:logs": "xcrun simctl spawn booted log stream --level debug --predicate 'subsystem CONTAINS \"com.sugow.eventshub.app\" OR process == \"EventsHub\"'",
     "db:push": "vp run --fail-if-no-match --filter @EventsHub/db db:push",
     "db:studio": "vp run --fail-if-no-match --filter @EventsHub/db db:studio",
     "db:seed": "vp run --fail-if-no-match --filter @EventsHub/db db:seed",

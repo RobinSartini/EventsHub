@@ -1,0 +1,3 @@
+// Réglages partagés. Les valeurs propres à chaque dev vont dans Local.xcconfig (ignoré par git).
+// Copier Local.xcconfig.example en Local.xcconfig puis renseigner son team ID.
+#include? "Local.xcconfig"

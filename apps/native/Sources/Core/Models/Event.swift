@@ -4,6 +4,7 @@ import Foundation
 struct Event: Identifiable, Equatable, Decodable, Sendable {
     let id: String
     let name: String
+    let organizerId: String
     let startDate: Date
     let location: String?
     let capacity: Int?

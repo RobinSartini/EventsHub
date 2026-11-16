@@ -1,8 +1,11 @@
 name: EventsHub
 options:
-  bundleIdPrefix: com.eventsHub
+  bundleIdPrefix: com.sugow.eventshub
   deploymentTarget:
     iOS: "27.0"
+configFiles:
+  Debug: Config/Shared.xcconfig
+  Release: Config/Shared.xcconfig
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -13,16 +16,16 @@ targets:
     sources: [Sources]
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.eventsHub.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.sugow.eventshub.app
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         TARGETED_DEVICE_FAMILY: "1,2"
-    configs:
-      Debug:
-        EVENTS_API_BASE_URL: http://localhost:4010
-      Release:
-        EVENTS_API_BASE_URL: ""
+      configs:
+        Debug:
+          EVENTS_API_BASE_URL: http://localhost:4010
+        Release:
+          EVENTS_API_BASE_URL: ""
     info:
       path: Config/Info.plist
       properties:
