@@ -3,6 +3,7 @@ import { type ReactNode, useState } from "react";
 import { ArrowRightIcon, PlusIcon, SearchIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Avatar } from "@/components/ui/avatar";
 import { CapacityBar } from "@/components/ui/capacity-bar";
 import { CheckboxField, CheckboxGroup } from "@/components/ui/checkbox";
 import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
@@ -264,6 +265,17 @@ export default function DesignSystem() {
           <CapacityBar taken={34} capacity={60} />
           <CapacityBar taken={62} capacity={80} />
           <CapacityBar taken={80} capacity={80} />
+        </div>
+      </Section>
+
+      <Section
+        title="Avatar"
+        description="Des initiales dans un rond : bleu roi pour le profil, en négatif pour l'organisateur."
+      >
+        <Avatar name="Camille Bernard" href="/design-system" />
+        <div className="flex items-center gap-3">
+          <Avatar name="Lumière Collectif" size="lg" />
+          <span className="font-bold">Lumière Collectif</span>
         </div>
       </Section>
 
