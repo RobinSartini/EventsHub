@@ -1,11 +1,13 @@
 import { type ReactNode, useState } from "react";
 
-import { ArrowRightIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { ArrowRightIcon, MinusIcon, PlusIcon, SearchIcon, Share2Icon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { CapacityBar } from "@/components/ui/capacity-bar";
 import { CheckboxField, CheckboxGroup } from "@/components/ui/checkbox";
+import { FavoriteButton } from "@/components/ui/favorite-button";
+import { IconButton } from "@/components/ui/icon-button";
 import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
 import { DateBadge } from "@/components/ui/date-badge";
 import { LiveBadge } from "@/components/ui/live-badge";
@@ -180,6 +182,26 @@ function QuantityStepperDemo() {
   );
 }
 
+function FavoriteButtonDemo() {
+  const [favorites, setFavorites] = useState({ card: false, page: true });
+
+  return (
+    <>
+      <FavoriteButton
+        eventName="Nuit Fluo"
+        isFavorite={favorites.card}
+        onToggle={() => setFavorites((current) => ({ ...current, card: !current.card }))}
+      />
+      <FavoriteButton
+        eventName="Nuit Fluo"
+        size="lg"
+        isFavorite={favorites.page}
+        onToggle={() => setFavorites((current) => ({ ...current, page: !current.page }))}
+      />
+    </>
+  );
+}
+
 export default function DesignSystem() {
   return (
     <main className="mx-auto w-full max-w-[1360px] px-4 py-10 sm:px-6 lg:px-10">
@@ -266,6 +288,28 @@ export default function DesignSystem() {
           <CapacityBar taken={62} capacity={80} />
           <CapacityBar taken={80} capacity={80} />
         </div>
+      </Section>
+
+      <Section
+        title="IconButton"
+        description="Un rond, une icône, une action. Son nom passe par aria-label, puisqu'il n'a pas de texte visible."
+      >
+        <IconButton aria-label="Retirer un billet">
+          <MinusIcon />
+        </IconButton>
+        <IconButton aria-label="Ajouter un billet" variant="primary">
+          <PlusIcon />
+        </IconButton>
+        <IconButton aria-label="Partager l'événement" variant="outline" size="lg">
+          <Share2Icon />
+        </IconButton>
+      </Section>
+
+      <Section
+        title="FavoriteButton"
+        description="Un cœur qui se remplit quand on aime. Sur la fiche, le fond rosit une fois l'événement sauvegardé."
+      >
+        <FavoriteButtonDemo />
       </Section>
 
       <Section
