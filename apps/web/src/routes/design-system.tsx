@@ -8,6 +8,7 @@ import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
 import { DateBadge } from "@/components/ui/date-badge";
 import { LiveBadge } from "@/components/ui/live-badge";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
 export function meta() {
@@ -122,6 +123,19 @@ function CheckboxDemo() {
   );
 }
 
+const SORTS = [
+  { value: "date", label: "Date" },
+  { value: "distance", label: "Distance" },
+  { value: "popularity", label: "Popularité" },
+  { value: "price", label: "Prix" },
+] as const;
+
+function SelectDemo() {
+  const [sort, setSort] = useState<(typeof SORTS)[number]["value"]>("date");
+
+  return <Select label="Trier par" options={SORTS} value={sort} onValueChange={setSort} />;
+}
+
 export default function DesignSystem() {
   return (
     <main className="mx-auto w-full max-w-[1360px] px-4 py-10 sm:px-6 lg:px-10">
@@ -176,6 +190,13 @@ export default function DesignSystem() {
         description="La case à cocher teintée de bleu roi, avec un compteur pour savoir où il y a du monde."
       >
         <CheckboxDemo />
+      </Section>
+
+      <Section
+        title="Select"
+        description="Trier par date, distance, popularité ou prix, sans quitter la pilule."
+      >
+        <SelectDemo />
       </Section>
 
       <Section

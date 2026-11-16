@@ -1,5 +1,7 @@
-import { useId } from "react";
+import { Select as SelectPrimitive } from "@base-ui/react/select";
+import { CheckIcon, ChevronDownIcon } from "lucide-react";
 
+import { focusRing } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
 type SelectOption<T extends string> = {
@@ -22,26 +24,52 @@ function Select<T extends string>({
   onValueChange,
   className,
 }: Readonly<SelectProps<T>>) {
-  const id = useId();
-
   return (
-    <div data-slot="select" className={cn("inline-flex items-center gap-2", className)}>
-      <label htmlFor={id} className="text-muted-foreground text-sm">
-        {label}
-      </label>
-      <select
-        id={id}
-        value={value}
-        onChange={(event) => onValueChange(event.target.value as T)}
-        className="bg-card rounded-full px-4 py-2 text-sm font-bold"
+    <SelectPrimitive.Root
+      items={options}
+      value={value}
+      onValueChange={(selected) => {
+        if (selected !== null) onValueChange(selected);
+      }}
+    >
+      <SelectPrimitive.Trigger
+        aria-label={label}
+        data-slot="select"
+        className={cn(
+          focusRing,
+          "bg-card border-border inline-flex h-[46px] cursor-pointer items-center gap-2 rounded-full border-2 pr-3 pl-4 font-sans text-sm font-bold",
+          className,
+        )}
       >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </div>
+        <span aria-hidden="true" className="text-muted-foreground whitespace-nowrap">
+          {label}
+        </span>
+        <SelectPrimitive.Value className="text-foreground font-extrabold" />
+        <SelectPrimitive.Icon>
+          <ChevronDownIcon aria-hidden="true" className="size-4" strokeWidth={2.5} />
+        </SelectPrimitive.Icon>
+      </SelectPrimitive.Trigger>
+      <SelectPrimitive.Portal>
+        <SelectPrimitive.Positioner sideOffset={8} alignItemWithTrigger={false} className="z-50">
+          <SelectPrimitive.Popup className="bg-card shadow-float min-w-(--anchor-width) rounded-2xl p-1.5 outline-none">
+            <SelectPrimitive.List>
+              {options.map((option) => (
+                <SelectPrimitive.Item
+                  key={option.value}
+                  value={option.value}
+                  className="data-highlighted:bg-muted flex cursor-pointer items-center justify-between gap-4 rounded-xl px-3 py-2 font-sans text-sm font-bold outline-none data-selected:font-extrabold"
+                >
+                  <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>
+                  <SelectPrimitive.ItemIndicator>
+                    <CheckIcon aria-hidden="true" className="text-primary size-4" strokeWidth={3} />
+                  </SelectPrimitive.ItemIndicator>
+                </SelectPrimitive.Item>
+              ))}
+            </SelectPrimitive.List>
+          </SelectPrimitive.Popup>
+        </SelectPrimitive.Positioner>
+      </SelectPrimitive.Portal>
+    </SelectPrimitive.Root>
   );
 }
 
