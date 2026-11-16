@@ -18,9 +18,15 @@ targets:
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         TARGETED_DEVICE_FAMILY: "1,2"
+    configs:
+      Debug:
+        EVENTS_API_BASE_URL: http://localhost:4010
+      Release:
+        EVENTS_API_BASE_URL: ""
     info:
       path: Config/Info.plist
       properties:
+        EventsAPIBaseURL: $(EVENTS_API_BASE_URL)
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
     scheme:

@@ -13,9 +13,9 @@ private struct MockEventsAPI: EventsAPI {
     // Arrange
     let expected = [
         Event(id: "1", name: "Nuit Fluo", startDate: Date(timeIntervalSince1970: 1_800_000_000),
-              location: "Valence", capacity: 18, status: "published"),
+              location: "Valence", capacity: 18, status: .published),
         Event(id: "2", name: "Afterwork jeux", startDate: Date(timeIntervalSince1970: 1_800_003_600),
-              location: "Le Comptoir", capacity: nil, status: "published"),
+              location: "Le Comptoir", capacity: nil, status: .published),
     ]
     let viewModel = HomeViewModel(api: MockEventsAPI(events: expected))
 
