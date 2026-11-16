@@ -56,3 +56,7 @@ temp
 
 # Fumadocs (généré)
 .source
+
+graft/
+graft/.cache/
+graft/.graph/
