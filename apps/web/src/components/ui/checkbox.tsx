@@ -1,5 +1,6 @@
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox";
 import { CheckIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -23,4 +24,51 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
   );
 }
 
-export { Checkbox };
+// Composants réservés : API définitive, rendu final dans la PR 3 (#33).
+
+type CheckboxFieldProps = {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  label: string;
+  /** Nombre de résultats affiché à droite, par exemple 128. */
+  count?: number;
+  className?: string;
+};
+
+/** Une case avec son libellé cliquable, pour les filtres. */
+function CheckboxField({
+  checked,
+  onCheckedChange,
+  label,
+  count,
+  className,
+}: Readonly<CheckboxFieldProps>) {
+  return (
+    <label
+      data-slot="checkbox-field"
+      className={cn("flex cursor-pointer items-center gap-3 text-sm font-bold", className)}
+    >
+      <Checkbox checked={checked} onCheckedChange={(value) => onCheckedChange(value)} />
+      <span className="flex-1">{label}</span>
+      {count === undefined ? null : <span className="text-muted-foreground">{count}</span>}
+    </label>
+  );
+}
+
+type CheckboxGroupProps = {
+  /** Titre du groupe, lu par les lecteurs d'écran : « Catégories ». */
+  legend: string;
+  children: ReactNode;
+  className?: string;
+};
+
+function CheckboxGroup({ legend, children, className }: Readonly<CheckboxGroupProps>) {
+  return (
+    <fieldset data-slot="checkbox-group" className={cn("flex flex-col gap-2", className)}>
+      <legend className="font-display mb-2 text-sm font-bold">{legend}</legend>
+      {children}
+    </fieldset>
+  );
+}
+
+export { Checkbox, CheckboxField, CheckboxGroup };
