@@ -41,3 +41,76 @@ jobs:
 
       - name: Test
         run: vp run -r test
+
+  images:
+    name: Docker image (${{ matrix.app }})
+    needs: ci
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        app: [server, web]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compute image tags
+        id: meta
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}-${{ matrix.app }}"
+          echo "tags=$image:${GITHUB_REF_NAME}-${GITHUB_SHA::7},$image:${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          build-args: VITE_SERVER_URL=${{ vars.VITE_SERVER_URL || 'http://localhost:3001' }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+
+  notify:
+    name: Discord notification
+    needs: images
+    if: always() && github.event_name == 'push' && needs.images.result != 'skipped'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Post to Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          RESULT: ${{ needs.images.result }}
+          MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          [ -n "$WEBHOOK" ] || { echo "DISCORD_WEBHOOK_URL not set, skipping"; exit 0; }
+          tag="${GITHUB_REF_NAME}-${GITHUB_SHA::7}"
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          if [ "$RESULT" = "success" ]; then
+            title="Images publiées : $tag"; color=5763719
+            body=$(printf '%s\n\n`%s-server:%s`\n`%s-web:%s`\n\nDéployer ou revenir à cette version :\n`EVENTSHUB_TAG=%s docker compose pull server web && EVENTSHUB_TAG=%s docker compose up -d --no-build server web`' \
+              "${MESSAGE%%$'\n'*}" "$image" "$tag" "$image" "$tag" "$tag" "$tag")
+          else
+            title="Échec du build des images : $tag"; color=15548997
+            body="${MESSAGE%%$'\n'*}"
+          fi
+          jq -n --arg t "$title" --arg d "$body" --arg u "$run_url" --argjson c "$color" \
+            '{embeds: [{title: $t, description: $d, url: $u, color: $c}]}' |
+            curl -fsS -H "Content-Type: application/json" -d @- "$WEBHOOK"

@@ -153,6 +153,19 @@ La CI GitHub Actions (`.github/workflows/ci.yml`) se déclenche sur chaque push 
 - Un test instable (_flaky_) ne se désactive pas en silence : ouvrez une issue et référencez-la.
 - Les variables d'environnement de la CI sont factices ; n'y mettez jamais de vrai secret.
 
+### Images Docker et rollback
+
+Après une CI verte sur un push vers `dev`, `staging` ou `main`, la CI publie les images `server` et `web` sur GHCR (`ghcr.io/robinsartini/eventshub-server` et `-web`) avec deux tags : `<branche>-<sha court>` (fixe, ex. `dev-3d566f6`) et `<branche>` (la dernière version de la branche). Un message Discord annonce chaque publication ou échec, avec la commande de déploiement.
+
+Pour déployer une version, ou revenir à une version précédente, sur une machine connectée à GHCR (`docker login ghcr.io`) :
+
+```bash
+EVENTSHUB_TAG=dev-3d566f6 docker compose pull server web
+EVENTSHUB_TAG=dev-3d566f6 docker compose up -d --no-build server web
+```
+
+Sans `EVENTSHUB_TAG`, `docker compose up --build` construit en local comme avant (tag `local`). Réglages du dépôt : le secret `DISCORD_WEBHOOK_URL` (sans lui, pas de notification) et la variable `VITE_SERVER_URL` (URL de l'API compilée dans l'image web, `http://localhost:3001` par défaut).
+
 ## Pull requests et review
 
 Avant d'ouvrir la PR :

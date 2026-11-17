@@ -6,6 +6,7 @@ name: EventsHub
 services:
   web:
     platform: ${DOCKER_PLATFORM:-}
+    image: ghcr.io/robinsartini/eventshub-web:${EVENTSHUB_TAG:-local}
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -22,6 +23,7 @@ services:
 
   server:
     platform: ${DOCKER_PLATFORM:-}
+    image: ghcr.io/robinsartini/eventshub-server:${EVENTSHUB_TAG:-local}
     build:
       context: .
       dockerfile: apps/server/Dockerfile
