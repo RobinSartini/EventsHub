@@ -1,7 +1,6 @@
 import { env } from "@EventsHub/env/web";
 import { z } from "zod";
 
-// Champs utiles à l'accueil, d'après le schéma Event de contrat/openapi.yaml.
 const eventSchema = z.object({
   id: z.string(),
   name: z.string(),

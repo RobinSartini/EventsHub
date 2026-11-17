@@ -49,7 +49,6 @@ function AppNavBar() {
   const isHome = useLocation().pathname === "/";
   const user = session?.user ? { name: session.user.name } : null;
   const signOut = () => authClient.signOut({ fetchOptions: { onSuccess: () => navigate("/") } });
-  // Sur l'accueil, la barre de recherche et les catégories forment l'en-tête, sans trait entre eux.
   return (
     <NavBar
       user={user}

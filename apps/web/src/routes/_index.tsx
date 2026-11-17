@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { type ApiEvent, fetchCategories, fetchEvents } from "@/lib/events-api";
 import {
   eventsQuery,
+  type HomeFilters,
   nextPage,
   PAGE_SIZE,
   readHomeSearch,
@@ -25,6 +26,7 @@ import {
   writeHomeSearch,
 } from "@/lib/home-search";
 import { plural } from "@/lib/plural";
+import { pageWidth } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
 const ALL = "all";
@@ -54,12 +56,10 @@ function toCardEvent({ location, city, ...event }: ApiEvent): EventCardEvent {
   return { ...event, location: place || undefined };
 }
 
-export default function Home() {
-  const [params, setParams] = useSearchParams();
-  const search = readHomeSearch(params);
+function useHomeEvents(search: HomeFilters) {
   const today = new Date();
 
-  const events = useInfiniteQuery({
+  return useInfiniteQuery({
     queryKey: ["events", eventsQuery(search, today, 1)],
     queryFn: ({ pageParam, signal }) => fetchEvents(eventsQuery(search, today, pageParam), signal),
     initialPageParam: 1,
@@ -67,6 +67,9 @@ export default function Home() {
     placeholderData: keepPreviousData,
     meta: { silent: true },
   });
+}
+
+function useCategoryTabs() {
   const categories = useQuery({
     queryKey: ["categories"],
     queryFn: ({ signal }) => fetchCategories(signal),
@@ -74,7 +77,7 @@ export default function Home() {
     meta: { silent: true },
   });
 
-  const tabs = [
+  return [
     ...FIXED_TABS,
     ...(categories.data ?? []).map(({ slug, name }) => ({
       value: slug,
@@ -82,10 +85,63 @@ export default function Home() {
       icon: CATEGORY_ICONS[slug] ?? SparklesIcon,
     })),
   ];
+}
+
+function CardSkeleton() {
+  return (
+    <div className="flex flex-col gap-3">
+      <Skeleton className="rounded-card rounded-bl-anchor aspect-[20/19]" />
+      <Skeleton className="h-4 w-2/3 rounded-full" />
+      <Skeleton className="h-3 w-1/2 rounded-full" />
+    </div>
+  );
+}
+
+function EventGrid({ events, busy }: Readonly<{ events: ApiEvent[]; busy: boolean }>) {
+  return (
+    <ul aria-busy={busy} className={cn(grid, "transition-opacity aria-busy:opacity-60")}>
+      {events.map((event, index) => (
+        <li
+          key={event.id}
+          className="animate-rise"
+          style={{ animationDelay: `${(index % PAGE_SIZE) * 40}ms` }}
+        >
+          <EventCard event={toCardEvent(event)} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+type LoadMoreProps = { remaining: number; loading: boolean; failed: boolean; onLoad: () => void };
+
+function LoadMore({ remaining, loading, failed, onLoad }: Readonly<LoadMoreProps>) {
+  return (
+    <div className="flex flex-col items-center gap-3 pt-4">
+      <p className="text-muted-foreground text-sm font-bold">
+        Encore {remaining} {plural(remaining, "événement")} à découvrir
+      </p>
+      <Button variant="outline" disabled={loading} onClick={onLoad}>
+        {loading ? "Chargement" : "Afficher plus"}
+      </Button>
+      {failed ? (
+        <p role="alert" className="text-signal-text text-sm font-bold">
+          Une erreur est survenue, réessaie.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+export default function Home() {
+  const [params, setParams] = useSearchParams();
+  const search = readHomeSearch(params);
+  const events = useHomeEvents(search);
+  const tabs = useCategoryTabs();
+
   const hasFilters = Object.values(search).some(Boolean);
   const list = events.data?.pages.flatMap((page) => page.events) ?? [];
   const total = events.data?.pages[0]?.total ?? 0;
-  const remaining = total - list.length;
 
   const onCategory = (category: string) =>
     setParams(writeHomeSearch({ ...search, category: category === ALL ? undefined : category }));
@@ -93,13 +149,22 @@ export default function Home() {
 
   return (
     <div>
-      <div className="bg-card border-b px-4 md:px-8">
-        <CategoryTabs categories={tabs} value={search.category ?? ALL} onValueChange={onCategory} />
+      <div className="bg-card border-b">
+        <div className={pageWidth}>
+          <CategoryTabs
+            categories={tabs}
+            value={search.category ?? ALL}
+            onValueChange={onCategory}
+          />
+        </div>
       </div>
 
-      <main className="flex flex-col gap-6 px-4 py-8 md:px-8">
+      <main className={cn(pageWidth, "flex flex-col gap-6 py-8")}>
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-          <h1 aria-live="polite" className="font-display text-3xl font-extrabold md:text-4xl">
+          <h1
+            aria-live="polite"
+            className="font-display text-3xl font-extrabold text-balance md:text-4xl"
+          >
             {events.data ? `${total} ${plural(total, "événement")}` : "Événements"}
             {search.city ? (
               <>
@@ -132,51 +197,29 @@ export default function Home() {
         {events.isPending ? (
           <div aria-hidden="true" className={grid}>
             {Array.from({ length: PAGE_SIZE }, (_, index) => (
-              <Skeleton
-                key={index}
-                className="aspect-[20/19] rounded-media rounded-bl-media-tail"
-              />
+              <CardSkeleton key={index} />
             ))}
           </div>
         ) : null}
 
         {events.data && list.length === 0 ? (
-          <p className="text-muted-foreground py-12 text-center">
-            Aucun événement ne correspond à ta recherche.
-          </p>
+          <div className="flex flex-col items-center gap-2 py-16 text-center">
+            <p className="text-lg font-bold">Aucun événement ne correspond à ta recherche.</p>
+            <p className="text-muted-foreground text-sm">
+              Essaie une autre ville, une autre date ou une autre catégorie.
+            </p>
+          </div>
         ) : null}
 
-        {list.length > 0 ? (
-          <ul
-            aria-busy={events.isPlaceholderData}
-            className={cn(grid, "transition-opacity aria-busy:opacity-60")}
-          >
-            {list.map((event) => (
-              <li key={event.id}>
-                <EventCard event={toCardEvent(event)} />
-              </li>
-            ))}
-          </ul>
-        ) : null}
+        {list.length > 0 ? <EventGrid events={list} busy={events.isPlaceholderData} /> : null}
 
         {events.hasNextPage ? (
-          <div className="flex flex-col items-center gap-3 pt-4">
-            <p className="text-muted-foreground text-sm font-bold">
-              Encore {remaining} {plural(remaining, "événement")} à découvrir
-            </p>
-            <Button
-              variant="outline"
-              disabled={events.isFetchingNextPage}
-              onClick={() => events.fetchNextPage()}
-            >
-              {events.isFetchingNextPage ? "Chargement" : "Afficher plus"}
-            </Button>
-            {events.isFetchNextPageError ? (
-              <p role="alert" className="text-signal-text text-sm font-bold">
-                Une erreur est survenue, réessaie.
-              </p>
-            ) : null}
-          </div>
+          <LoadMore
+            remaining={total - list.length}
+            loading={events.isFetchingNextPage}
+            failed={events.isFetchNextPageError}
+            onLoad={() => events.fetchNextPage()}
+          />
         ) : null}
       </main>
     </div>

@@ -1,6 +1,5 @@
 import { vi } from "vitest";
 
-// Faux serveur pour les tests de l'accueil : GET /categories et GET /events (avec X-Total-Count).
 export const CATEGORIES = [
   { id: "c1", name: "Musique", slug: "musique" },
   { id: "c2", name: "Sport", slug: "sport" },
@@ -11,7 +10,6 @@ type StubOptions = { events?: StubEvent[]; total?: number; status?: number };
 
 export function stubApi({ events = [], total = events.length, status = 200 }: StubOptions = {}) {
   const fetchMock = vi.fn((url: string) => {
-    // Des ids différents par page, comme le vrai serveur.
     const page = new URL(url, "http://localhost").searchParams.get("page") ?? "1";
     const pageEvents = events.map((event) => ({ ...event, id: `${event.id}-p${page}` }));
     const body = url.includes("/categories") ? CATEGORIES : pageEvents;

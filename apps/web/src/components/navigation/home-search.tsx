@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router";
 import { SearchBar, type SearchValues } from "@/components/form/search-bar";
 import { readHomeSearch, writeHomeSearch } from "@/lib/home-search";
 
-// Barre de recherche de l'en-tête : lit et écrit la recherche de l'accueil dans l'URL.
 function HomeSearch() {
   const [params] = useSearchParams();
   const navigate = useNavigate();

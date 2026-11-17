@@ -1,11 +1,10 @@
 import { fromIsoDay, toIsoDay } from "./format-date";
 
-// Pseudo-catégorie de l'accueil : les événements du jour, via from/to du contrat.
 export const TONIGHT = "ce-soir";
 export const PAGE_SIZE = 12;
 const MAX_LENGTH = 100;
 
-type HomeFilters = {
+export type HomeFilters = {
   q?: string;
   city?: string;
   from?: string;
@@ -52,7 +51,6 @@ export function eventsQuery({ category, from, ...search }: HomeFilters, today: D
 
 type LoadedPage = { events: readonly unknown[]; total: number };
 
-// Page suivante pour « Afficher plus », ou undefined quand tout est chargé.
 export function nextPage(pages: readonly LoadedPage[]): number | undefined {
   const last = pages.at(-1);
   const loaded = pages.reduce((count, page) => count + page.events.length, 0);
