@@ -110,7 +110,7 @@ function SearchBar({ defaultValues, onSearch, className }: Readonly<SearchBarPro
       data-slot="search-bar"
       onSubmit={handleSubmit}
       className={cn(
-        "bg-card shadow-float flex w-full max-w-3xl flex-col gap-2 rounded-3xl border p-2 md:flex-row md:items-center md:rounded-full md:p-1.5",
+        "bg-card shadow-float flex w-full max-w-2xl flex-col gap-2 rounded-3xl border p-2 md:flex-row md:items-center md:rounded-full md:p-1.5",
         className,
       )}
     >
