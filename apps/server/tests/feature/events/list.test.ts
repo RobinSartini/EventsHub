@@ -110,6 +110,20 @@ describe("GET /events", () => {
     expect(count).toHaveBeenCalledWith({ where });
   });
 
+  test("a database failure returns 500 without leaking the error", async () => {
+    findMany.mockRejectedValue(new Error("connection refused on 10.0.0.5"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await get("/events");
+
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({
+      success: false,
+      status: 500,
+      error: "Internal Server Error",
+    });
+  });
+
   test.each<{ reason: string; query: string }>([
     { reason: "page 0", query: "page=0" },
     { reason: "pageSize too large", query: "pageSize=500" },
