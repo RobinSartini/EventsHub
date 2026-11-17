@@ -145,7 +145,7 @@ Ajoutez ou mettez à jour des tests pour tout comportement nouveau ou corrigé. 
 
 ### Intégration continue (CI)
 
-La CI GitHub Actions (`.github/workflows/ci.yml`) se déclenche sur chaque push et chaque PR vers `main`. Elle exécute dans l'ordre : `vp check`, `vp run -r check-types`, `vp run -r build`, puis `vp run -r test`.
+La CI GitHub Actions (`.github/workflows/ci.yml`) se déclenche sur chaque push et chaque PR vers `main`, `staging` et `dev`. Elle exécute dans l'ordre : `vp check`, `vp run -r check-types`, `vp run -r build`, puis `vp run -r test`.
 
 - **Une PR ne peut être fusionnée que si la CI est verte.** Une CI rouge ou en cours bloque le merge, même avec une approbation.
 - Si la CI échoue, corrigez sur votre branche et poussez ; ne relancez pas en boucle une exécution qui échoue pour une vraie raison.

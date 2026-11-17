@@ -1,6 +1,6 @@
 import { auth } from "@EventsHub/auth";
 
-import app from "../src/index";
+import app from "@/index";
 
 const origin = process.env.CORS_ORIGIN ?? "http://localhost:3001";
 

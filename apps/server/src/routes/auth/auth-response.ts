@@ -2,9 +2,9 @@ import type { Context } from "hono";
 
 import { auth } from "@EventsHub/auth";
 
-import type { AuthSession } from "../../types/auth";
+import type { AuthSession } from "@/types/auth";
 
-import { ApiError } from "../../utils/api-response";
+import { ApiError } from "@/errors";
 
 export const forwardToAuth = (c: Context) => auth.handler(c.req.raw);
 

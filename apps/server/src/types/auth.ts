@@ -1,6 +1,6 @@
 import type { auth } from "@EventsHub/auth";
 
-import type { User } from "./users";
+import type { User } from "@/types/users";
 
 import { z } from "zod";
 

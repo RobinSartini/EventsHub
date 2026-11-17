@@ -1,9 +1,9 @@
 import { ACCESS_TOKEN_TTL_SECONDS, auth } from "@EventsHub/auth";
 import { describe, expect, test } from "vitest";
 
-import type { RefreshResponse } from "../../../src/types/auth";
+import type { RefreshResponse } from "@/types/auth";
 
-import { json, post, signIn } from "../../helpers";
+import { json, post, signIn } from "@tests/helpers";
 
 describe("POST /api/auth/refresh", () => {
   test("a signed in user gets a short lived access token", async () => {

@@ -2,15 +2,16 @@ import type { Handler } from "hono";
 
 import prisma from "@EventsHub/db";
 
-import type { AdminVariables } from "../../../middleware/require-admin";
+import type { AdminVariables } from "@/middleware/require-admin";
 
-import { listAdminEventsQuery } from "../../../types/events";
-import { eventSelect, invalid } from "./event-select";
+import { listAdminEventsQuery } from "@/types/events";
+import { validationError } from "@/errors";
+import { eventSelect } from "@/routes/admin/events/event-select";
 
 export const listAdminEvents: Handler<{ Variables: AdminVariables }> = async (c) => {
   const parsed = listAdminEventsQuery.safeParse(c.req.query());
   if (!parsed.success) {
-    throw invalid("Invalid query", parsed.error);
+    throw validationError("Invalid query", parsed.error);
   }
   const { page, pageSize } = parsed.data;
 

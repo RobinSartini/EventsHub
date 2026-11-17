@@ -1,48 +1,53 @@
+import type { ReactNode } from "react";
+
+import { capacityStatus } from "@/lib/capacity";
 import { cn } from "@/lib/utils";
 
 type CapacityBarProps = {
   taken: number;
   capacity: number | null;
   className?: string;
+  children?: ReactNode;
 };
 
-function capacityLabel(taken: number, capacity: number): string {
-  const remaining = capacity - taken;
-  if (remaining <= 0) return "Complet";
-  if (taken / capacity >= 0.7) return `Plus que ${remaining} place${remaining > 1 ? "s" : ""}`;
-  return `${remaining} place${remaining > 1 ? "s" : ""} disponible${remaining > 1 ? "s" : ""}`;
-}
-
-function CapacityBar({ taken, capacity, className }: Readonly<CapacityBarProps>) {
+function CapacityBar({ taken, capacity, className, children }: Readonly<CapacityBarProps>) {
   if (capacity === null) return null;
 
-  const remaining = capacity - taken;
-  const isCritical = remaining <= 0 || taken / capacity >= 0.7;
+  const { level, hint } = capacityStatus(taken, capacity);
+  const filled = Math.min(taken, capacity);
+  const isAlert = level !== "calm";
 
   return (
-    <div data-slot="capacity-bar" className={cn("flex flex-col gap-1", className)}>
-      <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+    <div data-slot="capacity-bar" className={cn("flex flex-col gap-2", className)}>
+      <div
+        role="progressbar"
+        aria-label="Places réservées"
+        aria-valuemin={0}
+        aria-valuemax={capacity}
+        aria-valuenow={filled}
+        aria-valuetext={hint}
+        className="bg-secondary h-1.5 overflow-hidden rounded-full"
+      >
         <div
-          role="progressbar"
-          aria-valuenow={Math.min(taken, capacity)}
-          aria-valuemin={0}
-          aria-valuemax={capacity}
-          aria-label="Places disponibles"
-          style={{ width: `${Math.min((taken / capacity) * 100, 100)}%` }}
           className={cn(
-            "h-full rounded-full transition-all",
-            isCritical ? "bg-signal" : "bg-primary",
+            "h-full transition-[width] duration-700 ease-signature motion-reduce:transition-none",
+            isAlert ? "bg-signal" : "bg-primary",
           )}
+          style={{ width: `${(filled / capacity) * 100}%` }}
         />
       </div>
-      <p
-        className={cn(
-          "text-xs font-bold",
-          isCritical ? "text-signal-text" : "text-muted-foreground",
-        )}
-      >
-        {capacityLabel(taken, capacity)}
-      </p>
+      <div className="flex items-baseline justify-between gap-2">
+        <span
+          aria-hidden="true"
+          className={cn(
+            "font-sans text-[13px] font-extrabold",
+            isAlert ? "text-signal-text" : "text-muted-foreground",
+          )}
+        >
+          {hint}
+        </span>
+        {children}
+      </div>
     </div>
   );
 }

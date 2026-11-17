@@ -1,11 +1,11 @@
 import { Hono } from "hono";
 
-import { forwardToAuth } from "./auth-response";
-import { getSession } from "./get-session";
-import { refresh } from "./refresh";
-import { signIn } from "./sign-in";
-import { signOut } from "./sign-out";
-import { signUp } from "./sign-up";
+import { forwardToAuth } from "@/routes/auth/auth-response";
+import { getSession } from "@/routes/auth/get-session";
+import { refresh } from "@/routes/auth/refresh";
+import { signIn } from "@/routes/auth/sign-in";
+import { signOut } from "@/routes/auth/sign-out";
+import { signUp } from "@/routes/auth/sign-up";
 
 export const authRoutes = new Hono()
   .post("/sign-up/email", ...signUp)

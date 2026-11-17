@@ -2,15 +2,16 @@ import type { Handler } from "hono";
 
 import prisma from "@EventsHub/db";
 
-import type { AdminVariables } from "../../middleware/require-admin";
+import type { AdminVariables } from "@/middleware/require-admin";
 
-import { listUsersQuery } from "../../types/users";
-import { invalid, userSelect } from "./user-select";
+import { listUsersQuery } from "@/types/users";
+import { validationError } from "@/errors";
+import { userSelect } from "@/routes/users/user-select";
 
 export const listUsers: Handler<{ Variables: AdminVariables }> = async (c) => {
   const parsed = listUsersQuery.safeParse(c.req.query());
   if (!parsed.success) {
-    throw invalid("Invalid query", parsed.error);
+    throw validationError("Invalid query", parsed.error);
   }
   const { page, pageSize } = parsed.data;
 
