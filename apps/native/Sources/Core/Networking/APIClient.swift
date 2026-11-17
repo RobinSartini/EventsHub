@@ -49,7 +49,7 @@ struct APIClient: Sendable {
         if let body {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             do {
-                request.httpBody = try JSONEncoder().encode(body)
+                request.httpBody = try Self.encoder.encode(body)
             } catch {
                 throw APIError.badRequest
             }
@@ -80,13 +80,15 @@ struct APIClient: Sendable {
     func send<T: Decodable>(_ method: String, path: String, body: (any Encodable)? = nil) async throws -> T {
         let data = try await sendRaw(method, path: path, body: body)
         do {
-            return try Self.makeDecoder().decode(T.self, from: data)
+            return try Self.decoder.decode(T.self, from: data)
         } catch {
             throw APIError.decoding
         }
     }
 
-    private static func makeDecoder() -> JSONDecoder {
+    private static let encoder = JSONEncoder()
+
+    private static let decoder: JSONDecoder = {
         let withFraction = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
         let plain = Date.ISO8601FormatStyle()
         let decoder = JSONDecoder()
@@ -99,5 +101,5 @@ struct APIClient: Sendable {
             )
         }
         return decoder
-    }
+    }()
 }
