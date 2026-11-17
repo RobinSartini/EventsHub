@@ -13,4 +13,4 @@ export const authRoutes = new Hono()
   .post("/sign-out", ...signOut)
   .get("/get-session", ...getSession)
   .post("/refresh", ...refresh)
-  .on(["GET", "POST"], "/*", forwardToAuth);
+  .get("/jwks", forwardToAuth);
