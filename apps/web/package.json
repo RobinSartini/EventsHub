@@ -11,7 +11,9 @@
     "test": "vitest run --passWithNoTests",
     "lint": "vp lint --no-error-on-unmatched-pattern",
     "format": "vp fmt",
-    "check": "vp check --no-error-on-unmatched-pattern"
+    "check": "vp check --no-error-on-unmatched-pattern",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@EventsHub/api": "workspace:*",
@@ -53,6 +55,10 @@
   "devDependencies": {
     "@EventsHub/config": "workspace:*",
     "@react-router/dev": "^8.4.0",
+    "@storybook/addon-a11y": "10.6.5",
+    "@storybook/addon-docs": "10.6.5",
+    "@storybook/addon-themes": "10.6.5",
+    "@storybook/react-vite": "10.6.5",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query-devtools": "^5.104.1",
     "@testing-library/dom": "^10.4.2",
@@ -66,6 +72,7 @@
     "@vitest/ui": "catalog:",
     "jsdom": "catalog:",
     "react-router-devtools": "^6.2.3",
+    "storybook": "10.6.5",
     "tailwindcss": "catalog:",
     "typescript": "^5",
     "vite": "^8.3.2",
