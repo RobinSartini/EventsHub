@@ -155,7 +155,7 @@ La CI GitHub Actions (`.github/workflows/ci.yml`) se déclenche sur chaque push 
 
 ### Images Docker et rollback
 
-Après une CI verte sur un push vers `dev`, `staging` ou `main`, la CI publie les images `server` et `web` sur GHCR (`ghcr.io/robinsartini/eventshub-server` et `-web`) avec deux tags : `<branche>-<sha court>` (fixe, ex. `dev-3d566f6`) et `<branche>` (la dernière version de la branche).
+Après une CI verte sur un push vers `dev`, `staging` ou `main`, la CI publie les images `server` et `web` sur GHCR (`ghcr.io/sugow0/eventshub-server` et `-web`) avec deux tags : `<branche>-<sha court>` (fixe, ex. `dev-3d566f6`) et `<branche>` (la dernière version de la branche).
 
 Pour déployer une version, ou revenir à une version précédente, sur une machine connectée à GHCR (`docker login ghcr.io`) :
 
