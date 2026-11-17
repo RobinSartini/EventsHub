@@ -6,6 +6,7 @@
 
 Recherchez, créez et suivez des événements près de chez vous, sur le web comme sur mobile.
 
+[![CI](https://github.com/RobinSartini/EventsHub/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/RobinSartini/EventsHub/actions/workflows/ci.yml?query=branch%3Adev)
 ![React](https://img.shields.io/badge/React-Router_v8-61DAFB?logo=react&logoColor=black)
 ![Hono](https://img.shields.io/badge/Hono-Node.js-E36002?logo=hono&logoColor=white)
 ![Tailwind](https://img.shields.io/badge/TailwindCSS-38B2AC?logo=tailwindcss&logoColor=white)
@@ -16,9 +17,10 @@ Recherchez, créez et suivez des événements près de chez vous, sur le web com
 
 ---
 
-## 📖 Histoire
+## 📖 Introduction
 
-On en avait marre des événements mal organisés. C'est pourquoi nous avons créé **EventsHub** : une application qui centralise la découverte, la création et la gestion d'événements, avec les inscriptions, les quotas et les billets à QR code.
+**EventsHub** centralise la découverte, la création et la gestion d'événements, sur le web et sur iOS.
+On y trouve les événements autour de soi, on s'y inscrit, et les organisateurs gèrent quotas et billets à QR code.
 
 ## ✨ Fonctionnalités principales
 
@@ -274,9 +276,20 @@ flowchart LR
 
 ## 🚀 Démarrage
 
+### En une ligne
+
+Avec les prérequis ci-dessous installés et Docker Desktop démarré :
+
+```bash
+git clone https://github.com/RobinSartini/EventsHub.git && cd EventsHub && bun install && bun dev
+```
+
+Le front est ensuite sur http://localhost:5173, l'API sur http://localhost:3000 et la documentation sur http://localhost:4000. Le détail des étapes suit.
+
 ### Prérequis
 
 - [Bun](https://bun.sh) 1.3 ou plus récent
+- [Node.js](https://nodejs.org) 24, utilisé par le build du front (`bun run build`)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) pour la base PostgreSQL locale
 - Git
 - Pour l'app mobile uniquement : macOS, Xcode et [XcodeGen](https://github.com/yonaskolb/XcodeGen)
@@ -389,6 +402,23 @@ npx @stoplight/prism-cli mock contrat/openapi.yaml -p 4010
 ```
 
 Pour un appareil physique, voir [`apps/native/README.md`](apps/native/README.md).
+
+## 🏷️ Versionnage
+
+- **Branches** : on part de `dev` pour chaque changement et on y revient par une PR. `dev` est ensuite promue vers `staging`, puis vers `main`.
+- **Commits et titres de PR** : [Conventional Commits](https://www.conventionalcommits.org/fr/) (`feat`, `fix`, `docs`, `refactor`, `test`, `ci`…), en anglais.
+- **Contrat d'API** : versionné en SemVer dans `info.version` de `contrat/openapi.yaml` (mineure pour un ajout, majeure pour un changement cassant). Historique dans [`docs/contrat.md`](docs/contrat.md).
+- **Images Docker** : chaque push validé sur `dev`, `staging` ou `main` publie des images taguées `<branche>-<sha court>`, qui servent à déployer ou revenir à une version. Voir [`docs/ci.md`](docs/ci.md).
+
+## 📚 Documentation
+
+| Document                                 | Contenu                                                                             |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- |
+| [`docs/contrat.md`](docs/contrat.md)     | Le contrat d'API : où le lire, ses conventions, comment le modifier, son historique |
+| [`docs/decisions.md`](docs/decisions.md) | Les choix techniques, leur raison et la PR qui les a introduits                     |
+| [`docs/ci.md`](docs/ci.md)               | Ce que vérifie la CI, les images Docker, le déploiement et le rollback              |
+| [`docs/test.md`](docs/test.md)           | Lancer et écrire les tests, back, web et iOS                                        |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md)     | Branches, commits, pull requests et review                                          |
 
 ## 🗂️ Structure du projet
 
