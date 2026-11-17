@@ -20,7 +20,7 @@ function Logo({ className }: Readonly<{ className?: string }>) {
       >
         <span className="bg-signal size-2.5 rounded-full" />
       </span>
-      EventHub
+      EventsHub
     </Link>
   );
 }

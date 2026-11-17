@@ -39,7 +39,7 @@ import { Switch } from "@/components/form/switch";
 import { formatPrice } from "@/lib/format-price";
 
 export function meta() {
-  return [{ title: "Design system - EventHub" }];
+  return [{ title: "Design system - EventsHub" }];
 }
 
 function Section({
@@ -327,7 +327,7 @@ export default function DesignSystem() {
   return (
     <main className="mx-auto w-full max-w-[1360px] px-4 py-10 sm:px-6 lg:px-10">
       <header className="flex flex-col gap-2 pb-4">
-        <p className="text-signal-text font-mono text-xs font-bold uppercase">EventHub</p>
+        <p className="text-signal-text font-mono text-xs font-bold uppercase">EventsHub</p>
         <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Design system</h1>
         <p className="text-muted-foreground max-w-prose">
           Les composants du site, tels qu'ils s'affichent, en clair comme en sombre.

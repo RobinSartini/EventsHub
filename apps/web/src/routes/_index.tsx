@@ -110,7 +110,7 @@ const RADIUS_KM = 10;
 
 export function meta() {
   return [
-    { title: "Événements - EventHub" },
+    { title: "Événements - EventsHub" },
     { name: "description", content: `Découvrez les événements autour de ${CITY}` },
   ];
 }
