@@ -234,7 +234,7 @@ paths:
     get:
       summary: Récupérer mon profil
       description: >
-        Profil de l'utilisateur connecté, avec ses statistiques et les organisations dont il est membre.
+        Profil de l'utilisateur connecté, avec ses statistiques.
         Alimente l'écran Profil.
       security:
         - cookieAuth: []
@@ -322,8 +322,8 @@ paths:
                 $ref: "#/components/schemas/Error"
         "409":
           description: >
-            Suppression impossible : l'utilisateur est `owner` d'une organisation, ou a des
-            réservations à venir. Le message d'erreur en donne la raison.
+            Suppression impossible : l'utilisateur a des billets pour des événements à venir,
+            ou organise des événements à venir. Le message d'erreur en donne la raison.
           content:
             application/json:
               schema:
@@ -1072,46 +1072,36 @@ components:
       type: object
       required:
         - outingsCount
-        - followingCount
+        - favoritesCount
         - upcomingReservationsCount
+        - organizedEventsCount
       properties:
         outingsCount:
           type: integer
           minimum: 0
-          description: Nombre d'événements passés auxquels l'utilisateur a assisté (billet scanné).
+          description: Nombre de billets de l'utilisateur pour des événements déjà passés.
           example: 14
-        followingCount:
+        favoritesCount:
           type: integer
           minimum: 0
-          description: Nombre d'organisateurs suivis.
+          description: Nombre d'événements en favoris.
           example: 5
         upcomingReservationsCount:
           type: integer
           minimum: 0
-          description: Nombre de réservations pour des événements à venir.
+          description: Nombre de billets de l'utilisateur pour des événements à venir.
           example: 3
-
-    OrganizationMembership:
-      type: object
-      required:
-        - id
-        - name
-        - role
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-          example: Collectif Néon
-        role:
-          type: string
-          enum: [owner, member]
+        organizedEventsCount:
+          type: integer
+          minimum: 0
+          description: >
+            Nombre d'événements créés par l'utilisateur (`organizerId`). L'app propose le mode
+            organisateur quand il est supérieur à 0.
+          example: 0
 
     MeProfile:
       description: >
         L'utilisateur connecté (mêmes champs que `User`) enrichi des données du profil.
-        `organizations` est vide pour un simple participant ; l'app n'affiche le mode organisateur
-        que lorsqu'elle contient au moins une entrée.
       allOf:
         - $ref: "#/components/schemas/User"
         - type: object
@@ -1127,7 +1117,6 @@ components:
             - city
             - publicProfile
             - stats
-            - organizations
           properties:
             city:
               type: string
@@ -1139,10 +1128,6 @@ components:
               description: Si faux, `GET /users/{id}/public` répond 404.
             stats:
               $ref: "#/components/schemas/ProfileStats"
-            organizations:
-              type: array
-              items:
-                $ref: "#/components/schemas/OrganizationMembership"
 
     ProfileUpdate:
       type: object
@@ -1195,21 +1180,11 @@ components:
       type: object
       required:
         - reminderDayBefore
-        - followedOrganizers
-        - waitlist
       properties:
         reminderDayBefore:
           type: boolean
           default: true
-          description: Rappel la veille d'un événement réservé.
-        followedOrganizers:
-          type: boolean
-          default: true
-          description: Nouveaux événements des organisateurs suivis.
-        waitlist:
-          type: boolean
-          default: true
-          description: Place disponible sur une liste d'attente.
+          description: Rappel la veille d'un événement pour lequel l'utilisateur a un billet.
 
     NotificationPreferencesUpdate:
       type: object
@@ -1218,10 +1193,6 @@ components:
       minProperties: 1
       properties:
         reminderDayBefore:
-          type: boolean
-        followedOrganizers:
-          type: boolean
-        waitlist:
           type: boolean
 
     PaymentMethod:
