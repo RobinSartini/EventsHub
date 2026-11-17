@@ -1,11 +1,12 @@
 import prisma from "@EventsHub/db";
-import { Hono } from "hono";
+import type { Handler } from "hono";
+
 import { z } from "zod";
 
-import type { ListEventsQuery } from "../types/events";
+import type { ListEventsQuery } from "../../types/events";
 
-import { listEventsQuery } from "../types/events";
-import { ApiError } from "../utils/api-response";
+import { listEventsQuery } from "../../types/events";
+import { ApiError } from "../../utils/api-response";
 
 type EventWhere = NonNullable<Parameters<typeof prisma.event.findMany>[0]>["where"];
 
@@ -47,9 +48,7 @@ function eventFilters({ q, category, from, to, city }: ListEventsQuery): EventWh
   };
 }
 
-export const eventRoutes = new Hono();
-
-eventRoutes.get("/", async (c) => {
+export const listEvents: Handler = async (c) => {
   const parsed = listEventsQuery.safeParse(c.req.query());
   if (!parsed.success) {
     throw new ApiError(400, "Invalid query", z.flattenError(parsed.error).fieldErrors);
@@ -70,4 +69,4 @@ eventRoutes.get("/", async (c) => {
 
   c.header("X-Total-Count", String(total));
   return c.json(events);
-});
+};
