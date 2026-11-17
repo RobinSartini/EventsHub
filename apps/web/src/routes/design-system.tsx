@@ -1,12 +1,28 @@
 import { type ReactNode, useState } from "react";
 
-import { ArrowRightIcon, MinusIcon, PlusIcon, SearchIcon, Share2Icon } from "lucide-react";
+import {
+  ActivityIcon,
+  ArrowRightIcon,
+  CompassIcon,
+  GiftIcon,
+  ImageIcon,
+  MinusIcon,
+  MoonIcon,
+  MusicIcon,
+  PaletteIcon,
+  PlusIcon,
+  SearchIcon,
+  Share2Icon,
+  TicketIcon,
+  UtensilsIcon,
+} from "lucide-react";
 
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
 import { Avatar } from "@/components/ui/avatar";
 import { CapacityBar } from "@/components/ui/capacity-bar";
+import { CategoryTabs } from "@/components/ui/category-tabs";
 import { CheckboxField, CheckboxGroup } from "@/components/ui/checkbox";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import { IconButton } from "@/components/ui/icon-button";
@@ -288,6 +304,25 @@ function RangeSliderDemo() {
   );
 }
 
+const EVENT_CATEGORIES = [
+  { value: "all", label: "Tout", icon: CompassIcon },
+  { value: "tonight", label: "Ce soir", icon: MoonIcon },
+  { value: "music", label: "Musique", icon: MusicIcon },
+  { value: "workshops", label: "Ateliers", icon: PaletteIcon },
+  { value: "sport", label: "Sport", icon: ActivityIcon },
+  { value: "conventions", label: "Conventions", icon: TicketIcon },
+  { value: "expos", label: "Expos", icon: ImageIcon },
+  { value: "food", label: "Food", icon: UtensilsIcon },
+  { value: "free", label: "Gratuit", icon: GiftIcon },
+] as const;
+
+function CategoryTabsDemo() {
+  const [category, setCategory] = useState<(typeof EVENT_CATEGORIES)[number]["value"]>("all");
+  return (
+    <CategoryTabs categories={EVENT_CATEGORIES} value={category} onValueChange={setCategory} />
+  );
+}
+
 function ThemeSwitch() {
   const { resolvedTheme, setTheme } = useTheme();
   return (
@@ -375,6 +410,13 @@ export default function DesignSystem() {
         description="Combien de places ? Moins, plus, et le compteur suit. Plus passe en bleu roi dès qu'un billet est choisi."
       >
         <QuantityStepperDemo />
+      </Section>
+
+      <Section
+        title="CategoryTabs"
+        description="Une rangée de catégories à icônes, la catégorie active soulignée. Sur téléphone, la rangée défile."
+      >
+        <CategoryTabsDemo />
       </Section>
 
       <Section
