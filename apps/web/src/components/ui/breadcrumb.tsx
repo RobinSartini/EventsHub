@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 
+import { focusRing } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
 type BreadcrumbItem = {
@@ -14,22 +15,30 @@ type BreadcrumbProps = {
 
 function Breadcrumb({ items, className }: Readonly<BreadcrumbProps>) {
   return (
-    <nav aria-label="Fil d'Ariane" data-slot="breadcrumb" className={cn("text-sm", className)}>
-      <ol className="flex flex-wrap gap-2">
+    <nav aria-label="Fil d'Ariane" data-slot="breadcrumb" className={className}>
+      <ol className="text-muted-foreground flex flex-wrap gap-2 text-sm font-bold">
         {items.map((item, index) => {
-          const isLast = index === items.length - 1;
+          const isCurrent = index === items.length - 1;
           return (
-            <li key={item.label} className="flex gap-2">
-              {isLast || !item.href ? (
-                <span aria-current={isLast ? "page" : undefined} className="font-bold">
-                  {item.label}
-                </span>
-              ) : (
-                <Link to={item.href} className="text-muted-foreground">
+            <li
+              key={`${index}-${item.label}`}
+              className="flex gap-2 not-first:before:content-['/']"
+            >
+              {item.href && !isCurrent ? (
+                <Link
+                  to={item.href}
+                  className={cn(focusRing, "hover:text-foreground rounded-sm transition-colors")}
+                >
                   {item.label}
                 </Link>
+              ) : (
+                <span
+                  aria-current={isCurrent ? "page" : undefined}
+                  className={cn(isCurrent && "text-foreground")}
+                >
+                  {item.label}
+                </span>
               )}
-              {isLast ? null : <span aria-hidden="true">/</span>}
             </li>
           );
         })}

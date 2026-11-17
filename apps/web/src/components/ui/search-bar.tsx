@@ -1,8 +1,9 @@
 import { Popover } from "@base-ui/react/popover";
 import { SearchIcon } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, Fragment, useState } from "react";
 
 import { formatDayLabel, fromIsoDay, toIsoDay } from "@/lib/format-date";
+import { focusRing } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
 import { Button } from "./button";
@@ -21,16 +22,22 @@ type SearchBarProps = {
 };
 
 const TEXT_FIELDS = [
-  { name: "q", label: "Quoi", type: "search", placeholder: "Concert, expo, atelier..." },
-  { name: "city", label: "Où", type: "text", placeholder: "Lyon" },
+  {
+    name: "q",
+    label: "Quoi",
+    type: "search",
+    placeholder: "Concert, atelier...",
+    width: "md:flex-[1.4]",
+    maxLength: 100,
+  },
+  { name: "city", label: "Où", type: "text", placeholder: "Une ville", width: "", maxLength: 100 },
 ] as const;
 
-const SEARCH_KEYS: readonly (keyof SearchValues)[] = [...TEXT_FIELDS.map((f) => f.name), "from"];
+const SEARCH_KEYS = ["q", "city", "from"] as const;
 
-const field =
-  "bg-secondary flex h-12 min-w-0 basis-full items-baseline gap-2.5 rounded-full px-[18px] py-3 md:w-40 md:flex-none";
-const fieldLabel = "text-foreground font-mono text-[11px] font-extrabold tracking-widest uppercase";
-const fieldText = "min-w-0 flex-1 truncate font-sans text-[15px] leading-6 font-bold";
+const field = "flex min-w-0 flex-1 flex-col gap-1 rounded-full px-6 py-3 md:px-8";
+const fieldLabel = "text-foreground text-sm font-extrabold";
+const fieldText = "w-full truncate text-base leading-6";
 
 function DateField({ defaultValue }: Readonly<{ defaultValue?: string }>) {
   const [open, setOpen] = useState(false);
@@ -44,22 +51,21 @@ function DateField({ defaultValue }: Readonly<{ defaultValue?: string }>) {
 
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
-      <Popover.Trigger
-        className={cn(
-          field,
-          "focus-visible:ring-ring cursor-pointer text-left outline-none focus-visible:ring-2 md:w-auto",
-        )}
-      >
+      <Popover.Trigger className={cn(focusRing, field, "cursor-pointer text-left")}>
         <span className={fieldLabel}>Quand</span>{" "}
-        <span
-          className={cn(fieldText, day ? "text-foreground" : "text-muted-foreground font-medium")}
-        >
+        <span className={cn(fieldText, day ? "text-foreground" : "text-muted-foreground")}>
           {day ? formatDayLabel(day) : "Choisir une date"}
         </span>
       </Popover.Trigger>
       <input type="hidden" name="from" value={day ? toIsoDay(day) : ""} />
       <Popover.Portal>
-        <Popover.Positioner side="bottom" align="start" sideOffset={8} className="z-50">
+        <Popover.Positioner
+          side="bottom"
+          align="start"
+          sideOffset={8}
+          collisionAvoidance={{ side: "none", fallbackAxisSide: "none" }}
+          className="z-50"
+        >
           <Popover.Popup className="bg-card shadow-float flex flex-col gap-2 rounded-[26px] p-3 outline-none">
             <Calendar
               mode="single"
@@ -104,36 +110,35 @@ function SearchBar({ defaultValues, onSearch, className }: Readonly<SearchBarPro
       data-slot="search-bar"
       onSubmit={handleSubmit}
       className={cn(
-        "bg-card border-border flex w-full max-w-[50rem] flex-wrap items-center gap-1 rounded-[32px_32px_32px_10px] border-2 p-1 md:rounded-card",
+        "bg-card shadow-float flex w-full max-w-3xl flex-col gap-2 rounded-3xl border p-2 md:flex-row md:items-center md:rounded-full md:p-1.5",
         className,
       )}
     >
-      {TEXT_FIELDS.map((textField) => (
-        <label
-          key={textField.name}
-          className={cn(
-            field,
-            "has-[input:focus-visible]:ring-ring cursor-text has-[input:focus-visible]:ring-2",
-            textField.name === "q" && "md:w-auto md:flex-1",
-          )}
-        >
-          <span className={fieldLabel}>{textField.label}</span>
-          <input
-            name={textField.name}
-            type={textField.type}
-            placeholder={textField.placeholder}
-            defaultValue={defaultValues?.[textField.name]}
-            className={cn(
-              fieldText,
-              "text-foreground placeholder:text-muted-foreground placeholder:font-medium bg-transparent outline-none focus:placeholder:text-transparent",
-            )}
-          />
-        </label>
-      ))}
-      <DateField defaultValue={defaultValues?.from} />
-      <Button type="submit" className="basis-full md:basis-auto">
-        <SearchIcon data-icon="inline-start" />
-        Rechercher
+      <div className="flex flex-1 flex-col md:flex-row md:items-center">
+        {TEXT_FIELDS.map((textField) => (
+          <Fragment key={textField.name}>
+            <label className={cn(field, "cursor-text", textField.width)}>
+              <span className={fieldLabel}>{textField.label}</span>
+              <input
+                name={textField.name}
+                type={textField.type}
+                placeholder={textField.placeholder}
+                maxLength={textField.maxLength}
+                defaultValue={defaultValues?.[textField.name]}
+                className={cn(
+                  fieldText,
+                  "text-foreground placeholder:text-muted-foreground bg-transparent outline-none focus:placeholder:text-transparent",
+                )}
+              />
+            </label>
+            <span aria-hidden="true" className="bg-border mx-6 h-px md:mx-0 md:h-12 md:w-px" />
+          </Fragment>
+        ))}
+        <DateField defaultValue={defaultValues?.from} />
+      </div>
+      <Button type="submit" className="md:size-16 md:shrink-0 md:px-0">
+        <SearchIcon className="md:size-6" strokeWidth={2.5} />
+        <span className="md:sr-only">Rechercher</span>
       </Button>
     </form>
   );
