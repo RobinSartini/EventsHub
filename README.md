@@ -305,7 +305,7 @@ bun dev
 
 Cette commande fait tout, à chaque lancement :
 
-1. crée `apps/server/.env` à partir de `apps/server/.env.example` s'il n'existe pas (les valeurs par défaut fonctionnent en local) ;
+1. crée `.env` (identifiants PostgreSQL pour Docker) et `apps/server/.env` (configuration de l'API) à partir de leur `.env.example` s'ils n'existent pas, ou leur ajoute les variables manquantes sans toucher aux valeurs existantes. Les valeurs par défaut fonctionnent en local ;
 2. démarre PostgreSQL dans Docker (port 5432) et attend qu'il soit prêt ;
 3. applique le schéma Prisma à la base ;
 4. ajoute les données de démonstration (4 catégories, 30 événements) si la base ne contient aucun événement ;
@@ -337,16 +337,42 @@ Dans l'ordre : tous les tests, le lint et le formatage (comme le hook de pre-com
 
 Les tests du back simulent la base de données : Docker n'est pas nécessaire pour les lancer.
 
-### Commandes de la base
+### Tout lancer dans Docker
 
-| Commande        | Effet                                                        |
-| --------------- | ------------------------------------------------------------ |
-| `bun db:start`  | Démarre PostgreSQL en arrière-plan et attend qu'il soit prêt |
-| `bun db:stop`   | Arrête PostgreSQL en gardant les données                     |
-| `bun db:down`   | Supprime le conteneur (les données restent dans le volume)   |
-| `bun db:push`   | Applique le schéma Prisma à la base                          |
-| `bun db:seed`   | Remplace les événements de démonstration par des neufs       |
-| `bun db:studio` | Ouvre Prisma Studio pour consulter et modifier les données   |
+Pour tester l'application comme en production (images construites, sans rechargement à chaud) :
+
+| Commande               | Effet                                                                                    |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| `bun run docker:up`    | Construit les images, prépare la base (schéma + données de démo si vide) et lance tout   |
+| `bun run docker:down`  | Arrête et supprime les conteneurs, en gardant les données                                |
+| `bun run docker:reset` | Supprime conteneurs, images **et données**, puis reconstruit tout (demande confirmation) |
+
+Le web est alors sur http://localhost:3000 et l'API sur http://localhost:3001. `bun dev` arrête automatiquement ces conteneurs, qui occupent le port 3000.
+
+### Base de données
+
+`bun dev` et `bun run docker:up` préparent la base tout seuls à chaque lancement :
+
+1. démarrage de PostgreSQL dans Docker (identifiants lus dans `.env`) ;
+2. application du schéma Prisma (`packages/db/prisma/schema/*.prisma`) avec `prisma db push` ;
+3. ajout des données de démonstration si la base ne contient aucun événement.
+
+Après un changement de schéma (le vôtre ou celui d'un `git pull`), relancez simplement `bun dev`.
+
+Le projet n'a pas encore de migrations : `db push` aligne directement la base sur le schéma, sans historique. C'est adapté au développement local, pas à une base de production. Un changement destructif (colonne supprimée, type modifié) est refusé par `db push` pour éviter de perdre des données : lisez le message, puis relancez `bun db:push --accept-data-loss` si la perte est voulue, ou `bun run docker:reset` pour repartir d'une base vide.
+
+L'utilisateur PostgreSQL local (`POSTGRES_USER`) est le super-utilisateur créé par l'image Docker : il a tous les droits nécessaires au schéma, au seed et aux migrations.
+
+| Commande          | Effet                                                        |
+| ----------------- | ------------------------------------------------------------ |
+| `bun db:start`    | Démarre PostgreSQL en arrière-plan et attend qu'il soit prêt |
+| `bun db:stop`     | Arrête PostgreSQL en gardant les données                     |
+| `bun db:down`     | Supprime le conteneur (les données restent dans le volume)   |
+| `bun db:push`     | Applique le schéma Prisma à la base                          |
+| `bun db:seed`     | Remplace les événements de démonstration par des neufs       |
+| `bun db:studio`   | Ouvre Prisma Studio pour consulter et modifier les données   |
+| `bun db:generate` | Régénère le client Prisma (fait aussi par `bun install`)     |
+| `bun db:migrate`  | Crée et applique une migration (pas encore utilisé)          |
 
 ### App mobile (macOS)
 
