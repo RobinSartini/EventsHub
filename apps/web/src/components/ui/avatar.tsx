@@ -1,3 +1,4 @@
+import { UserIcon } from "lucide-react";
 import { Link } from "react-router";
 
 import { initials } from "@/lib/initials";
@@ -18,8 +19,7 @@ const sizes = {
 };
 
 function Avatar({ name, href, size = "default", className }: Readonly<AvatarProps>) {
-  const letters = initials(name);
-  if (!letters) return null;
+  const letters = initials(name) || <UserIcon className="size-1/2" />;
 
   const classes = cn(
     "font-display inline-flex shrink-0 items-center justify-center rounded-full font-extrabold",

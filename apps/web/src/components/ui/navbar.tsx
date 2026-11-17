@@ -1,12 +1,14 @@
 import { MenuIcon, UserIcon } from "lucide-react";
 import { Link, NavLink } from "react-router";
 
+import { useDarkTheme } from "@/components/theme-switch";
 import { focusRing } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
 import { Avatar } from "./avatar";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -29,6 +31,7 @@ type NavBarProps = {
 const menuItem = "rounded-xl px-3 py-2.5 text-sm font-bold";
 
 function AccountMenu({ links, user, onSignOut }: Readonly<Omit<NavBarProps, "className">>) {
+  const [dark, setDark] = useDarkTheme();
   const linkItem = (to: string, label: string) => (
     <DropdownMenuItem key={to} className={menuItem} render={<Link to={to} />}>
       {label}
@@ -54,7 +57,9 @@ function AccountMenu({ links, user, onSignOut }: Readonly<Omit<NavBarProps, "cla
         >
           {links.map((link) => linkItem(link.to, link.label))}
           <DropdownMenuSeparator className="my-1" />
-          {linkItem("/organizer", "Organiser un événement")}
+          <DropdownMenuCheckboxItem className={menuItem} checked={dark} onCheckedChange={setDark}>
+            Thème sombre
+          </DropdownMenuCheckboxItem>
           {user ? (
             <DropdownMenuItem className={menuItem} onClick={onSignOut}>
               Se déconnecter

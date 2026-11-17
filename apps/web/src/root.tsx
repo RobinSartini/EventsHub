@@ -41,12 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-const NAV_LINKS = [
-  { to: "/", label: "Explorer" },
-  { to: "/reservations", label: "Réservations" },
-  { to: "/favorites", label: "Favoris" },
-  { to: "/profile", label: "Profil" },
-] as const;
+const NAV_LINKS = [{ to: "/", label: "Explorer" }] as const;
 
 function AppNavBar() {
   const { data: session } = authClient.useSession();

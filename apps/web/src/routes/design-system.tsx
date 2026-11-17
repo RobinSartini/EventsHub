@@ -19,7 +19,7 @@ import {
 
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/components/theme-provider";
+import { ThemeSwitch } from "@/components/theme-switch";
 import { Avatar } from "@/components/ui/avatar";
 import { CapacityBar } from "@/components/ui/capacity-bar";
 import { CategoryTabs } from "@/components/ui/category-tabs";
@@ -317,21 +317,9 @@ const EVENT_CATEGORIES = [
 ] as const;
 
 function CategoryTabsDemo() {
-  const [category, setCategory] = useState<(typeof EVENT_CATEGORIES)[number]["value"]>("all");
+  const [category, setCategory] = useState("all");
   return (
     <CategoryTabs categories={EVENT_CATEGORIES} value={category} onValueChange={setCategory} />
-  );
-}
-
-function ThemeSwitch() {
-  const { resolvedTheme, setTheme } = useTheme();
-  return (
-    <Switch
-      label="Thème sombre"
-      checked={resolvedTheme === "dark"}
-      onCheckedChange={(dark) => setTheme(dark ? "dark" : "light")}
-      className="mt-2 w-fit"
-    />
   );
 }
 
@@ -344,7 +332,7 @@ export default function DesignSystem() {
         <p className="text-muted-foreground max-w-prose">
           Les composants du site, tels qu'ils s'affichent, en clair comme en sombre.
         </p>
-        <ThemeSwitch />
+        <ThemeSwitch className="mt-2 w-fit" />
       </header>
 
       <Section

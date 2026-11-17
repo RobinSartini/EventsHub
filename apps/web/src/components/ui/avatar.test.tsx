@@ -11,10 +11,14 @@ describe("Avatar", () => {
     expect(screen.getByText("CB")).toBeInTheDocument();
   });
 
-  it("n'affiche rien pour un nom vide", () => {
-    const { container } = render(<Avatar name="  " />);
+  it("garde le lien vers le profil quand le nom est vide", () => {
+    render(
+      <MemoryRouter>
+        <Avatar name="  " href="/profile" />
+      </MemoryRouter>,
+    );
 
-    expect(container).toBeEmptyDOMElement();
+    expect(screen.getByRole("link", { name: "Mon profil" })).toHaveAttribute("href", "/profile");
   });
 
   it("s'appelle Mon profil et mène au profil quand c'est un lien", () => {

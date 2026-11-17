@@ -28,11 +28,12 @@ const TEXT_FIELDS = [
     type: "search",
     placeholder: "Concert, atelier...",
     width: "md:flex-[1.4]",
+    maxLength: 100,
   },
-  { name: "city", label: "Où", type: "text", placeholder: "Une ville", width: "" },
+  { name: "city", label: "Où", type: "text", placeholder: "Une ville", width: "", maxLength: 100 },
 ] as const;
 
-const SEARCH_KEYS: readonly (keyof SearchValues)[] = [...TEXT_FIELDS.map((f) => f.name), "from"];
+const SEARCH_KEYS = ["q", "city", "from"] as const;
 
 const field = "flex min-w-0 flex-1 flex-col gap-1 rounded-full px-6 py-3 md:px-8";
 const fieldLabel = "text-foreground text-sm font-extrabold";
@@ -122,6 +123,7 @@ function SearchBar({ defaultValues, onSearch, className }: Readonly<SearchBarPro
                 name={textField.name}
                 type={textField.type}
                 placeholder={textField.placeholder}
+                maxLength={textField.maxLength}
                 defaultValue={defaultValues?.[textField.name]}
                 className={cn(
                   fieldText,

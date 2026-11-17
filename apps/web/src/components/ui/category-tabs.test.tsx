@@ -8,7 +8,7 @@ import { CategoryTabs } from "./category-tabs";
 const CATEGORIES = [
   { value: "all", label: "Tout", icon: SparklesIcon },
   { value: "music", label: "Musique", icon: MusicIcon },
-] as const;
+];
 
 function renderTabs() {
   const onValueChange = vi.fn();
@@ -17,20 +17,17 @@ function renderTabs() {
 }
 
 describe("CategoryTabs", () => {
-  it("marque seulement la catégorie active comme enfoncée", () => {
+  it("coche seulement la catégorie active", () => {
     renderTabs();
 
-    expect(screen.getByRole("button", { name: "Tout" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: "Musique" })).toHaveAttribute(
-      "aria-pressed",
-      "false",
-    );
+    expect(screen.getByRole("radio", { name: "Tout" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "Musique" })).not.toBeChecked();
   });
 
   it("appelle onValueChange avec la catégorie cliquée", async () => {
     const { onValueChange } = renderTabs();
 
-    await userEvent.click(screen.getByRole("button", { name: "Musique" }));
+    await userEvent.click(screen.getByRole("radio", { name: "Musique" }));
 
     expect(onValueChange).toHaveBeenCalledExactlyOnceWith("music");
   });
@@ -38,8 +35,17 @@ describe("CategoryTabs", () => {
   it("ne rappelle pas onValueChange sur la catégorie déjà active", async () => {
     const { onValueChange } = renderTabs();
 
-    await userEvent.click(screen.getByRole("button", { name: "Tout" }));
+    await userEvent.click(screen.getByRole("radio", { name: "Tout" }));
 
     expect(onValueChange).not.toHaveBeenCalled();
+  });
+
+  it("passe à la catégorie suivante avec la flèche droite", async () => {
+    const { onValueChange } = renderTabs();
+
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowRight}");
+
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith("music");
   });
 });
