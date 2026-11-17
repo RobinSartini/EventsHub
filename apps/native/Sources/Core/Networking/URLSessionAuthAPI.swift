@@ -6,6 +6,9 @@ struct URLSessionAuthAPI: AuthAPI {
     var baseURL: URL? = URLSessionEventsAPI.configuredBaseURL
     var session: URLSession = .shared
 
+    private static let decoder = JSONDecoder()
+    private static let encoder = JSONEncoder()
+
     func signUp(name: String, email: String, password: String) async throws -> AuthUser {
         try await authenticate(path: "sign-up/email", body: ["name": name, "email": email, "password": password])
     }
@@ -21,7 +24,7 @@ struct URLSessionAuthAPI: AuthAPI {
     func currentSession() async throws -> AuthUser? {
         do {
             let data = try await send(path: "get-session", method: "GET", body: nil)
-            return try JSONDecoder().decode(AuthResponse?.self, from: data)?.user
+            return try Self.decoder.decode(AuthResponse?.self, from: data)?.user
         } catch AuthError.invalidCredentials {
             return nil
         }
@@ -29,7 +32,7 @@ struct URLSessionAuthAPI: AuthAPI {
 
     private func authenticate(path: String, body: [String: String]) async throws -> AuthUser {
         let data = try await send(path: path, method: "POST", body: body)
-        guard let user = try? JSONDecoder().decode(AuthResponse.self, from: data).user else {
+        guard let user = try? Self.decoder.decode(AuthResponse.self, from: data).user else {
             throw AuthError.server
         }
         return user
@@ -41,7 +44,7 @@ struct URLSessionAuthAPI: AuthAPI {
         request.httpMethod = method
         if let body {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = try JSONEncoder().encode(body)
+            request.httpBody = try Self.encoder.encode(body)
         }
         let data: Data
         let response: URLResponse

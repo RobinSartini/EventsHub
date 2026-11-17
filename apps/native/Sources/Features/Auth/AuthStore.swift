@@ -21,8 +21,8 @@ final class AuthStore {
         self.api = api
     }
 
-    /// Au lancement : vérifie le cookie existant. Une erreur réseau ne déconnecte pas à tort,
-    /// mais sans session confirmée l'utilisateur est renvoyé vers Login.
+    /// Au lancement : vérifie le cookie existant. Sans session confirmée (invalide, expirée ou
+    /// serveur injoignable), l'utilisateur est renvoyé vers Login.
     func restore() async {
         state = (try? await api.currentSession()).flatMap { $0 }.map(State.signedIn) ?? .signedOut
     }
@@ -55,16 +55,16 @@ final class AuthStore {
     }
 }
 
-/// Validation locale avant l'appel réseau (Better Auth impose 8 caractères minimum).
+/// Validation locale avant l'appel réseau (alignée sur `signUpBody` côté serveur : nom 2+, mot de passe 8 à 128).
 enum AuthValidation {
     static func email(_ value: String) -> Bool {
         let parts = value.split(separator: "@", omittingEmptySubsequences: false)
         return parts.count == 2 && !parts[0].isEmpty && parts[1].contains(".") && !value.contains(" ")
     }
 
-    static func password(_ value: String) -> Bool { value.count >= 8 }
+    static func password(_ value: String) -> Bool { (8...128).contains(value.count) }
 
     static func name(_ value: String) -> Bool {
-        !value.trimmingCharacters(in: .whitespaces).isEmpty
+        value.trimmingCharacters(in: .whitespaces).count >= 2
     }
 }
