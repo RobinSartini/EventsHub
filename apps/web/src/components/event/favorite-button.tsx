@@ -2,7 +2,7 @@ import { HeartIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import { IconButton } from "./icon-button";
+import { IconButton } from "@/components/ui/icon-button";
 
 type FavoriteButtonProps = {
   isFavorite: boolean;

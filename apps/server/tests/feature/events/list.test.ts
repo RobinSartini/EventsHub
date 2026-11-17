@@ -115,6 +115,8 @@ describe("GET /events", () => {
     { reason: "pageSize too large", query: "pageSize=500" },
     { reason: "malformed date", query: "from=01-02-2027" },
     { reason: "from after to", query: "from=2027-02-01&to=2027-01-01" },
+    { reason: "city over 100 characters", query: `city=${"a".repeat(101)}` },
+    { reason: "category over 100 characters", query: `category=${"a".repeat(101)}` },
   ])("an invalid query is rejected with 400 ($reason)", async ({ query }) => {
     const res = await get(`/events?${query}`);
 

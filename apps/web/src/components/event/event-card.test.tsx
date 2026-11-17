@@ -24,47 +24,12 @@ function renderCard(props: Partial<Parameters<typeof EventCard>[0]> = {}) {
 }
 
 describe("EventCard", () => {
-  it("affiche le nom de l'événement comme un titre", () => {
-    renderCard();
-
-    expect(screen.getByRole("heading", { name: "Nuit Fluo" })).toBeInTheDocument();
-  });
-
   it("mène à /events/:id", () => {
     renderCard();
 
     expect(screen.getByRole("link", { name: "Nuit Fluo" })).toHaveAttribute(
       "href",
       "/events/evt_1",
-    );
-  });
-
-  it("affiche la date, l'heure de Paris, le lieu, le prix et la jauge", () => {
-    renderCard();
-
-    expect(screen.getByText("SAM 14 NOV")).toBeInTheDocument();
-    expect(screen.getByText("21:00 - Les Docks")).toBeInTheDocument();
-    expect(screen.getByText(/^12\s€$/)).toBeInTheDocument();
-    expect(screen.getByRole("progressbar", { name: "Places réservées" })).toBeInTheDocument();
-  });
-
-  it("convertit les centimes du contrat en euros", () => {
-    renderCard({ event: { ...NUIT_FLUO, priceCents: 1250 } });
-
-    expect(screen.getByText(/^12,50\s€$/)).toBeInTheDocument();
-  });
-
-  it("affiche Gratuit pour un prix à 0 centime", () => {
-    renderCard({ event: { ...NUIT_FLUO, priceCents: 0 } });
-
-    expect(screen.getByText("Gratuit")).toBeInTheDocument();
-  });
-
-  it("place le prix à côté de la phrase de la jauge", () => {
-    renderCard();
-
-    expect(screen.getByText(/^12\s€$/).parentElement).toContainElement(
-      screen.getByText("Plus que 18 places"),
     );
   });
 

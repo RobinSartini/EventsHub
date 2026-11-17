@@ -1,5 +1,6 @@
 import { useId } from "react";
 
+import { focusRing } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
 type RangeSliderProps = {
@@ -27,9 +28,13 @@ function RangeSlider({
 
   return (
     <div data-slot="range-slider" className={cn("flex flex-col gap-2", className)}>
-      <div className="flex justify-between text-sm font-bold">
-        <label htmlFor={id}>{label}</label>
-        <output htmlFor={id}>{format(value)}</output>
+      <div className="flex items-baseline justify-between gap-3">
+        <label htmlFor={id} className="text-muted-foreground text-sm font-semibold">
+          {label}
+        </label>
+        <output htmlFor={id} className="text-primary font-mono text-sm font-bold">
+          {format(value)}
+        </output>
       </div>
       <input
         id={id}
@@ -40,7 +45,7 @@ function RangeSlider({
         value={value}
         aria-valuetext={format(value)}
         onChange={(event) => onValueChange(Number(event.target.value))}
-        className="accent-primary w-full"
+        className={cn(focusRing, "accent-primary w-full cursor-pointer rounded-full")}
       />
     </div>
   );

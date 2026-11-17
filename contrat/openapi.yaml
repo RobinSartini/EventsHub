@@ -1,12 +1,14 @@
 openapi: 3.0.3
 info:
   title: EventsHub API
-  version: 1.2.0
+  version: 1.4.0
 paths:
   /events:
     get:
       summary: Récupérer la liste des événements
-      description: Récupère les événements publiés, triés par date de début croissante, avec filtrage optionnel.
+      description: >
+        Récupère les événements publiés, avec filtrage optionnel. Triés par date de début croissante,
+        ou par distance avec `sort=distance`. Le tri s'applique avant la pagination.
       parameters:
         - name: q
           in: query
@@ -21,6 +23,7 @@ paths:
           in: query
           schema:
             type: string
+            maxLength: 100
           description: Filtrer par catégorie (slug ou id)
         - name: from
           in: query
@@ -38,7 +41,33 @@ paths:
           in: query
           schema:
             type: string
+            maxLength: 100
           description: Filtrer par ville (insensible à la casse)
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [date, distance]
+            default: date
+          description: >
+            `date` : date de début croissante. `distance` : du plus proche au plus loin de `lat`/`lng`
+            (obligatoires), à date égale par date de début ; les événements sans coordonnées sont en dernier.
+        - name: lat
+          in: query
+          schema:
+            type: number
+            format: float
+            minimum: -90
+            maximum: 90
+          description: Latitude de l'utilisateur. Toujours avec `lng`.
+        - name: lng
+          in: query
+          schema:
+            type: number
+            format: float
+            minimum: -180
+            maximum: 180
+          description: Longitude de l'utilisateur. Toujours avec `lat`.
         - $ref: "#/components/parameters/Page"
         - name: pageSize
           in: query
@@ -61,11 +90,60 @@ paths:
                 items:
                   $ref: "#/components/schemas/Event"
         "400":
-          description: Paramètres invalides (page, pageSize, date malformée, from après to).
+          description: >
+            Paramètres invalides (page, pageSize, date malformée, from après to, `q`, `category` ou `city` de plus de
+            100 caractères, `lat` sans `lng`
+            ou l'inverse, `sort=distance` sans position).
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /events/{id}:
+    get:
+      summary: Récupérer la fiche d'un événement
+      description: >
+        Renvoie un événement par son id, publié ou annulé (`status` permet d'afficher l'annulation).
+        Public, sans authentification.
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Fiche de l'événement.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          description: Événement introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /categories:
+    get:
+      summary: Récupérer les catégories
+      description: Toutes les catégories, triées par nom. Public, sans pagination.
+      security: []
+      responses:
+        "200":
+          description: Liste des catégories.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
         "500":
           description: Erreur interne du serveur.
 
@@ -469,6 +547,27 @@ components:
         updatedAt:
           type: string
           format: date-time
+        distanceKm:
+          type: number
+          format: float
+          nullable: true
+          description: >
+            Distance en kilomètres depuis `lat`/`lng`. Présent seulement quand la position est fournie ;
+            `null` si l'événement n'a pas de coordonnées.
+
+    Category:
+      type: object
+      required: [id, name, slug]
+      properties:
+        id:
+          type: string
+          example: "cuid_cat123"
+        name:
+          type: string
+          example: Musique
+        slug:
+          type: string
+          example: musique
 
     EventUpdate:
       type: object
