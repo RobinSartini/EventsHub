@@ -24,7 +24,7 @@ bun install
 bun dev
 ```
 
-`bun dev` crée `apps/server/.env` s'il manque, démarre PostgreSQL dans Docker, applique le schéma Prisma, ajoute les données de démonstration si la base est vide, puis lance toutes les applications.
+`bun dev` crée `.env` et `apps/server/.env` à partir de leur `.env.example` s'ils manquent (ou leur ajoute les variables manquantes), démarre PostgreSQL dans Docker, applique le schéma Prisma, ajoute les données de démonstration si la base est vide, puis lance toutes les applications.
 
 | Service       | URL                   |
 | ------------- | --------------------- |

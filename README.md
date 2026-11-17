@@ -305,7 +305,7 @@ bun dev
 
 Cette commande fait tout, à chaque lancement :
 
-1. crée `apps/server/.env` à partir de `apps/server/.env.example` s'il n'existe pas (les valeurs par défaut fonctionnent en local) ;
+1. crée `.env` (identifiants PostgreSQL pour Docker) et `apps/server/.env` (configuration de l'API) à partir de leur `.env.example` s'ils n'existent pas, ou leur ajoute les variables manquantes sans toucher aux valeurs existantes. Les valeurs par défaut fonctionnent en local ;
 2. démarre PostgreSQL dans Docker (port 5432) et attend qu'il soit prêt ;
 3. applique le schéma Prisma à la base ;
 4. ajoute les données de démonstration (4 catégories, 30 événements) si la base ne contient aucun événement ;
