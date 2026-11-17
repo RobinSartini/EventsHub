@@ -26,8 +26,10 @@ import {
   writeHomeSearch,
 } from "@/lib/home-search";
 import { plural } from "@/lib/plural";
+import { cn } from "@/lib/utils";
 
 const ALL = "all";
+const grid = "grid gap-x-6 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   atelier: PaletteIcon,
@@ -156,9 +158,9 @@ export default function Home() {
       ) : null}
 
       {events.isPending ? (
-        <div aria-hidden="true" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 8 }, (_, index) => (
-            <Skeleton key={index} className="h-72 rounded-card" />
+        <div aria-hidden="true" className={grid}>
+          {Array.from({ length: PAGE_SIZE }, (_, index) => (
+            <Skeleton key={index} className="aspect-square rounded-2xl" />
           ))}
         </div>
       ) : null}
@@ -172,11 +174,11 @@ export default function Home() {
       {events.data?.events.length ? (
         <ul
           aria-busy={events.isPlaceholderData}
-          className="grid gap-6 transition-opacity aria-busy:opacity-60 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          className={cn(grid, "transition-opacity aria-busy:opacity-60")}
         >
           {events.data.events.map((event) => (
             <li key={event.id}>
-              <EventCard event={toCardEvent(event)} className="h-full" />
+              <EventCard event={toCardEvent(event)} />
             </li>
           ))}
         </ul>
