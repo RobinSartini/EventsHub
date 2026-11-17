@@ -16,9 +16,10 @@ import {
 
 import type { Route } from "./+types/root";
 
-import Header from "./components/header";
 import { ThemeProvider } from "./components/theme-provider";
+import { NavBar } from "./components/ui/navbar";
 import { Toaster } from "./components/ui/sonner";
+import { authClient } from "./lib/auth-client";
 import { queryClient } from "./utils/trpc";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -39,6 +40,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+const NAV_LINKS = [
+  { to: "/", label: "Explorer" },
+  { to: "/favorites", label: "Favoris" },
+  { to: "/tickets", label: "Mes billets" },
+  { to: "/organizer", label: "Espace organisateur" },
+] as const;
+
+function AppNavBar() {
+  const { data: session } = authClient.useSession();
+  const user = session?.user ? { name: session.user.name } : null;
+  return <NavBar links={NAV_LINKS} user={user} />;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -49,7 +63,7 @@ export default function App() {
         storageKey="vite-ui-theme"
       >
         <div className="grid grid-rows-[auto_1fr] h-svh">
-          <Header />
+          <AppNavBar />
           <Outlet />
         </div>
         <Toaster richColors />
