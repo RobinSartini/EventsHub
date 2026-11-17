@@ -42,9 +42,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 const NAV_LINKS = [
   { to: "/", label: "Explorer" },
+  { to: "/reservations", label: "Réservations" },
   { to: "/favorites", label: "Favoris" },
-  { to: "/tickets", label: "Mes billets" },
-  { to: "/organizer", label: "Espace organisateur" },
+  { to: "/profile", label: "Profil" },
 ] as const;
 
 function AppNavBar() {

@@ -1,8 +1,10 @@
 import { NavLink } from "react-router";
 
+import { focusRing } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
 import { Avatar } from "./avatar";
+import { Logo } from "./logo";
 
 type NavBarLink = {
   to: string;
@@ -15,27 +17,39 @@ type NavBarProps = {
   className?: string;
 };
 
+const pill = cn(focusRing, "rounded-full px-4 py-2.5 text-sm font-bold whitespace-nowrap");
+
 function NavBar({ links, user, className }: Readonly<NavBarProps>) {
   return (
-    <header data-slot="navbar" className={cn("flex items-center gap-4 px-4 py-2", className)}>
-      <NavLink to="/" className="font-display font-extrabold">
-        EventsHub
-      </NavLink>
-      <nav aria-label="Navigation principale" className="flex flex-1 gap-4">
-        {links.map((link) => (
-          <NavLink key={link.to} to={link.to} className="aria-[current=page]:font-bold">
-            {link.label}
+    <header data-slot="navbar" className={cn("bg-card border-b", className)}>
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 md:flex-nowrap md:px-8">
+        <Logo />
+        <nav
+          aria-label="Navigation principale"
+          className="order-last -mx-4 flex w-[calc(100%+2rem)] gap-1 overflow-x-auto px-4 md:order-none md:mx-0 md:w-auto md:p-0"
+        >
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              end
+              className={cn(
+                pill,
+                "hover:bg-secondary aria-[current=page]:bg-foreground aria-[current=page]:text-background transition-colors",
+              )}
+            >
+              {link.label}
+            </NavLink>
+          ))}
+        </nav>
+        {user ? (
+          <Avatar name={user.name} href="/profile" />
+        ) : (
+          <NavLink to="/login" className={cn(pill, "bg-primary text-primary-foreground")}>
+            Se connecter
           </NavLink>
-        ))}
-      </nav>
-      <NavLink to="/events/new" className="bg-signal text-signal-foreground rounded-full px-4 py-2">
-        Créer un événement
-      </NavLink>
-      {user ? (
-        <Avatar name={user.name} href="/profile" />
-      ) : (
-        <NavLink to="/login">Se connecter</NavLink>
-      )}
+        )}
+      </div>
     </header>
   );
 }
