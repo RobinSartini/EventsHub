@@ -56,11 +56,16 @@ function EventCard({ event, isFavorite, onToggleFavorite, className }: Readonly<
     <article
       data-slot="event-card"
       className={cn(
-        "has-[a:focus-visible]:ring-ring has-[a:focus-visible]:ring-offset-background relative flex flex-col gap-3 rounded-3xl has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-offset-4",
+        "has-[a:focus-visible]:ring-ring has-[a:focus-visible]:ring-offset-background relative flex flex-col gap-3 rounded-media has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-offset-4",
         className,
       )}
     >
-      <div className={cn("relative aspect-[20/19] overflow-hidden rounded-3xl", theme.media)}>
+      <div
+        className={cn(
+          "relative aspect-[20/19] overflow-hidden rounded-media rounded-bl-media-tail",
+          theme.media,
+        )}
+      >
         <div
           aria-hidden="true"
           className={cn(blob, theme.first, "-top-[20%] -right-[25%] size-[85%]")}
@@ -91,7 +96,7 @@ function EventCard({ event, isFavorite, onToggleFavorite, className }: Readonly<
         <h3 className="text-base leading-snug font-bold">
           <Link
             to={`/events/${event.id}`}
-            className="outline-none after:absolute after:inset-0 after:rounded-3xl"
+            className="outline-none after:absolute after:inset-0 after:rounded-media"
           >
             {event.name}
           </Link>

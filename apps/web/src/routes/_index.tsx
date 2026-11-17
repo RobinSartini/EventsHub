@@ -132,7 +132,10 @@ export default function Home() {
         {events.isPending ? (
           <div aria-hidden="true" className={grid}>
             {Array.from({ length: PAGE_SIZE }, (_, index) => (
-              <Skeleton key={index} className="aspect-[20/19] rounded-3xl" />
+              <Skeleton
+                key={index}
+                className="aspect-[20/19] rounded-media rounded-bl-media-tail"
+              />
             ))}
           </div>
         ) : null}
