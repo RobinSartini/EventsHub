@@ -29,7 +29,7 @@
   },
   "type": "module",
   "scripts": {
-    "dev": "bun scripts/dev-setup.ts && vp run -r --parallel dev",
+    "dev": "bun scripts/dev-setup.ts && vp run --parallel --filter './apps/*' dev",
     "build": "vp run -r build",
     "check-types": "vp run -r check-types",
     "docker:up": "bun scripts/docker.ts up",
