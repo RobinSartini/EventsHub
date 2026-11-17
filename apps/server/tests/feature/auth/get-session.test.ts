@@ -14,10 +14,16 @@ describe("GET /api/auth/get-session", () => {
     expect((await json<GetSessionResponse>(res))?.user.email).toBe(user.email);
   });
 
-  test("returns null and protected routes answer 401 with an invalid session", async () => {
+  test("answers 401 without a session cookie", async () => {
+    const res = await get("/api/auth/get-session");
+
+    expect(res.status).toBe(401);
+  });
+
+  test("answers 401 with an invalid session", async () => {
     const cookie = "better-auth.session_token=forged.token";
 
-    expect(await (await get("/api/auth/get-session", cookie)).json()).toBeNull();
+    expect((await get("/api/auth/get-session", cookie)).status).toBe(401);
     expect((await get("/trpc/privateData", cookie)).status).toBe(401);
   });
 });

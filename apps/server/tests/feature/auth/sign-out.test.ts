@@ -9,7 +9,7 @@ describe("POST /api/auth/sign-out", () => {
     const res = await post("/api/auth/sign-out", {}, cookie);
 
     expect(res.status).toBe(200);
-    expect(await (await get("/api/auth/get-session", cookie)).json()).toBeNull();
+    expect((await get("/api/auth/get-session", cookie)).status).toBe(401);
   });
 
   test("signing out without a session is rejected with 401", async () => {
