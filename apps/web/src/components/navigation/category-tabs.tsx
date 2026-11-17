@@ -31,7 +31,7 @@ function CategoryTabs({
       onValueChange={(next) => onValueChange(next as string)}
       data-slot="category-tabs"
       className={cn(
-        "flex w-full gap-2 overflow-x-auto [contain:inline-size] [scrollbar-width:none] md:gap-6",
+        "-mb-px flex w-full gap-2 overflow-x-auto [contain:inline-size] [scrollbar-width:none] md:gap-6",
         className,
       )}
     >
@@ -41,7 +41,7 @@ function CategoryTabs({
           value={category}
           className={cn(
             focusRing,
-            "text-muted-foreground hover:text-foreground data-checked:border-foreground data-checked:text-foreground flex shrink-0 cursor-pointer flex-col items-center gap-2 rounded-t-lg border-b-2 border-transparent px-3 pt-2 pb-3 text-xs font-bold transition-colors",
+            "text-muted-foreground hover:text-foreground data-checked:border-primary data-checked:text-foreground flex shrink-0 cursor-pointer flex-col items-center gap-2 rounded-t-lg border-b-3 border-transparent px-3 pt-2 pb-3 text-xs font-bold transition-colors",
           )}
         >
           <Icon aria-hidden="true" className="size-6" strokeWidth={1.75} />
