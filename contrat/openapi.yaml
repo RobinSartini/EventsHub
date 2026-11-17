@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: EventsHub API
-  version: 1.4.0
+  version: 1.5.0
 paths:
   /events:
     get:
@@ -247,6 +247,10 @@ paths:
                 $ref: "#/components/schemas/MeProfile"
         "401":
           description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Erreur interne du serveur.
     patch:
@@ -277,14 +281,22 @@ paths:
                 $ref: "#/components/schemas/Error"
         "401":
           description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Erreur interne du serveur.
-    delete:
+
+  /me/deletion:
+    post:
       summary: Supprimer mon compte
       description: >
         Supprime définitivement le compte de l'utilisateur connecté, ses sessions et ses données
         personnelles, et détache ses moyens de paiement Stripe. Requis par l'App Store pour toute
         application qui permet de créer un compte. Le mot de passe est redemandé pour confirmer.
+        C'est un POST et non un DELETE, car un DELETE avec corps n'a pas de sémantique définie en
+        OpenAPI 3.0 et certains proxys ou clients suppriment ce corps.
       security:
         - cookieAuth: []
       requestBody:
@@ -304,6 +316,10 @@ paths:
                 $ref: "#/components/schemas/Error"
         "401":
           description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "409":
           description: >
             Suppression impossible : l'utilisateur est `owner` d'une organisation, ou a des
@@ -314,6 +330,10 @@ paths:
                 $ref: "#/components/schemas/Error"
         "502":
           description: Stripe indisponible, le compte n'est pas supprimé.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Erreur interne du serveur.
 
@@ -331,6 +351,10 @@ paths:
                 $ref: "#/components/schemas/NotificationPreferences"
         "401":
           description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Erreur interne du serveur.
     patch:
@@ -359,6 +383,10 @@ paths:
                 $ref: "#/components/schemas/Error"
         "401":
           description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Erreur interne du serveur.
 
@@ -382,6 +410,10 @@ paths:
                   $ref: "#/components/schemas/PaymentMethod"
         "401":
           description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Erreur interne du serveur.
 
@@ -403,8 +435,16 @@ paths:
                 $ref: "#/components/schemas/PaymentMethodSetup"
         "401":
           description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "502":
           description: Stripe indisponible.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Erreur interne du serveur.
 
@@ -426,10 +466,22 @@ paths:
           description: Carte supprimée.
         "401":
           description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "404":
           description: Carte introuvable ou appartenant à un autre utilisateur.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "502":
           description: Stripe indisponible.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Erreur interne du serveur.
 
@@ -456,8 +508,16 @@ paths:
                 $ref: "#/components/schemas/PublicProfile"
         "401":
           description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "404":
           description: Profil introuvable ou privé.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Erreur interne du serveur.
 
@@ -672,6 +732,10 @@ paths:
                 $ref: "#/components/schemas/Error"
         "401":
           description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Erreur interne du serveur.
 
@@ -1089,7 +1153,6 @@ components:
         name:
           type: string
           minLength: 2
-          maxLength: 100
         image:
           type: string
           format: uri
