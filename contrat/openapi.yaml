@@ -152,6 +152,105 @@ paths:
         "500":
           description: Erreur interne du serveur.
 
+  /admin/events:
+    get:
+      summary: Récupérer tous les événements (admin)
+      description: Réservé aux administrateurs. Inclut les événements annulés. Triés par date de début décroissante.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Nombre d'événements par page
+      responses:
+        "200":
+          description: Liste des événements récupérée.
+          headers:
+            X-Total-Count:
+              $ref: "#/components/headers/XTotalCount"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+        "400":
+          description: Paramètres de pagination invalides.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+        "403":
+          description: Accès refusé (rôle admin requis).
+        "500":
+          description: Erreur interne du serveur.
+
+  /admin/events/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    patch:
+      summary: Modifier n'importe quel événement (admin)
+      description: >
+        Réservé aux administrateurs. Seuls les champs envoyés sont modifiés.
+        La date de fin ne peut pas précéder la date de début (comparée aux dates enregistrées si une seule est envoyée).
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUpdate"
+      responses:
+        "200":
+          description: Événement modifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "400":
+          description: Données invalides (corps vide, champ inconnu, valeur hors bornes, dates inversées, catégorie inconnue).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+        "403":
+          description: Accès refusé (rôle admin requis).
+        "404":
+          description: Événement introuvable.
+        "500":
+          description: Erreur interne du serveur.
+    delete:
+      summary: Supprimer n'importe quel événement (admin)
+      description: Réservé aux administrateurs. Supprime aussi les billets et favoris de l'événement.
+      security:
+        - cookieAuth: []
+      responses:
+        "204":
+          description: Événement supprimé.
+        "401":
+          description: Non authentifié.
+        "403":
+          description: Accès refusé (rôle admin requis).
+        "404":
+          description: Événement introuvable.
+        "500":
+          description: Erreur interne du serveur.
+
   /api/auth/sign-up/email:
     post:
       summary: "Inscription d'un utilisateur"
@@ -342,6 +441,13 @@ components:
         city:
           type: string
           example: Paris
+        priceCents:
+          type: integer
+          minimum: 0
+        isAccessible:
+          type: boolean
+        isKidFriendly:
+          type: boolean
         latitude:
           type: number
           format: float
@@ -363,6 +469,56 @@ components:
         updatedAt:
           type: string
           format: date-time
+
+    EventUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          nullable: true
+        categoryId:
+          type: string
+          nullable: true
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+          nullable: true
+        location:
+          type: string
+          minLength: 1
+        city:
+          type: string
+          minLength: 1
+        latitude:
+          type: number
+          format: float
+          nullable: true
+        longitude:
+          type: number
+          format: float
+          nullable: true
+        capacity:
+          type: integer
+          minimum: 1
+          nullable: true
+        status:
+          type: string
+          enum: [published, cancelled]
+        priceCents:
+          type: integer
+          minimum: 0
+        isAccessible:
+          type: boolean
+        isKidFriendly:
+          type: boolean
 
     User:
       type: object

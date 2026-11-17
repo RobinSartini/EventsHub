@@ -22,6 +22,10 @@ export function patch(path: string, body: unknown, cookie = "") {
   });
 }
 
+export function del(path: string, cookie = "") {
+  return app.request(path, { method: "DELETE", headers: { Origin: origin, Cookie: cookie } });
+}
+
 export function get(path: string, cookie = "") {
   return app.request(path, { headers: { Origin: origin, Cookie: cookie } });
 }
