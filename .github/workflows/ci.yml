@@ -16,11 +16,6 @@ jobs:
       BETTER_AUTH_SECRET: ci-only-dummy-secret-at-least-32-chars
       BETTER_AUTH_URL: http://localhost:3000
       CORS_ORIGIN: http://localhost:3001
-      STRIPE_SECRET_KEY: sk_test_dummy
-      STRIPE_WEBHOOK_SECRET: whsec_dummy
-      UPSTASH_REDIS_REST_URL: http://localhost:8079
-      UPSTASH_REDIS_REST_TOKEN: dummy
-      ANTHROPIC_API_KEY: dummy
 
     steps:
       - name: Checkout repository

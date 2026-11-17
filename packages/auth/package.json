@@ -24,7 +24,6 @@
     "@better-auth/prisma-adapter": "1.6.22",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
-    "stripe": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
