@@ -46,7 +46,7 @@ Vitest avec jsdom et Testing Library (`apps/web/vitest.config.ts`).
 
 ## `packages/api`
 
-Des tests de l'ancienne API tRPC, écrits avant leur implémentation et marqués `it.fails` : ils passent tant qu'ils échouent. Les fonctionnalités correspondantes ont été faites dans Hono (`apps/server`) ; ces tests sont à supprimer ou à porter vers `apps/server`.
+Pas de tests : les anciens tests tRPC en échec attendu (`it.fails`) ont été supprimés dans [#112](https://github.com/RobinSartini/EventsHub/pull/112), car ce qu'ils décrivaient est implémenté et testé dans `apps/server`.
 
 ## App iOS (`apps/native`)
 
