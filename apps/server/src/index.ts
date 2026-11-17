@@ -6,11 +6,11 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
-import { adminEventRoutes } from "./routes/admin/events";
-import { authRoutes } from "./routes/auth";
-import { eventRoutes } from "./routes/events";
-import { userRoutes } from "./routes/users";
-import { errorHandler } from "./utils/error-handler";
+import { adminEventRoutes } from "@/routes/admin/events";
+import { authRoutes } from "@/routes/auth";
+import { eventRoutes } from "@/routes/events";
+import { userRoutes } from "@/routes/users";
+import { errorHandler } from "@/errors";
 
 const app = new Hono();
 

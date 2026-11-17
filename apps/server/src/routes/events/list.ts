@@ -1,12 +1,10 @@
 import prisma from "@EventsHub/db";
 import type { Handler } from "hono";
 
-import { z } from "zod";
+import type { ListEventsQuery } from "@/types/events";
 
-import type { ListEventsQuery } from "../../types/events";
-
-import { listEventsQuery } from "../../types/events";
-import { ApiError } from "../../utils/api-response";
+import { listEventsQuery } from "@/types/events";
+import { validationError } from "@/errors";
 
 type EventWhere = NonNullable<NonNullable<Parameters<typeof prisma.event.findMany>[0]>["where"]>;
 
@@ -59,7 +57,7 @@ function eventFilters({ q, category, from, to, city }: ListEventsQuery): EventWh
 export const listEvents: Handler = async (c) => {
   const parsed = listEventsQuery.safeParse(c.req.query());
   if (!parsed.success) {
-    throw new ApiError(400, "Invalid query", z.flattenError(parsed.error).fieldErrors);
+    throw validationError("Invalid query", parsed.error);
   }
   const { page, pageSize } = parsed.data;
   const where = eventFilters(parsed.data);

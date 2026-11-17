@@ -1,8 +1,8 @@
 import { auth } from "@EventsHub/auth";
 import { createFactory } from "hono/factory";
 
-import { ApiError } from "../../utils/api-response";
-import { toAuthResponse } from "./auth-response";
+import { unauthorized } from "@/errors";
+import { toAuthResponse } from "@/routes/auth/auth-response";
 
 export const getSession = createFactory().createHandlers(async (c) => {
   const { headers, response } = await auth.api.getSession({
@@ -10,7 +10,7 @@ export const getSession = createFactory().createHandlers(async (c) => {
     returnHeaders: true,
   });
   if (!response) {
-    throw new ApiError(401, "Unauthorized");
+    throw unauthorized();
   }
   for (const cookie of headers.getSetCookie()) {
     c.header("Set-Cookie", cookie, { append: true });

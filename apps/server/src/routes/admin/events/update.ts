@@ -2,17 +2,17 @@ import type { Handler } from "hono";
 
 import prisma from "@EventsHub/db";
 
-import type { AdminVariables } from "../../../middleware/require-admin";
+import type { AdminVariables } from "@/middleware/require-admin";
 
-import { updateEventBody } from "../../../types/events";
-import { ApiError } from "../../../utils/api-response";
-import { eventSelect, findEventOr404, invalid } from "./event-select";
+import { updateEventBody } from "@/types/events";
+import { badRequest, validationError } from "@/errors";
+import { eventSelect, findEventOr404 } from "@/routes/admin/events/event-select";
 
 export const updateAdminEvent: Handler<{ Variables: AdminVariables }, "/:id"> = async (c) => {
   const id = c.req.param("id");
   const parsed = updateEventBody.safeParse(await c.req.json().catch(() => undefined));
   if (!parsed.success) {
-    throw invalid("Invalid request body", parsed.error);
+    throw validationError("Invalid request body", parsed.error);
   }
   const data = parsed.data;
   const existing = await findEventOr404(id);
@@ -20,7 +20,7 @@ export const updateAdminEvent: Handler<{ Variables: AdminVariables }, "/:id"> = 
   const start = new Date(data.startDate ?? existing.startDate);
   const end = data.endDate === undefined ? existing.endDate : data.endDate;
   if (end && new Date(end) < start) {
-    throw new ApiError(400, "endDate must be after startDate");
+    throw badRequest("endDate must be after startDate");
   }
   if (data.categoryId) {
     const category = await prisma.category.findUnique({
@@ -28,7 +28,7 @@ export const updateAdminEvent: Handler<{ Variables: AdminVariables }, "/:id"> = 
       select: { id: true },
     });
     if (!category) {
-      throw new ApiError(400, "Unknown category");
+      throw badRequest("Unknown category");
     }
   }
 
