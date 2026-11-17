@@ -1,20 +1,7 @@
 import type { ReactNode } from "react";
 
+import { Logo } from "@/components/navigation/logo";
 import { cn } from "@/lib/utils";
-
-function BrandMark({ className }: Readonly<{ className?: string }>) {
-  return (
-    <span className={className}>
-      <span
-        aria-hidden="true"
-        className="bg-primary-foreground grid size-9 place-items-center rounded-full"
-      >
-        <span className="bg-signal size-3.5 rounded-full" />
-      </span>
-      <span className="font-display text-lg font-extrabold">EventHub</span>
-    </span>
-  );
-}
 
 /** Billet décoratif : illustre le produit, sans donnée réelle. */
 function TicketPreview() {
@@ -25,11 +12,11 @@ function TicketPreview() {
     >
       <div className="flex-1">
         <p className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase">
-          Entrée · 01
+          Entrée n° 01
         </p>
         <p className="font-display mt-2 text-xl font-extrabold">Nuit Fluo</p>
         <p className="text-muted-foreground mt-4 font-mono text-[10px] tracking-widest uppercase">
-          Sam 28.11 · 21:00
+          Sam 28.11 à 21:00
         </p>
       </div>
       <span className="bg-primary text-primary-foreground grid size-12 shrink-0 place-items-center rounded-full font-mono text-xs font-bold">
@@ -64,7 +51,7 @@ const PANELS = {
   "sign-in": {
     panel: "bg-primary text-primary-foreground",
     topBlob: "bg-signal right-[-8rem] rounded-[45%_55%_60%_40%]",
-    bottomBlob: "bg-primary-soft left-[-6rem]",
+    bottomBlob: "bg-primary-foreground/20 left-[-6rem]",
     headline: "Tous les événements de ta ville, dans ta poche.",
   },
   "sign-up": {
@@ -89,7 +76,7 @@ function BrandPanel({ variant }: Readonly<{ variant: AuthLayoutProps["variant"] 
         aria-hidden="true"
         className={cn("absolute bottom-[-8rem] size-[22rem] rounded-full", bottomBlob)}
       />
-      <BrandMark className="relative flex items-center gap-3" />
+      <Logo inverted className="relative self-start" />
       <div className="relative flex flex-1 items-center justify-center">
         {variant === "sign-in" ? <TicketPreview /> : <SignUpPerks />}
       </div>

@@ -5,7 +5,7 @@ import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
 
 export function meta() {
-  return [{ title: "Connexion - EventHub" }];
+  return [{ title: "Connexion - EventsHub" }];
 }
 
 export default function Login() {

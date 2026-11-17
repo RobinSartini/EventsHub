@@ -21,7 +21,7 @@ export function PasswordStrength({ value }: Readonly<{ value: string }>) {
       </div>
       <p aria-live="polite" className="text-muted-foreground text-xs">
         <span className="text-foreground font-bold">{label}</span>
-        {hint && ` — ${hint}`}
+        {hint && ` : ${hint}`}
       </p>
     </div>
   );

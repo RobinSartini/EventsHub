@@ -39,9 +39,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
             toast.success("Compte créé");
           },
           onError: ({ error }) => {
-            const message = authErrorMessage(error.status);
-            setSubmitError(message);
-            toast.error(message);
+            setSubmitError(authErrorMessage(error.status));
           },
         },
       );

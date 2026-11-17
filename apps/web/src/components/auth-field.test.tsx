@@ -73,10 +73,32 @@ describe("AuthField", () => {
     const input = screen.getByLabelText("Mot de passe");
     expect(input).toHaveAttribute("type", "password");
 
-    await user.click(screen.getByRole("button", { name: "Afficher" }));
+    await user.click(screen.getByRole("button", { name: "Afficher le mot de passe" }));
     expect(input).toHaveAttribute("type", "text");
 
-    await user.click(screen.getByRole("button", { name: "Masquer" }));
+    expect(screen.getByRole("button", { name: "Afficher le mot de passe" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Afficher le mot de passe" }));
+    expect(input).toHaveAttribute("type", "password");
+  });
+
+  it("remasque le mot de passe à l'envoi du formulaire", async () => {
+    const user = userEvent.setup();
+    render(
+      <form onSubmit={(event) => event.preventDefault()}>
+        <AuthField field={makeField("secret123")} label="Mot de passe" type="password" />
+        <button type="submit">Envoyer</button>
+      </form>,
+    );
+    const input = screen.getByLabelText("Mot de passe");
+    await user.click(screen.getByRole("button", { name: "Afficher le mot de passe" }));
+    expect(input).toHaveAttribute("type", "text");
+
+    await user.click(screen.getByRole("button", { name: "Envoyer" }));
+
     expect(input).toHaveAttribute("type", "password");
   });
 

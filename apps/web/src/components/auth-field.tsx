@@ -1,5 +1,6 @@
 import { EyeIcon, EyeOffIcon } from "lucide-react";
-import { type ComponentProps, useState } from "react";
+import { type ComponentProps, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 import { cn } from "@/lib/utils";
 
@@ -21,7 +22,17 @@ type AuthFieldProps = {
 /** Champ libellé + message d'erreur, partagé par les formulaires de connexion et d'inscription. */
 export function AuthField({ field, label, type = "text", autoComplete }: AuthFieldProps) {
   const [revealed, setRevealed] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const isPassword = type === "password";
+
+  // Remasque le mot de passe avant l'envoi : sinon le navigateur proposerait de l'enregistrer en clair.
+  useEffect(() => {
+    const form = inputRef.current?.form;
+    if (!isPassword || !form) return;
+    const mask = () => flushSync(() => setRevealed(false));
+    form.addEventListener("submit", mask, { capture: true });
+    return () => form.removeEventListener("submit", mask, { capture: true });
+  }, [isPassword]);
   const errors = field.state.meta.errors.filter(Boolean);
   const errorId = `${field.name}-error`;
 
@@ -32,6 +43,7 @@ export function AuthField({ field, label, type = "text", autoComplete }: AuthFie
       </Label>
       <div className="relative">
         <Input
+          ref={inputRef}
           id={field.name}
           name={field.name}
           type={isPassword && revealed ? "text" : type}
@@ -49,7 +61,7 @@ export function AuthField({ field, label, type = "text", autoComplete }: AuthFie
         {isPassword && (
           <button
             type="button"
-            aria-label={revealed ? "Masquer" : "Afficher"}
+            aria-label="Afficher le mot de passe"
             aria-pressed={revealed}
             onClick={() => setRevealed((value) => !value)}
             className="text-muted-foreground hover:text-foreground focus-visible:ring-ring absolute top-1/2 right-4 -translate-y-1/2 rounded-full outline-none focus-visible:ring-2"

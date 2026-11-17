@@ -33,9 +33,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
             toast.success("Connexion réussie");
           },
           onError: ({ error }) => {
-            const message = authErrorMessage(error.status);
-            setSubmitError(message);
-            toast.error(message);
+            setSubmitError(authErrorMessage(error.status));
           },
         },
       );
