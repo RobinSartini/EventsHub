@@ -1,5 +1,6 @@
 import { MenuIcon, UserIcon } from "lucide-react";
-import { Link, NavLink } from "react-router";
+import { type ReactNode, useRef } from "react";
+import { Link } from "react-router";
 
 import { useDarkTheme } from "@/components/theme-switch";
 import { focusRing } from "@/lib/styles";
@@ -22,16 +23,22 @@ type NavBarLink = {
 };
 
 type NavBarProps = {
-  links: readonly NavBarLink[];
+  links?: readonly NavBarLink[];
   user: { name: string } | null;
   onSignOut: () => void;
   className?: string;
+  children?: ReactNode;
 };
 
 const menuItem = "rounded-xl px-3 py-2.5 text-sm font-bold";
 
-function AccountMenu({ links, user, onSignOut }: Readonly<Omit<NavBarProps, "className">>) {
+function AccountMenu({
+  links = [],
+  user,
+  onSignOut,
+}: Readonly<Omit<NavBarProps, "className" | "children">>) {
   const [dark, setDark] = useDarkTheme();
+  const pill = useRef<HTMLDivElement>(null);
   const linkItem = (to: string, label: string) => (
     <DropdownMenuItem key={to} className={menuItem} render={<Link to={to} />}>
       {label}
@@ -39,7 +46,7 @@ function AccountMenu({ links, user, onSignOut }: Readonly<Omit<NavBarProps, "cla
   );
 
   return (
-    <div className="flex items-center gap-1 rounded-full border p-1 pl-2">
+    <div ref={pill} className="flex items-center gap-1 rounded-full border p-1 pl-2">
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label="Menu"
@@ -51,12 +58,13 @@ function AccountMenu({ links, user, onSignOut }: Readonly<Omit<NavBarProps, "cla
           <MenuIcon className="size-5" />
         </DropdownMenuTrigger>
         <DropdownMenuContent
+          anchor={pill}
           align="end"
           sideOffset={8}
           className="bg-card shadow-float w-60 rounded-3xl p-2 ring-0"
         >
           {links.map((link) => linkItem(link.to, link.label))}
-          <DropdownMenuSeparator className="my-1" />
+          {links.length > 0 ? <DropdownMenuSeparator className="my-1" /> : null}
           <DropdownMenuCheckboxItem className={menuItem} checked={dark} onCheckedChange={setDark}>
             Thème sombre
           </DropdownMenuCheckboxItem>
@@ -87,26 +95,16 @@ function AccountMenu({ links, user, onSignOut }: Readonly<Omit<NavBarProps, "cla
   );
 }
 
-function NavBar({ links, user, onSignOut, className }: Readonly<NavBarProps>) {
+function NavBar({ links, user, onSignOut, className, children }: Readonly<NavBarProps>) {
   return (
     <header data-slot="navbar" className={cn("bg-card border-b", className)}>
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-3 md:px-8">
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-3 md:px-10 lg:flex-nowrap">
         <Logo />
-        <nav aria-label="Navigation principale" className="hidden gap-1 md:flex">
-          {links.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end
-              className={cn(
-                focusRing,
-                "hover:bg-secondary aria-[current=page]:bg-foreground aria-[current=page]:text-background rounded-full px-4 py-2.5 text-sm font-bold whitespace-nowrap transition-colors",
-              )}
-            >
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
+        {children ? (
+          <div className="order-last flex w-full justify-center lg:order-none lg:w-auto lg:flex-1">
+            {children}
+          </div>
+        ) : null}
         <AccountMenu links={links} user={user} onSignOut={onSignOut} />
       </div>
     </header>

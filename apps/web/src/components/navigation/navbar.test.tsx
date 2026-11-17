@@ -5,19 +5,16 @@ import { describe, expect, it, vi } from "vitest";
 
 import { NavBar } from "./navbar";
 
-const LINKS = [
-  { to: "/", label: "Explorer" },
-  { to: "/favorites", label: "Favoris" },
-] as const;
+const LINKS = [{ to: "/favorites", label: "Favoris" }] as const;
 
-function renderNavBar(user: { name: string } | null, path = "/") {
+function renderNavBar(user: { name: string } | null) {
   const onSignOut = vi.fn();
   render(
-    <MemoryRouter initialEntries={[path]}>
+    <MemoryRouter>
       <NavBar links={LINKS} user={user} onSignOut={onSignOut} />
     </MemoryRouter>,
   );
-  return { onSignOut, nav: screen.getByRole("navigation", { name: "Navigation principale" }) };
+  return { onSignOut };
 }
 
 async function openMenu() {
@@ -26,16 +23,6 @@ async function openMenu() {
 }
 
 describe("NavBar", () => {
-  it("marque seulement la rubrique courante avec aria-current page", () => {
-    const { nav } = renderNavBar(null, "/favorites");
-
-    expect(within(nav).getByRole("link", { name: "Favoris" })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
-    expect(within(nav).getByRole("link", { name: "Explorer" })).not.toHaveAttribute("aria-current");
-  });
-
   it("mène à la connexion depuis la pilule sans session", () => {
     renderNavBar(null);
 

@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { HomeSearch } from "@/components/navigation/home-search";
 import Home from "@/routes/_index";
 
 import { lastEventsUrl, stubApi } from "./stub-api";
@@ -29,6 +30,7 @@ function renderHome() {
     ...render(
       <MemoryRouter>
         <QueryClientProvider client={queryClient}>
+          <HomeSearch />
           <Home />
         </QueryClientProvider>
       </MemoryRouter>,

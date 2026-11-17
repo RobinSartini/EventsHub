@@ -35,8 +35,8 @@ const TEXT_FIELDS = [
 
 const SEARCH_KEYS = ["q", "city", "from"] as const;
 
-const field = "flex min-w-0 flex-1 flex-col gap-0.5 rounded-full px-6 py-2";
-const fieldLabel = "text-foreground text-sm font-extrabold";
+const field = "flex min-w-0 flex-1 flex-col gap-0.5 rounded-full px-6 py-1.5";
+const fieldLabel = "text-foreground text-xs font-extrabold";
 const fieldText = "w-full truncate text-base leading-5";
 
 function DateField({ defaultValue }: Readonly<{ defaultValue?: string }>) {
@@ -110,7 +110,7 @@ function SearchBar({ defaultValues, onSearch, className }: Readonly<SearchBarPro
       data-slot="search-bar"
       onSubmit={handleSubmit}
       className={cn(
-        "bg-card shadow-float flex w-full max-w-2xl flex-col gap-2 rounded-3xl border p-2 md:flex-row md:items-center md:rounded-full md:p-1.5",
+        "bg-card shadow-raised flex w-full max-w-[40rem] flex-col gap-2 rounded-3xl border p-2 md:flex-row md:items-center md:rounded-full md:p-1.5",
         className,
       )}
     >
@@ -136,7 +136,7 @@ function SearchBar({ defaultValues, onSearch, className }: Readonly<SearchBarPro
         ))}
         <DateField defaultValue={defaultValues?.from} />
       </div>
-      <Button type="submit" className="md:size-14 md:shrink-0 md:px-0">
+      <Button type="submit" className="md:size-12 md:shrink-0 md:px-0">
         <SearchIcon className="md:size-5" strokeWidth={2.5} />
         <span className="md:sr-only">Rechercher</span>
       </Button>

@@ -12,7 +12,6 @@ import {
 import { Link, useSearchParams } from "react-router";
 
 import { EventCard, type EventCardEvent } from "@/components/event/event-card";
-import { SearchBar, type SearchValues } from "@/components/form/search-bar";
 import { CategoryTabs } from "@/components/navigation/category-tabs";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,7 +28,7 @@ import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
 const ALL = "all";
-const grid = "grid gap-x-6 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
+const grid = "grid grid-cols-[repeat(auto-fill,minmax(15.5rem,1fr))] gap-x-6 gap-y-8";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   atelier: PaletteIcon,
@@ -109,8 +108,6 @@ export default function Home() {
   const hasFilters = Boolean(search.q || search.city || search.from || search.category);
   const total = events.data?.total ?? 0;
 
-  const onSearch = (values: SearchValues) =>
-    setParams(writeHomeSearch({ ...values, category: search.category }));
   const onCategory = (category: string) =>
     setParams(
       writeHomeSearch({ ...search, category: category === ALL ? undefined : category, page: 1 }),
@@ -118,73 +115,72 @@ export default function Home() {
   const clearAll = () => setParams(new URLSearchParams());
 
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 md:px-10">
-      <SearchBar
-        key={[search.q, search.city, search.from].join("|")}
-        defaultValues={search}
-        onSearch={onSearch}
-        className="self-center"
-      />
-      <CategoryTabs
-        categories={tabs}
-        value={search.category ?? ALL}
-        onValueChange={onCategory}
-        className="border-b"
-      />
-
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="font-display text-2xl font-extrabold">
-          {search.city ? `Événements à ${search.city}` : "Événements à venir"}
-        </h1>
-        <div className="flex items-baseline gap-4">
-          <p aria-live="polite" className="text-muted-foreground text-sm font-bold">
-            {events.data ? `${total} ${plural(total, "événement")}` : null}
-          </p>
-          {hasFilters ? (
-            <Button variant="link" size="sm" onClick={clearAll}>
-              Tout effacer
-            </Button>
-          ) : null}
-        </div>
+    <div>
+      <div className="bg-card border-b px-4 md:px-10">
+        <CategoryTabs categories={tabs} value={search.category ?? ALL} onValueChange={onCategory} />
       </div>
 
-      {events.isError && !events.data ? (
-        <div role="alert" className="flex flex-col items-start gap-3">
-          <p>Une erreur est survenue pendant le chargement des événements.</p>
-          <Button variant="outline" onClick={() => events.refetch()}>
-            Réessayer
-          </Button>
+      <main className="flex flex-col gap-6 px-4 py-8 md:px-10">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+          <h1 aria-live="polite" className="font-display text-3xl font-extrabold md:text-4xl">
+            {events.data ? `${total} ${plural(total, "événement")}` : "Événements"}
+            {search.city ? (
+              <>
+                {" à "}
+                <span className="text-primary">{search.city}</span>
+              </>
+            ) : (
+              " à venir"
+            )}
+          </h1>
+          <div className="flex items-baseline gap-4">
+            <p className="text-muted-foreground text-sm font-bold">Triés par date</p>
+            {hasFilters ? (
+              <Button variant="link" size="sm" onClick={clearAll}>
+                Tout effacer
+              </Button>
+            ) : null}
+          </div>
         </div>
-      ) : null}
 
-      {events.isPending ? (
-        <div aria-hidden="true" className={grid}>
-          {Array.from({ length: PAGE_SIZE }, (_, index) => (
-            <Skeleton key={index} className="aspect-square rounded-2xl" />
-          ))}
-        </div>
-      ) : null}
+        {events.isError && !events.data ? (
+          <div role="alert" className="flex flex-col items-start gap-3">
+            <p>Une erreur est survenue pendant le chargement des événements.</p>
+            <Button variant="outline" onClick={() => events.refetch()}>
+              Réessayer
+            </Button>
+          </div>
+        ) : null}
 
-      {events.data?.events.length === 0 ? (
-        <p className="text-muted-foreground py-12 text-center">
-          Aucun événement ne correspond à ta recherche.
-        </p>
-      ) : null}
+        {events.isPending ? (
+          <div aria-hidden="true" className={grid}>
+            {Array.from({ length: PAGE_SIZE }, (_, index) => (
+              <Skeleton key={index} className="aspect-[20/19] rounded-3xl" />
+            ))}
+          </div>
+        ) : null}
 
-      {events.data?.events.length ? (
-        <ul
-          aria-busy={events.isPlaceholderData}
-          className={cn(grid, "transition-opacity aria-busy:opacity-60")}
-        >
-          {events.data.events.map((event) => (
-            <li key={event.id}>
-              <EventCard event={toCardEvent(event)} />
-            </li>
-          ))}
-        </ul>
-      ) : null}
+        {events.data?.events.length === 0 ? (
+          <p className="text-muted-foreground py-12 text-center">
+            Aucun événement ne correspond à ta recherche.
+          </p>
+        ) : null}
 
-      <Pagination search={search} pageCount={Math.ceil(total / PAGE_SIZE)} />
-    </main>
+        {events.data?.events.length ? (
+          <ul
+            aria-busy={events.isPlaceholderData}
+            className={cn(grid, "transition-opacity aria-busy:opacity-60")}
+          >
+            {events.data.events.map((event) => (
+              <li key={event.id}>
+                <EventCard event={toCardEvent(event)} />
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        <Pagination search={search} pageCount={Math.ceil(total / PAGE_SIZE)} />
+      </main>
+    </div>
   );
 }

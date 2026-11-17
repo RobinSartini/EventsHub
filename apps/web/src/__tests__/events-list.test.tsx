@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { HomeSearch } from "@/components/navigation/home-search";
 import Home from "@/routes/_index";
 
 import { lastEventsUrl, stubApi } from "./stub-api";
@@ -23,6 +24,7 @@ function renderHome(url = "/") {
     ...render(
       <MemoryRouter initialEntries={[url]}>
         <QueryClientProvider client={queryClient}>
+          <HomeSearch />
           <Home />
         </QueryClientProvider>
       </MemoryRouter>,
@@ -45,7 +47,7 @@ describe("US-02 – Parcourir les événements à l'accueil", () => {
       expect(screen.getByText("Expo Photo")).toBeInTheDocument();
       expect(screen.getByText("Marathon Paris")).toBeInTheDocument();
     });
-    expect(screen.getByText("3 événements")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("3 événements à venir");
   });
 
   it("500 – should display an error message", async () => {
