@@ -18,7 +18,7 @@ type EventCardEvent = {
   capacity?: number | null;
   status?: "published" | "cancelled";
   ticketsSold?: number;
-  price?: number | null;
+  priceCents?: number;
 };
 
 type EventCardProps = {
@@ -46,9 +46,9 @@ const blob =
 function EventCard({ event, isFavorite, onToggleFavorite, className }: Readonly<EventCardProps>) {
   const theme = mediaTheme(event.id);
   const price =
-    event.price === undefined ? null : (
+    event.priceCents === undefined ? null : (
       <span className="font-mono text-sm font-bold whitespace-nowrap">
-        {formatPrice(event.price)}
+        {formatPrice(event.priceCents / 100)}
       </span>
     );
   const meta = [formatTime(event.startDate), event.location].filter(Boolean).join(" - ");

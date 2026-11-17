@@ -211,7 +211,7 @@ const EVENTS: EventCardEvent[] = [
     location: "Les Docks",
     capacity: 80,
     ticketsSold: 62,
-    price: 12,
+    priceCents: 1200,
   },
   {
     id: "jam-session",
@@ -220,14 +220,14 @@ const EVENTS: EventCardEvent[] = [
     location: "Le Cargo",
     capacity: 60,
     ticketsSold: 34,
-    price: 8,
+    priceCents: 800,
   },
   {
     id: "expo-lumiere",
     name: "Expo Lumière",
     startDate: "2026-11-21T09:00:00Z",
     location: "Halle Tony Garnier",
-    price: null,
+    priceCents: 0,
   },
   {
     id: "atelier-ceramique",
@@ -236,7 +236,7 @@ const EVENTS: EventCardEvent[] = [
     location: "La Croix-Rousse",
     capacity: 12,
     ticketsSold: 5,
-    price: 35,
+    priceCents: 3500,
     status: "cancelled",
   },
 ];
