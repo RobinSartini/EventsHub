@@ -5,12 +5,17 @@ const badgeFormatter = new Intl.DateTimeFormat("fr-FR", {
   timeZone: "Europe/Paris",
 });
 
-export function formatDateBadge(isoDate: string): string {
+function dayParts(isoDate: string) {
   const parts = badgeFormatter.formatToParts(new Date(isoDate));
   const part = (type: Intl.DateTimeFormatPartTypes) =>
     (parts.find((p) => p.type === type)?.value ?? "").replace(".", "");
 
-  return `${part("weekday")} ${part("day")} ${part("month")}`.toUpperCase();
+  return { weekday: part("weekday"), day: part("day"), month: part("month") };
+}
+
+export function formatDateBadge(isoDate: string): string {
+  const { weekday, day, month } = dayParts(isoDate);
+  return `${weekday} ${day} ${month}`.toUpperCase();
 }
 
 const timeFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -21,6 +26,12 @@ const timeFormatter = new Intl.DateTimeFormat("fr-FR", {
 
 export function formatTime(isoDate: string): string {
   return timeFormatter.format(new Date(isoDate));
+}
+
+export function formatEventDate(isoDate: string): string {
+  const { weekday, day, month } = dayParts(isoDate);
+  const capitalized = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+  return `${capitalized}. ${day} ${month} - ${formatTime(isoDate)}`;
 }
 
 const dayLabelFormatter = new Intl.DateTimeFormat("fr-FR", {
