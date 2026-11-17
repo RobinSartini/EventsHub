@@ -13,10 +13,12 @@ import { DateBadge } from "@/components/ui/date-badge";
 import { EventCard, type EventCardEvent } from "@/components/ui/event-card";
 import { LiveBadge } from "@/components/ui/live-badge";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
+import { RangeSlider } from "@/components/ui/range-slider";
 import { SearchBar, type SearchValues } from "@/components/ui/search-bar";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { formatPrice } from "@/lib/format-price";
 
 export function meta() {
   return [{ title: "Design system - EventsHub" }];
@@ -258,6 +260,32 @@ function EventCardDemo() {
   );
 }
 
+function RangeSliderDemo() {
+  const [priceMax, setPriceMax] = useState(15);
+  const [radius, setRadius] = useState(10);
+
+  return (
+    <div className="flex w-full max-w-sm flex-col gap-6">
+      <RangeSlider
+        label="Prix max"
+        min={0}
+        max={50}
+        value={priceMax}
+        onValueChange={setPriceMax}
+        format={formatPrice}
+      />
+      <RangeSlider
+        label="Rayon"
+        min={1}
+        max={50}
+        value={radius}
+        onValueChange={setRadius}
+        format={(km) => `${km} km`}
+      />
+    </div>
+  );
+}
+
 export default function DesignSystem() {
   return (
     <main className="mx-auto w-full max-w-[1360px] px-4 py-10 sm:px-6 lg:px-10">
@@ -333,6 +361,13 @@ export default function DesignSystem() {
         description="Combien de places ? Moins, plus, et le compteur suit. Plus passe en bleu roi dès qu'un billet est choisi."
       >
         <QuantityStepperDemo />
+      </Section>
+
+      <Section
+        title="RangeSlider"
+        description="Glisser pour fixer une limite : prix maximum, rayon autour de soi. L'unité est annoncée aux lecteurs d'écran."
+      >
+        <RangeSliderDemo />
       </Section>
 
       <Section
