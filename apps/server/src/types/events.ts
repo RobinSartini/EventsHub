@@ -8,10 +8,10 @@ export const listEventsQuery = z
       .max(100)
       .optional()
       .transform((value) => value || undefined),
-    category: z.string().trim().min(1).optional(),
+    category: z.string().trim().min(1).max(100).optional(),
     from: z.iso.date().optional(),
     to: z.iso.date().optional(),
-    city: z.string().trim().min(1).optional(),
+    city: z.string().trim().min(1).max(100).optional(),
     sort: z.enum(["date", "distance"]).default("date"),
     lat: z.coerce.number().min(-90).max(90).optional(),
     lng: z.coerce.number().min(-180).max(180).optional(),
