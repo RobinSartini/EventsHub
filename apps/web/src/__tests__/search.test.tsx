@@ -4,7 +4,6 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import Header from "@/components/header";
 import Search from "@/routes/search";
 
 // --- Router mock ---
@@ -60,9 +59,11 @@ function renderSearch() {
   return {
     user: userEvent.setup(),
     ...render(
-      <QueryClientProvider client={queryClient}>
-        <Search />
-      </QueryClientProvider>,
+      <MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <Search />
+        </QueryClientProvider>
+      </MemoryRouter>,
     ),
   };
 }
@@ -74,25 +75,18 @@ describe("US-05 – Rechercher un événement par mot-clé", () => {
     searchParams.current = new URLSearchParams();
   });
 
-  it("should display a search bar in the header", () => {
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>,
-    );
+  it("should display the search bar", () => {
+    renderSearch();
 
+    expect(screen.getByRole("search")).toBeInTheDocument();
     expect(screen.getByRole("searchbox")).toBeInTheDocument();
   });
 
-  it("should navigate to /search with the keyword when submitting the header search bar", async () => {
-    const user = userEvent.setup();
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>,
-    );
+  it("should navigate to /search with the keyword when submitting the search bar", async () => {
+    const { user } = renderSearch();
 
-    await user.type(screen.getByRole("searchbox"), "jazz{Enter}");
+    await user.type(screen.getByRole("searchbox"), "jazz");
+    await user.click(screen.getByRole("button", { name: "Rechercher" }));
 
     expect(mockNavigate).toHaveBeenCalledWith("/search?q=jazz");
   });
