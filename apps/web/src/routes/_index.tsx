@@ -28,7 +28,7 @@ import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
 const ALL = "all";
-const grid = "grid grid-cols-[repeat(auto-fill,minmax(15.5rem,1fr))] gap-x-6 gap-y-8";
+const grid = "grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   atelier: PaletteIcon,
