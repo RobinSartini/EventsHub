@@ -1,0 +1,49 @@
+---
+title: Démarrer le projet
+description: Du clone du dépôt à l'application qui tourne en local.
+---
+
+## Prérequis
+
+- [Bun](https://bun.sh) 1.3 ou plus récent
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/), démarré
+- Git
+
+Sous Windows, désactivez la conversion des fins de ligne pour ce dépôt, sinon le hook de pre-commit refuse des fichiers que vous n'avez pas modifiés :
+
+```bash
+git config core.autocrlf false
+```
+
+## Installer et lancer
+
+```bash
+git clone https://github.com/RobinSartini/EventsHub.git
+cd EventsHub
+bun install
+bun dev
+```
+
+`bun dev` crée `apps/server/.env` s'il manque, démarre PostgreSQL dans Docker, applique le schéma Prisma, ajoute les données de démonstration si la base est vide, puis lance toutes les applications.
+
+| Service       | URL                   |
+| ------------- | --------------------- |
+| Front web     | http://localhost:5173 |
+| API           | http://localhost:3000 |
+| Documentation | http://localhost:4000 |
+
+## Devenir administrateur
+
+1. Créez un compte depuis le front web.
+2. Lancez `bun db:studio`, ouvrez la table `user`, passez le champ `role` de votre compte à `admin` et enregistrez.
+3. Déconnectez-vous puis reconnectez-vous.
+
+## Tests et qualité
+
+```bash
+bun run test
+bun run check
+bun run check-types
+```
+
+Utilisez `bun run test` et non `bun test`, qui lance un autre runner que Vitest. Les tests du back simulent la base de données : Docker n'est pas nécessaire pour les lancer.

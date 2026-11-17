@@ -54,18 +54,15 @@ bun dev       # lance le web et le serveur
 
 Variables d'environnement du serveur (`apps/server/.env.example`) :
 
-| Variable                                              | Rôle                                      |
-| ----------------------------------------------------- | ----------------------------------------- |
-| `DATABASE_URL`                                        | Connexion PostgreSQL                      |
-| `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL`              | Authentification (secret de 32 car. min.) |
-| `CORS_ORIGIN`                                         | Origine autorisée du front                |
-| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`         | Paiements                                 |
-| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Redis et rate limiting                    |
-| `ANTHROPIC_API_KEY`                                   | API Anthropic                             |
+| Variable                                 | Rôle                                      |
+| ---------------------------------------- | ----------------------------------------- |
+| `DATABASE_URL`                           | Connexion PostgreSQL                      |
+| `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL` | Authentification (secret de 32 car. min.) |
+| `CORS_ORIGIN`                            | Origine autorisée du front                |
 
 Ces variables sont validées par Zod dans `packages/env` : toute nouvelle variable s'y déclare et s'ajoute au `.env.example` **et** à la section `env` de `.github/workflows/ci.yml`. Ne committez jamais un `.env`.
 
-Alternatives : le **Dev Container** (`.devcontainer/`) ou `docker-compose.yml` fournissent un environnement prêt à l'emploi. Pour forcer l'architecture des images Docker, copiez `.env.example` en `.env` à la racine et renseignez `DOCKER_PLATFORM` (`linux/arm64` sur Mac Apple Silicon, `linux/amd64` sur Windows, Linux ou serveur) ; vide, Docker utilise l'architecture de la machine. Pour le mobile (macOS uniquement) : `cd apps/native && xcodegen generate`, puis ouvrez le projet dans Xcode.
+Alternative : `docker-compose.yml` fournit un environnement prêt à l'emploi. Pour forcer l'architecture des images Docker, copiez `.env.example` en `.env` à la racine et renseignez `DOCKER_PLATFORM` (`linux/arm64` sur Mac Apple Silicon, `linux/amd64` sur Windows, Linux ou serveur) ; vide, Docker utilise l'architecture de la machine. Pour le mobile (macOS uniquement) : `cd apps/native && xcodegen generate`, puis ouvrez le projet dans Xcode.
 
 Commandes utiles : `bun db:studio` (interface base de données), `bun db:generate` / `bun db:migrate` (Prisma), `bun dev:web`, `bun dev:server`, `bun dev:docs`.
 
@@ -139,7 +136,7 @@ Avant de pousser :
 ```bash
 bun check         # lint + formatage (vp check)
 bun check-types   # typage TypeScript
-bun test          # tests (Vitest, Playwright)
+bun run test      # tests (Vitest)
 bun build         # build de production
 bun secrets:scan  # détection de secrets (Gitleaks)
 ```
