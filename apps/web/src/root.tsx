@@ -12,6 +12,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigate,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -49,8 +50,10 @@ const NAV_LINKS = [
 
 function AppNavBar() {
   const { data: session } = authClient.useSession();
+  const navigate = useNavigate();
   const user = session?.user ? { name: session.user.name } : null;
-  return <NavBar links={NAV_LINKS} user={user} />;
+  const signOut = () => authClient.signOut({ fetchOptions: { onSuccess: () => navigate("/") } });
+  return <NavBar links={NAV_LINKS} user={user} onSignOut={signOut} />;
 }
 
 export default function App() {

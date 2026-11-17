@@ -7,11 +7,12 @@ import { cn } from "@/lib/utils";
 type AvatarProps = {
   name: string;
   href?: string;
-  size?: "default" | "lg";
+  size?: "sm" | "default" | "lg";
   className?: string;
 };
 
 const sizes = {
+  sm: "bg-primary text-primary-foreground size-8 text-xs",
   default: "bg-primary text-primary-foreground size-[46px] text-sm",
   lg: "bg-foreground text-background size-[52px] text-[15px]",
 };

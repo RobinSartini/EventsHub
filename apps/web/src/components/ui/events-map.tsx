@@ -38,7 +38,7 @@ function EventsMap({
   className,
 }: Readonly<EventsMapProps>) {
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative isolate", className)}>
       <MapContainer
         center={center}
         zoom={zoom}
