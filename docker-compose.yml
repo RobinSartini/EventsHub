@@ -5,6 +5,7 @@ name: EventsHub
 
 services:
   web:
+    platform: ${DOCKER_PLATFORM:-}
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -20,6 +21,7 @@ services:
       - EventsHub-network
 
   server:
+    platform: ${DOCKER_PLATFORM:-}
     build:
       context: .
       dockerfile: apps/server/Dockerfile
@@ -32,6 +34,8 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/EventsHub
+      - CORS_ORIGIN=http://localhost:3000
+      - BETTER_AUTH_URL=http://localhost:3001
       - REDIS_URL=redis://redis:6379
       - REDIS_HOST=redis
       # Rate limiting speaks Upstash REST; the srh bridge serves it from the local redis.
@@ -49,6 +53,7 @@ services:
       - EventsHub-network
 
   postgres:
+    platform: ${DOCKER_PLATFORM:-}
     image: postgres:18-alpine
     container_name: EventsHub-postgres
     environment:
@@ -69,6 +74,7 @@ services:
       - EventsHub-network
 
   redis:
+    platform: ${DOCKER_PLATFORM:-}
     image: redis:8-alpine
     container_name: EventsHub-redis
     ports:
@@ -85,6 +91,7 @@ services:
       - EventsHub-network
 
   srh:
+    platform: ${DOCKER_PLATFORM:-}
     image: hiett/serverless-redis-http:latest
     container_name: EventsHub-srh
     environment:

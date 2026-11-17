@@ -7,6 +7,8 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
 import { authRoutes } from "./routes/auth";
+import { eventRoutes } from "./routes/events";
+import { userRoutes } from "./routes/users";
 import { errorHandler } from "./utils/error-handler";
 
 const app = new Hono();
@@ -18,13 +20,16 @@ app.use(
   "/*",
   cors({
     origin: env.CORS_ORIGIN,
-    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowMethods: ["GET", "POST", "PATCH", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
+    exposeHeaders: ["X-Total-Count"],
     credentials: true,
   }),
 );
 
 app.route("/api/auth", authRoutes);
+app.route("/events", eventRoutes);
+app.route("/users", userRoutes);
 
 app.use(
   "/trpc/*",

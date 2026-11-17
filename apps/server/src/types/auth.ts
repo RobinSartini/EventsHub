@@ -36,3 +36,9 @@ export type SignOutResponse = {
 };
 
 export type GetSessionResponse = AuthSession | null;
+
+export type RefreshResponse = {
+  accessToken: string;
+  tokenType: "Bearer";
+  expiresIn: number;
+};

@@ -38,4 +38,28 @@ describe("POST /api/auth/sign-up/email", () => {
 
     expect(res.status).toBe(422);
   });
+
+  test("a visitor cannot choose their own role or status", async () => {
+    const res = await post("/api/auth/sign-up/email", {
+      ...user,
+      email: "sneaky@example.com",
+      role: "admin",
+      status: "active",
+    });
+
+    expect(res.status).toBe(200);
+    expect((await json<SignUpResponse>(res)).user).toMatchObject({
+      role: "user",
+      status: "active",
+    });
+  });
+
+  test("a new account is a user with an active status", async () => {
+    const res = await signUp({ ...user, email: "fresh@example.com" });
+
+    expect((await json<SignUpResponse>(res)).user).toMatchObject({
+      role: "user",
+      status: "active",
+    });
+  });
 });

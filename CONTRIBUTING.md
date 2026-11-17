@@ -65,7 +65,7 @@ Variables d'environnement du serveur (`apps/server/.env.example`) :
 
 Ces variables sont validées par Zod dans `packages/env` : toute nouvelle variable s'y déclare et s'ajoute au `.env.example` **et** à la section `env` de `.github/workflows/ci.yml`. Ne committez jamais un `.env`.
 
-Alternatives : le **Dev Container** (`.devcontainer/`) ou `docker-compose.yml` fournissent un environnement prêt à l'emploi. Pour le mobile (macOS uniquement) : `cd apps/native && xcodegen generate`, puis ouvrez le projet dans Xcode.
+Alternatives : le **Dev Container** (`.devcontainer/`) ou `docker-compose.yml` fournissent un environnement prêt à l'emploi. Pour forcer l'architecture des images Docker, copiez `.env.example` en `.env` à la racine et renseignez `DOCKER_PLATFORM` (`linux/arm64` sur Mac Apple Silicon, `linux/amd64` sur Windows, Linux ou serveur) ; vide, Docker utilise l'architecture de la machine. Pour le mobile (macOS uniquement) : `cd apps/native && xcodegen generate`, puis ouvrez le projet dans Xcode.
 
 Commandes utiles : `bun db:studio` (interface base de données), `bun db:generate` / `bun db:migrate` (Prisma), `bun dev:web`, `bun dev:server`, `bun dev:docs`.
 
