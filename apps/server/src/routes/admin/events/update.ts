@@ -17,7 +17,6 @@ export const updateAdminEvent: Handler<{ Variables: AdminVariables }, "/:id"> = 
   const data = parsed.data;
   const existing = await findEventOr404(id);
 
-  // Partial edits are checked against the stored dates so the range can never be inverted.
   const start = new Date(data.startDate ?? existing.startDate);
   const end = data.endDate === undefined ? existing.endDate : data.endDate;
   if (end && new Date(end) < start) {

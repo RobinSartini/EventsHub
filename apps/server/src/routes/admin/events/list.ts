@@ -7,7 +7,6 @@ import type { AdminVariables } from "../../../middleware/require-admin";
 import { listAdminEventsQuery } from "../../../types/events";
 import { eventSelect, invalid } from "./event-select";
 
-// Every status (published and cancelled), unlike the public GET /events.
 export const listAdminEvents: Handler<{ Variables: AdminVariables }> = async (c) => {
   const parsed = listAdminEventsQuery.safeParse(c.req.query());
   if (!parsed.success) {
