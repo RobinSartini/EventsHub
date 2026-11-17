@@ -9,6 +9,7 @@ import Search from "@/routes/search";
 
 // --- Router mock ---
 const mockNavigate = vi.fn();
+const searchParams = vi.hoisted(() => ({ current: new URLSearchParams() }));
 
 vi.mock("react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-router")>();
@@ -16,7 +17,7 @@ vi.mock("react-router", async (importOriginal) => {
     ...actual,
     NavLink: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
     useNavigate: () => mockNavigate,
-    useSearchParams: () => [new URLSearchParams(), vi.fn()],
+    useSearchParams: () => [searchParams.current, vi.fn()],
   };
 });
 
@@ -70,6 +71,7 @@ describe("US-05 – Rechercher un événement par mot-clé", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     mockNavigate.mockReset();
+    searchParams.current = new URLSearchParams();
   });
 
   it("should display a search bar in the header", () => {
@@ -82,6 +84,35 @@ describe("US-05 – Rechercher un événement par mot-clé", () => {
     expect(screen.getByRole("searchbox")).toBeInTheDocument();
   });
 
+  it("should navigate to /search with the keyword when submitting the header search bar", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Header />
+      </MemoryRouter>,
+    );
+
+    await user.type(screen.getByRole("searchbox"), "jazz{Enter}");
+
+    expect(mockNavigate).toHaveBeenCalledWith("/search?q=jazz");
+  });
+
+  it("should request GET /events with the q parameter from the URL", async () => {
+    searchParams.current = new URLSearchParams("q=jazz");
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => jazzEvents,
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderSearch();
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("q=jazz"));
+    });
+  });
+
   it("should display results matching the keyword", async () => {
     vi.stubGlobal(
       "fetch",
@@ -92,6 +123,7 @@ describe("US-05 – Rechercher un événement par mot-clé", () => {
       }),
     );
 
+    searchParams.current = new URLSearchParams("q=jazz");
     renderSearch();
 
     await waitFor(() => {

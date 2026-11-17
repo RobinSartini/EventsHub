@@ -163,4 +163,22 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       });
     });
   });
+
+  describe("Erreur serveur", () => {
+    it("500 – should display an error message", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => null }),
+      );
+
+      const { user } = renderSearchFilters();
+
+      await user.type(screen.getByLabelText(/ville/i), "Paris");
+      await user.click(screen.getByRole("button", { name: /appliquer|filtrer/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole("alert")).toHaveTextContent(/erreur/i);
+      });
+    });
+  });
 });
