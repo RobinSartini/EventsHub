@@ -1,5 +1,7 @@
 import type { auth } from "@EventsHub/auth";
 
+import type { User } from "@/types/users";
+
 import { z } from "zod";
 
 export const signUpBody = z.object({
@@ -17,25 +19,23 @@ export type SignUpBody = z.infer<typeof signUpBody>;
 export type SignInBody = z.infer<typeof signInBody>;
 
 export type AuthSession = typeof auth.$Infer.Session;
-export type AuthUser = AuthSession["user"];
 
-export type SignUpResponse = {
-  token: string | null;
-  user: AuthUser;
+export type Session = {
+  id: string;
+  userId: string;
+  expiresAt: string;
+  ipAddress: string | null;
+  userAgent: string | null;
 };
 
-export type SignInResponse = {
-  redirect: boolean;
-  token: string;
-  url?: string;
-  user: AuthUser;
+export type AuthResponse = {
+  user: User;
+  session: Session;
 };
 
 export type SignOutResponse = {
   success: boolean;
 };
-
-export type GetSessionResponse = AuthSession | null;
 
 export type RefreshResponse = {
   accessToken: string;

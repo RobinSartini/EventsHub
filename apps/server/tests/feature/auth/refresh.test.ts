@@ -1,10 +1,9 @@
 import { ACCESS_TOKEN_TTL_SECONDS, auth } from "@EventsHub/auth";
 import { describe, expect, test } from "vitest";
 
-import type { RefreshResponse } from "../../../src/types/auth";
-import type { ApiSuccess } from "../../../src/utils/api-response";
+import type { RefreshResponse } from "@/types/auth";
 
-import { json, post, signIn } from "../../helpers";
+import { json, post, signIn } from "@tests/helpers";
 
 describe("POST /api/auth/refresh", () => {
   test("a signed in user gets a short lived access token", async () => {
@@ -13,7 +12,7 @@ describe("POST /api/auth/refresh", () => {
     const res = await post("/api/auth/refresh", {}, cookie);
 
     expect(res.status).toBe(200);
-    const { data } = await json<ApiSuccess<RefreshResponse>>(res);
+    const data = await json<RefreshResponse>(res);
     expect(data).toMatchObject({ tokenType: "Bearer", expiresIn: ACCESS_TOKEN_TTL_SECONDS });
 
     const { payload } = await auth.api.verifyJWT({ body: { token: data.accessToken } });
@@ -24,16 +23,12 @@ describe("POST /api/auth/refresh", () => {
   test("each refresh issues a new valid access token", async () => {
     const cookie = await signIn();
 
-    const first = await json<ApiSuccess<RefreshResponse>>(
-      await post("/api/auth/refresh", {}, cookie),
-    );
+    const first = await json<RefreshResponse>(await post("/api/auth/refresh", {}, cookie));
     await new Promise((resolve) => setTimeout(resolve, 1100));
-    const second = await json<ApiSuccess<RefreshResponse>>(
-      await post("/api/auth/refresh", {}, cookie),
-    );
+    const second = await json<RefreshResponse>(await post("/api/auth/refresh", {}, cookie));
 
-    expect(second.data.accessToken).not.toBe(first.data.accessToken);
-    const { payload } = await auth.api.verifyJWT({ body: { token: second.data.accessToken } });
+    expect(second.accessToken).not.toBe(first.accessToken);
+    const { payload } = await auth.api.verifyJWT({ body: { token: second.accessToken } });
     expect(payload).not.toBeNull();
   });
 

@@ -1,6 +1,6 @@
 import { Worker, type Job } from "bullmq";
 
-import { connection, type EmailJobData, type NotificationJobData } from "./queue.js";
+import { connection, type EmailJobData, type NotificationJobData } from "@/lib/queue.js";
 
 /**
  * Email worker - processes email sending jobs

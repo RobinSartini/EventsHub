@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 
-import type { SignInResponse } from "../../../src/types/auth";
+import type { AuthResponse } from "@/types/auth";
 
-import { json, post, setUserFields, signUp, user } from "../../helpers";
+import { json, post, setUserFields, signUp, user } from "@tests/helpers";
 
 describe("POST /api/auth/sign-in/email", () => {
   test("a user can sign in with email and password", async () => {
@@ -15,7 +15,10 @@ describe("POST /api/auth/sign-in/email", () => {
 
     expect(res.status).toBe(200);
     expect(res.headers.getSetCookie().join()).toContain("session_token");
-    expect((await json<SignInResponse>(res)).user.email).toBe(user.email);
+    const body = await json<AuthResponse>(res);
+    expect(body.user.email).toBe(user.email);
+    expect(body.session.userId).toBe(body.user.id);
+    expect(body).not.toHaveProperty("token");
   });
 
   test("a wrong password is rejected with 401", async () => {

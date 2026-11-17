@@ -1,6 +1,6 @@
 import { auth } from "@EventsHub/auth";
 
-import app from "../src/index";
+import app from "@/index";
 
 const origin = process.env.CORS_ORIGIN ?? "http://localhost:3001";
 
@@ -20,6 +20,10 @@ export function patch(path: string, body: unknown, cookie = "") {
     headers: { "Content-Type": "application/json", Origin: origin, Cookie: cookie },
     body: JSON.stringify(body),
   });
+}
+
+export function del(path: string, cookie = "") {
+  return app.request(path, { method: "DELETE", headers: { Origin: origin, Cookie: cookie } });
 }
 
 export function get(path: string, cookie = "") {

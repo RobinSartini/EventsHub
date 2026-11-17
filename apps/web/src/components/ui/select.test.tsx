@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -14,6 +14,12 @@ function renderSelect() {
   const onValueChange = vi.fn();
   render(<Select label="Trier par" options={SORTS} value="date" onValueChange={onValueChange} />);
   return { onValueChange, trigger: screen.getByRole("combobox", { name: "Trier par" }) };
+}
+
+function expectHighlighted(name: string) {
+  return waitFor(() =>
+    expect(screen.getByRole("option", { name })).toHaveAttribute("data-highlighted"),
+  );
 }
 
 describe("Select", () => {
@@ -37,8 +43,10 @@ describe("Select", () => {
 
     trigger.focus();
     await userEvent.keyboard("{Enter}");
-    await screen.findByRole("listbox");
-    await userEvent.keyboard("{ArrowDown}{Enter}");
+    await expectHighlighted("Date");
+    await userEvent.keyboard("{ArrowDown}");
+    await expectHighlighted("Distance");
+    await userEvent.keyboard("{Enter}");
 
     expect(onValueChange).toHaveBeenCalledExactlyOnceWith("distance");
   });

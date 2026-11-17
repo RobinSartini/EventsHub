@@ -1,18 +1,18 @@
 import { describe, expect, test } from "vitest";
 
-import type { SignUpResponse } from "../../../src/types/auth";
+import type { AuthResponse } from "@/types/auth";
 
-import { json, post, signUp, user } from "../../helpers";
+import { json, post, signUp, user } from "@tests/helpers";
 
 describe("POST /api/auth/sign-up/email", () => {
   test("a visitor can create an account", async () => {
     const res = await signUp();
 
     expect(res.status).toBe(200);
-    expect((await json<SignUpResponse>(res)).user).toMatchObject({
-      email: user.email,
-      name: user.name,
-    });
+    expect(res.headers.getSetCookie().join()).toContain("session_token");
+    const body = await json<AuthResponse>(res);
+    expect(body.user).toMatchObject({ email: user.email, name: user.name });
+    expect(body.session.userId).toBe(body.user.id);
   });
 
   test("an invalid body is rejected with 400 and field errors", async () => {
@@ -48,7 +48,7 @@ describe("POST /api/auth/sign-up/email", () => {
     });
 
     expect(res.status).toBe(200);
-    expect((await json<SignUpResponse>(res)).user).toMatchObject({
+    expect((await json<AuthResponse>(res)).user).toMatchObject({
       role: "user",
       status: "active",
     });
@@ -57,7 +57,7 @@ describe("POST /api/auth/sign-up/email", () => {
   test("a new account is a user with an active status", async () => {
     const res = await signUp({ ...user, email: "fresh@example.com" });
 
-    expect((await json<SignUpResponse>(res)).user).toMatchObject({
+    expect((await json<AuthResponse>(res)).user).toMatchObject({
       role: "user",
       status: "active",
     });

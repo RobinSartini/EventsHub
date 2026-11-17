@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { get, post, signIn } from "../../helpers";
+import { get, post, signIn } from "@tests/helpers";
 
 describe("POST /api/auth/sign-out", () => {
   test("a signed in user can sign out", async () => {
