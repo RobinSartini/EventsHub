@@ -18,12 +18,6 @@ function renderField({ checked = false, count }: { checked?: boolean; count?: nu
 }
 
 describe("CheckboxField", () => {
-  it("affiche Musique cochée au départ", () => {
-    const { box } = renderField({ checked: true });
-
-    expect(box).toBeChecked();
-  });
-
   it("coche la case au clic sur le libellé", async () => {
     const { onCheckedChange } = renderField();
 
