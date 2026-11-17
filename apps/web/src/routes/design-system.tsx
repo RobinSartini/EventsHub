@@ -2,6 +2,7 @@ import { type ReactNode, useState } from "react";
 
 import { ArrowRightIcon, MinusIcon, PlusIcon, SearchIcon, Share2Icon } from "lucide-react";
 
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { CapacityBar } from "@/components/ui/capacity-bar";
@@ -361,6 +362,19 @@ export default function DesignSystem() {
         description="Combien de places ? Moins, plus, et le compteur suit. Plus passe en bleu roi dès qu'un billet est choisi."
       >
         <QuantityStepperDemo />
+      </Section>
+
+      <Section
+        title="Breadcrumb"
+        description="D'où l'on vient, et comment y retourner. La page courante n'est pas un lien."
+      >
+        <Breadcrumb
+          items={[
+            { label: "Explorer", href: "/" },
+            { label: "Musique", href: "/?category=music" },
+            { label: "Nuit Fluo" },
+          ]}
+        />
       </Section>
 
       <Section
