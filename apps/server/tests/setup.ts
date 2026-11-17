@@ -17,7 +17,7 @@ vi.mock("@EventsHub/db", () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
-    category: { findUnique: vi.fn() },
+    category: { findUnique: vi.fn(), findMany: vi.fn() },
     user: { findMany: vi.fn(), count: vi.fn(), findUnique: vi.fn(), update: vi.fn() },
     session: { deleteMany: vi.fn() },
   },

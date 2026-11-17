@@ -12,12 +12,23 @@ export const listEventsQuery = z
     from: z.iso.date().optional(),
     to: z.iso.date().optional(),
     city: z.string().trim().min(1).optional(),
+    sort: z.enum(["date", "distance"]).default("date"),
+    lat: z.coerce.number().min(-90).max(90).optional(),
+    lng: z.coerce.number().min(-180).max(180).optional(),
     page: z.coerce.number().int().min(1).default(1),
     pageSize: z.coerce.number().int().min(1).max(50).default(12),
   })
   .refine((query) => !query.from || !query.to || query.from <= query.to, {
     message: "from must be before or equal to to",
     path: ["to"],
+  })
+  .refine((query) => (query.lat === undefined) === (query.lng === undefined), {
+    message: "lat and lng go together",
+    path: ["lng"],
+  })
+  .refine((query) => query.sort !== "distance" || query.lat !== undefined, {
+    message: "sort=distance requires lat and lng",
+    path: ["sort"],
   });
 
 export type ListEventsQuery = z.infer<typeof listEventsQuery>;
@@ -36,8 +47,18 @@ export type Event = {
   longitude: number | null;
   capacity: number | null;
   status: "published" | "cancelled";
+  priceCents: number;
+  isAccessible: boolean;
+  isKidFriendly: boolean;
   createdAt: string;
   updatedAt: string;
+  distanceKm?: number | null;
+};
+
+export type Category = {
+  id: string;
+  name: string;
+  slug: string;
 };
 
 export const eventStatuses = ["published", "cancelled"] as const;
