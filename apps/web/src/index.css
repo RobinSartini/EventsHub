@@ -161,6 +161,21 @@
   --radius-panel-anchor: 12px;
 
   --ease-signature: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-morph: morph 12s ease-in-out infinite;
+
+  @keyframes morph {
+    0%,
+    100% {
+      border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
+    }
+    33% {
+      border-radius: 63% 37% 38% 62% / 55% 61% 39% 45%;
+    }
+    66% {
+      border-radius: 35% 65% 52% 48% / 64% 36% 64% 36%;
+    }
+  }
 }
 
 @layer base {

@@ -1,11 +1,16 @@
 import { type ReactNode, useState } from "react";
 
-import { ArrowRightIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { ArrowRightIcon, MinusIcon, PlusIcon, SearchIcon, Share2Icon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Avatar } from "@/components/ui/avatar";
+import { CapacityBar } from "@/components/ui/capacity-bar";
 import { CheckboxField, CheckboxGroup } from "@/components/ui/checkbox";
+import { FavoriteButton } from "@/components/ui/favorite-button";
+import { IconButton } from "@/components/ui/icon-button";
 import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
 import { DateBadge } from "@/components/ui/date-badge";
+import { EventCard, type EventCardEvent } from "@/components/ui/event-card";
 import { LiveBadge } from "@/components/ui/live-badge";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { SearchBar, type SearchValues } from "@/components/ui/search-bar";
@@ -178,6 +183,81 @@ function QuantityStepperDemo() {
   );
 }
 
+function FavoriteButtonDemo() {
+  const [favorites, setFavorites] = useState({ card: false, page: true });
+
+  return (
+    <>
+      <FavoriteButton
+        eventName="Nuit Fluo"
+        isFavorite={favorites.card}
+        onToggle={() => setFavorites((current) => ({ ...current, card: !current.card }))}
+      />
+      <FavoriteButton
+        eventName="Nuit Fluo"
+        size="lg"
+        isFavorite={favorites.page}
+        onToggle={() => setFavorites((current) => ({ ...current, page: !current.page }))}
+      />
+    </>
+  );
+}
+
+const EVENTS: EventCardEvent[] = [
+  {
+    id: "nuit-fluo",
+    name: "Nuit Fluo",
+    startDate: "2026-11-14T20:00:00Z",
+    location: "Les Docks",
+    capacity: 80,
+    ticketsSold: 62,
+    priceCents: 1200,
+  },
+  {
+    id: "jam-session",
+    name: "Jam session acoustique",
+    startDate: "2026-11-13T19:30:00Z",
+    location: "Le Cargo",
+    capacity: 60,
+    ticketsSold: 34,
+    priceCents: 800,
+  },
+  {
+    id: "expo-lumiere",
+    name: "Expo Lumière",
+    startDate: "2026-11-21T09:00:00Z",
+    location: "Halle Tony Garnier",
+    priceCents: 0,
+  },
+  {
+    id: "atelier-ceramique",
+    name: "Atelier céramique",
+    startDate: "2026-11-22T13:00:00Z",
+    location: "La Croix-Rousse",
+    capacity: 12,
+    ticketsSold: 5,
+    priceCents: 3500,
+    status: "cancelled",
+  },
+];
+
+function EventCardDemo() {
+  const [favorites, toggle] = useToggleList(["nuit-fluo"]);
+
+  return (
+    <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {EVENTS.map((event) => (
+        <EventCard
+          key={event.id}
+          event={event}
+          isFavorite={favorites.includes(event.id)}
+          onToggleFavorite={() => toggle(event.id, !favorites.includes(event.id))}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function DesignSystem() {
   return (
     <main className="mx-auto w-full max-w-[1360px] px-4 py-10 sm:px-6 lg:px-10">
@@ -253,6 +333,57 @@ export default function DesignSystem() {
         description="Combien de places ? Moins, plus, et le compteur suit. Plus passe en bleu roi dès qu'un billet est choisi."
       >
         <QuantityStepperDemo />
+      </Section>
+
+      <Section
+        title="CapacityBar"
+        description="La jauge qui crée l'envie : on voit la salle se remplir. À partir de 75 %, elle passe au rouge."
+      >
+        <div className="grid w-full max-w-sm gap-5">
+          <CapacityBar taken={34} capacity={60} />
+          <CapacityBar taken={62} capacity={80} />
+          <CapacityBar taken={80} capacity={80} />
+        </div>
+      </Section>
+
+      <Section
+        title="EventCard"
+        description="La carte qui donne envie de sortir : un visuel qui bouge, une date, un cœur, et l'essentiel en trois lignes. La grille décide de sa largeur."
+      >
+        <EventCardDemo />
+      </Section>
+
+      <Section
+        title="IconButton"
+        description="Un rond, une icône, une action. Son nom passe par aria-label, puisqu'il n'a pas de texte visible."
+      >
+        <IconButton aria-label="Retirer un billet">
+          <MinusIcon />
+        </IconButton>
+        <IconButton aria-label="Ajouter un billet" variant="primary">
+          <PlusIcon />
+        </IconButton>
+        <IconButton aria-label="Partager l'événement" variant="outline" size="lg">
+          <Share2Icon />
+        </IconButton>
+      </Section>
+
+      <Section
+        title="FavoriteButton"
+        description="Un cœur qui se remplit quand on aime. Sur la fiche, le fond rosit une fois l'événement sauvegardé."
+      >
+        <FavoriteButtonDemo />
+      </Section>
+
+      <Section
+        title="Avatar"
+        description="Des initiales dans un rond : bleu roi pour le profil, en négatif pour l'organisateur."
+      >
+        <Avatar name="Camille Bernard" href="/design-system" />
+        <div className="flex items-center gap-3">
+          <Avatar name="Lumière Collectif" size="lg" />
+          <span className="font-bold">Lumière Collectif</span>
+        </div>
       </Section>
 
       <Section
