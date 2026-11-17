@@ -30,8 +30,13 @@ enum APIError: LocalizedError, Equatable {
 /// L'URL de base vient de la clé Info.plist `EventsAPIBaseURL`, alimentée par le build setting
 /// `EVENTS_API_BASE_URL` (project.yml, surchargeable dans Config/Local.xcconfig). Aucun repli dans
 /// le code : sans valeur, la requête échoue avec `APIError.invalidURL` au lieu de viser `localhost`.
+///
+/// Better Auth refuse (403) toute requête avec cookie de session sans en-tête `Origin`. `origin`
+/// vient de la clé Info.plist `EventsAPIOrigin` (build setting `EVENTS_API_ORIGIN`, même mécanisme
+/// et mêmes surcharges) et doit égaler le `CORS_ORIGIN` du serveur ; vide, aucun en-tête n'est envoyé.
 struct APIClient: Sendable {
     var baseURL: URL? = Self.configuredBaseURL
+    var origin: String? = Self.configuredOrigin
     var session: URLSession = .shared
 
     static var configuredBaseURL: URL? {
@@ -40,12 +45,25 @@ struct APIClient: Sendable {
         return URL(string: raw)
     }
 
+    static var configuredOrigin: String? {
+        let raw = Bundle.main.object(forInfoDictionaryKey: "EventsAPIOrigin") as? String
+        guard let raw, !raw.isEmpty else { return nil }
+        return raw
+    }
+
+    /// Supprime les cookies de la session du client pour `baseURL` (déconnexion locale).
+    func clearCookies() {
+        guard let baseURL, let storage = session.configuration.httpCookieStorage else { return }
+        for cookie in storage.cookies(for: baseURL) ?? [] { storage.deleteCookie(cookie) }
+    }
+
     /// Exécute la requête, vérifie le statut et renvoie le corps brut.
     @discardableResult
     func sendRaw(_ method: String, path: String, body: (any Encodable)? = nil) async throws -> Data {
         guard let baseURL else { throw APIError.invalidURL }
         var request = URLRequest(url: baseURL.appending(path: path))
         request.httpMethod = method
+        if let origin, !origin.isEmpty { request.setValue(origin, forHTTPHeaderField: "Origin") }
         if let body {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             do {

@@ -21,7 +21,10 @@ struct URLSessionAuthAPI: AuthAPI {
         try await authenticate(path: "sign-in/email", body: ["email": email, "password": password])
     }
 
+    /// Quel que soit le résultat de l'appel, les cookies de session locaux sont supprimés pour
+    /// qu'une session ne ressuscite pas au prochain `currentSession()`.
     func signOut() async throws {
+        defer { client.clearCookies() }
         do {
             try await client.sendRaw("POST", path: "api/auth/sign-out", body: [String: String]())
         } catch let error as APIError {

@@ -29,14 +29,15 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
 
 /// Client branché sur le stub.
 func makeStubClient(
-    status: Int = 200, body: String = "{}", error: URLError? = nil, baseURL: URL? = URL(string: "http://test.local")
+    status: Int = 200, body: String = "{}", error: URLError? = nil, baseURL: URL? = URL(string: "http://test.local"),
+    origin: String? = "http://app.test"
 ) -> APIClient {
     StubURLProtocol.status = status
     StubURLProtocol.body = Data(body.utf8)
     StubURLProtocol.error = error
     let config = URLSessionConfiguration.ephemeral
     config.protocolClasses = [StubURLProtocol.self]
-    return APIClient(baseURL: baseURL, session: URLSession(configuration: config))
+    return APIClient(baseURL: baseURL, origin: origin, session: URLSession(configuration: config))
 }
 
 /// Parent `.serialized` : les suites imbriquées ne tournent jamais en parallèle.

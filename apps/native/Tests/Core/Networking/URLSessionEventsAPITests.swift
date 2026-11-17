@@ -19,6 +19,12 @@ extension Networking {
         #expect(events[0].status == .published)
     }
 
+    @Test func fetchEventsForwardsClientOrigin() async throws {
+        let api = URLSessionEventsAPI(client: makeStubClient(body: "[]", origin: "http://localhost:3000"))
+        _ = try await api.fetchEvents()
+        #expect(StubURLProtocol.lastRequest?.value(forHTTPHeaderField: "Origin") == "http://localhost:3000")
+    }
+
     @Test func serverErrorIsAPIErrorServer() async {
         let api = URLSessionEventsAPI(client: makeStubClient(status: 500))
         do {

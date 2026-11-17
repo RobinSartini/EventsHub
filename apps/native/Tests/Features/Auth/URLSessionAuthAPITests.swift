@@ -98,6 +98,33 @@ extension Networking {
         await expectError(.invalidCredentials) { try await failing.signOut() }
     }
 
+    @Test func signInForwardsClientOrigin() async throws {
+        let api = URLSessionAuthAPI(client: makeStubClient(body: authJSON, origin: "http://localhost:3000"))
+        _ = try await api.signIn(email: "alice@example.com", password: "motdepasse")
+        #expect(StubURLProtocol.lastRequest?.value(forHTTPHeaderField: "Origin") == "http://localhost:3000")
+    }
+
+    @Test func signOutClearsSessionCookiesWhateverTheOutcome() async throws {
+        let outcomes: [(status: Int, error: URLError?)] = [(200, nil), (403, nil), (500, nil), (200, URLError(.notConnectedToInternet))]
+        for outcome in outcomes {
+            let client = makeStubClient(status: outcome.status, error: outcome.error)
+            let storage = try #require(client.session.configuration.httpCookieStorage)
+            let base = try #require(client.baseURL)
+            let cookie = try #require(HTTPCookie(properties: [
+                .name: "better-auth.session_token", .value: "abc", .domain: "test.local", .path: "/",
+            ]))
+            storage.setCookie(cookie)
+            let other = try #require(HTTPCookie(properties: [
+                .name: "keep", .value: "1", .domain: "other.local", .path: "/",
+            ]))
+            storage.setCookie(other)
+            try? await URLSessionAuthAPI(client: client).signOut()
+            #expect(storage.cookies(for: base) ?? [] == [], "status \(outcome.status) error \(String(describing: outcome.error))")
+            #expect(storage.cookies?.contains { $0.name == "keep" } == true)
+            storage.deleteCookie(other)
+        }
+    }
+
     @Test func status403IsForbidden() async {
         let api = makeAPI(status: 403)
         await expectError(.forbidden) { _ = try await api.signIn(email: "a@b.co", password: "x") }

@@ -40,6 +40,30 @@ extension Networking {
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
     }
 
+    @Test func getSendsConfiguredOrigin() async throws {
+        let client = makeStubClient(body: #"{"name":"a","at":"2026-11-16T10:00:00Z"}"#, origin: "http://localhost:3000")
+        let _: Item = try await client.send("GET", path: "items")
+        #expect(StubURLProtocol.lastRequest?.value(forHTTPHeaderField: "Origin") == "http://localhost:3000")
+    }
+
+    @Test func postSendsConfiguredOrigin() async throws {
+        let client = makeStubClient(body: #"{"name":"a","at":"2026-11-16T10:00:00Z"}"#, origin: "http://localhost:3000")
+        let _: Item = try await client.send("POST", path: "items", body: ["k": "v"])
+        #expect(StubURLProtocol.lastRequest?.value(forHTTPHeaderField: "Origin") == "http://localhost:3000")
+    }
+
+    @Test func nilOriginSendsNoOriginHeader() async throws {
+        let client = makeStubClient(body: #"{"name":"a","at":"2026-11-16T10:00:00Z"}"#, origin: nil)
+        let _: Item = try await client.send("GET", path: "items")
+        #expect(StubURLProtocol.lastRequest?.value(forHTTPHeaderField: "Origin") == nil)
+    }
+
+    @Test func emptyOriginSendsNoOriginHeader() async throws {
+        let client = makeStubClient(body: #"{"name":"a","at":"2026-11-16T10:00:00Z"}"#, origin: "")
+        let _: Item = try await client.send("GET", path: "items")
+        #expect(StubURLProtocol.lastRequest?.value(forHTTPHeaderField: "Origin") == nil)
+    }
+
     @Test func status400IsBadRequest() async {
         let client = makeStubClient(status: 400)
         await expectError(.badRequest) { let _: Item = try await client.send("GET", path: "i") }

@@ -129,3 +129,21 @@ private struct MockAuthAPI: AuthAPI {
     #expect(!AuthValidation.name("  "))
     #expect(!AuthValidation.name(" A "))
 }
+
+extension Networking {
+@Suite struct AuthStoreSignOutTests {
+    @MainActor
+    @Test func signOutClearsLocalCookiesAfterForbiddenSoRestoreDoesNotResurrectSession() async throws {
+        let client = makeStubClient(status: 403)
+        let storage = try #require(client.session.configuration.httpCookieStorage)
+        let base = try #require(client.baseURL)
+        storage.setCookie(try #require(HTTPCookie(properties: [
+            .name: "better-auth.session_token", .value: "abc", .domain: "test.local", .path: "/",
+        ])))
+        let store = AuthStore(api: URLSessionAuthAPI(client: client))
+        await store.signOut()
+        #expect(store.state == .signedOut)
+        #expect(storage.cookies(for: base) ?? [] == [])
+    }
+}
+}
