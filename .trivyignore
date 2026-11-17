@@ -1,0 +1,14 @@
+# Advisories accepted after review, shared by Trivy and `bun audit` (CI reads the GHSA ids).
+# Each entry expires: re-check it, or upgrade, before the date.
+
+# better-auth 1.6.22, fixed in 1.7.x. We only use email/password and the jwt plugin:
+# no OAuth proxy, no device authorization, no magic link.
+CVE-2026-114607 exp:2026-12-31
+GHSA-965c-763c-88jm exp:2026-12-31
+GHSA-r4xp-prcw-77qf exp:2026-12-31
+GHSA-q84f-53jg-9ppm exp:2026-12-31
+
+# Dev tooling only (vite-plus, via oxfmt/tinypool), never shipped in an image.
+GHSA-587h-7wmj-h5pm exp:2026-12-31
+GHSA-5gmw-xhrv-c9v3 exp:2026-12-31
+GHSA-85c8-ppgw-ccpr exp:2026-12-31
