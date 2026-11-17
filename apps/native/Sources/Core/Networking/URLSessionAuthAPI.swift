@@ -1,13 +1,17 @@
 import Foundation
 
-/// Implémentation réseau de l'authentification. Même URL de base que `URLSessionEventsAPI`.
+/// Implémentation réseau de l'authentification, couche fine sur `APIClient`.
 /// `URLSession.shared` stocke et renvoie automatiquement le cookie de session.
 struct URLSessionAuthAPI: AuthAPI {
-    var baseURL: URL? = URLSessionEventsAPI.configuredBaseURL
-    var session: URLSession = .shared
+    var client: APIClient
 
-    private static let decoder = JSONDecoder()
-    private static let encoder = JSONEncoder()
+    init(client: APIClient = APIClient()) {
+        self.client = client
+    }
+
+    init(baseURL: URL?, session: URLSession = .shared) {
+        self.client = APIClient(baseURL: baseURL, session: session)
+    }
 
     func signUp(name: String, email: String, password: String) async throws -> AuthUser {
         try await authenticate(path: "sign-up/email", body: ["name": name, "email": email, "password": password])
@@ -18,48 +22,43 @@ struct URLSessionAuthAPI: AuthAPI {
     }
 
     func signOut() async throws {
-        _ = try await send(path: "sign-out", method: "POST", body: [:])
+        do {
+            try await client.sendRaw("POST", path: "api/auth/sign-out", body: [String: String]())
+        } catch let error as APIError {
+            throw AuthError(error)
+        }
     }
 
     func currentSession() async throws -> AuthUser? {
         do {
-            let data = try await send(path: "get-session", method: "GET", body: nil)
-            return try Self.decoder.decode(AuthResponse?.self, from: data)?.user
-        } catch AuthError.invalidCredentials {
+            let response: AuthResponse? = try await client.send("GET", path: "api/auth/get-session")
+            return response?.user
+        } catch APIError.unauthorized {
             return nil
+        } catch let error as APIError {
+            throw AuthError(error)
         }
     }
 
     private func authenticate(path: String, body: [String: String]) async throws -> AuthUser {
-        let data = try await send(path: path, method: "POST", body: body)
-        guard let user = try? Self.decoder.decode(AuthResponse.self, from: data).user else {
-            throw AuthError.server
-        }
-        return user
-    }
-
-    private func send(path: String, method: String, body: [String: String]?) async throws -> Data {
-        guard let baseURL else { throw AuthError.network }
-        var request = URLRequest(url: baseURL.appending(path: "api/auth/\(path)"))
-        request.httpMethod = method
-        if let body {
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = try Self.encoder.encode(body)
-        }
-        let data: Data
-        let response: URLResponse
         do {
-            (data, response) = try await session.data(for: request)
-        } catch {
-            throw AuthError.network
+            let response: AuthResponse = try await client.send("POST", path: "api/auth/\(path)", body: body)
+            return response.user
+        } catch let error as APIError {
+            throw AuthError(error)
         }
-        guard let http = response as? HTTPURLResponse else { throw AuthError.server }
-        switch http.statusCode {
-        case 200..<300: return data
-        case 400: throw AuthError.invalidInput
-        case 401: throw AuthError.invalidCredentials
-        case 422: throw AuthError.emailAlreadyUsed
-        default: throw AuthError.server
+    }
+}
+
+extension AuthError {
+    init(_ error: APIError) {
+        switch error {
+        case .invalidURL, .network: self = .network
+        case .badRequest: self = .invalidInput
+        case .unauthorized: self = .invalidCredentials
+        case .forbidden: self = .forbidden
+        case .unprocessable: self = .emailAlreadyUsed
+        case .server, .decoding: self = .server
         }
     }
 }

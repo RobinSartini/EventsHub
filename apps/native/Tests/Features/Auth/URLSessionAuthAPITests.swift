@@ -2,38 +2,8 @@ import Foundation
 import Testing
 @testable import EventsHub
 
-/// Faux réseau : `URLProtocol` qui renvoie une réponse fixée, sans serveur.
-private final class StubURLProtocol: URLProtocol, @unchecked Sendable {
-    nonisolated(unsafe) static var status = 200
-    nonisolated(unsafe) static var body = Data()
-    nonisolated(unsafe) static var error: URLError?
-    nonisolated(unsafe) static var lastRequest: URLRequest?
-
-    override class func canInit(with request: URLRequest) -> Bool { true }
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
-
-    override func startLoading() {
-        Self.lastRequest = request
-        if let error = Self.error {
-            client?.urlProtocol(self, didFailWithError: error)
-            return
-        }
-        let response = HTTPURLResponse(url: request.url!, statusCode: Self.status, httpVersion: nil, headerFields: nil)!
-        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        client?.urlProtocol(self, didLoad: Self.body)
-        client?.urlProtocolDidFinishLoading(self)
-    }
-
-    override func stopLoading() {}
-}
-
 private func makeAPI(status: Int = 200, body: String = "", error: URLError? = nil) -> URLSessionAuthAPI {
-    StubURLProtocol.status = status
-    StubURLProtocol.body = Data(body.utf8)
-    StubURLProtocol.error = error
-    let config = URLSessionConfiguration.ephemeral
-    config.protocolClasses = [StubURLProtocol.self]
-    return URLSessionAuthAPI(baseURL: URL(string: "http://test.local"), session: URLSession(configuration: config))
+    URLSessionAuthAPI(client: makeStubClient(status: status, body: body, error: error))
 }
 
 /// Forme de `AuthResponse` du contrat (User + Session) ; Better Auth ajoute des champs qu'on ignore.
@@ -52,8 +22,8 @@ private func expectError(_ expected: AuthError, _ call: () async throws -> Void)
     }
 }
 
-@Suite(.serialized)
-struct URLSessionAuthAPITests {
+extension Networking {
+@Suite struct URLSessionAuthAPITests {
     @Test func signInDecodesUserAndPostsCredentials() async throws {
         let api = makeAPI(body: authJSON)
         let user = try await api.signIn(email: "alice@example.com", password: "motdepasse")
@@ -127,4 +97,10 @@ struct URLSessionAuthAPITests {
         let failing = makeAPI(status: 401)
         await expectError(.invalidCredentials) { try await failing.signOut() }
     }
+
+    @Test func status403IsForbidden() async {
+        let api = makeAPI(status: 403)
+        await expectError(.forbidden) { _ = try await api.signIn(email: "a@b.co", password: "x") }
+    }
+}
 }
