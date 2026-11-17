@@ -4,9 +4,9 @@ import { MemoryRouter } from "react-router";
 import { toast } from "sonner";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import AppNavBar from "@/components/app-navbar";
 import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
-import UserMenu from "@/components/user-menu";
 import { authClient } from "@/lib/auth-client";
 
 const mockNavigate = vi.fn();
@@ -73,14 +73,14 @@ afterEach(() => {
 });
 
 describe("US-01 – POST /api/auth/sign-up/email", () => {
-  it("200 – should send name, email and password and redirect to dashboard", async () => {
+  it("200 – should send name, email and password and redirect to home", async () => {
     vi.mocked(authClient.signUp.email).mockImplementation(respondWith(200) as never);
 
     await fillSignUp();
 
     await waitFor(() => {
       expect(authClient.signUp.email).toHaveBeenCalledWith(account, expect.anything());
-      expect(mockNavigate).toHaveBeenCalledWith("/dashboard");
+      expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
 
@@ -119,7 +119,7 @@ describe("US-01 – POST /api/auth/sign-up/email", () => {
 });
 
 describe("US-01 – POST /api/auth/sign-in/email", () => {
-  it("200 – should send email and password and redirect to dashboard", async () => {
+  it("200 – should send email and password and redirect to home", async () => {
     vi.mocked(authClient.signIn.email).mockImplementation(respondWith(200) as never);
 
     await fillSignIn();
@@ -129,7 +129,7 @@ describe("US-01 – POST /api/auth/sign-in/email", () => {
         { email: account.email, password: account.password },
         expect.anything(),
       );
-      expect(mockNavigate).toHaveBeenCalledWith("/dashboard");
+      expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
 
@@ -167,77 +167,62 @@ describe("US-01 – POST /api/auth/sign-in/email", () => {
   });
 });
 
-describe("US-01 – GET /api/auth/get-session", () => {
-  it("200 – should display the signed in user", () => {
-    vi.mocked(authClient.useSession).mockReturnValue({
-      data: { user: { id: "u1", name: "Ada", email: account.email, emailVerified: true } },
-      isPending: false,
-    } as never);
+// get-session : l'affichage « connecté / Se connecter » du header est couvert ci-dessous (AppNavBar).
+function renderNavBar(signedIn: boolean) {
+  vi.mocked(authClient.useSession).mockReturnValue({
+    data: signedIn
+      ? { user: { id: "u1", name: "Ada", email: account.email, emailVerified: true } }
+      : null,
+    isPending: false,
+  } as never);
+  const user = userEvent.setup();
+  render(
+    <MemoryRouter>
+      <AppNavBar />
+    </MemoryRouter>,
+  );
+  return user;
+}
 
-    render(
-      <MemoryRouter>
-        <UserMenu />
-      </MemoryRouter>,
-    );
+function signOutRespondsWith(status: number) {
+  vi.mocked(authClient.signOut).mockImplementation((async (options: { fetchOptions?: Callbacks }) =>
+    respondWith(status)(undefined, options?.fetchOptions)) as never);
+}
 
-    expect(screen.getByRole("button", { name: "Ada" })).toBeInTheDocument();
+describe("US-01 – GET /api/auth/get-session : header", () => {
+  it("200 – should show the sign-out button and no sign-in link when signed in", () => {
+    renderNavBar(true);
+
+    expect(screen.getByRole("button", { name: "Se déconnecter" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Se connecter" })).not.toBeInTheDocument();
   });
 
-  it("401 – should offer to sign in", () => {
-    vi.mocked(authClient.useSession).mockReturnValue({
-      data: null,
-      error: { status: 401, statusText: "Unauthorized" },
-      isPending: false,
-    } as never);
+  it("401 – should show the sign-in link and no sign-out button when signed out", () => {
+    renderNavBar(false);
 
-    render(
-      <MemoryRouter>
-        <UserMenu />
-      </MemoryRouter>,
-    );
-
-    expect(screen.getByRole("link", { name: /sign in|se connecter/i })).toHaveAttribute(
-      "href",
-      "/login",
-    );
+    expect(screen.getByRole("link", { name: "Se connecter" })).toHaveAttribute("href", "/login");
+    expect(screen.queryByRole("button", { name: "Se déconnecter" })).not.toBeInTheDocument();
   });
 });
 
-describe("US-01 – POST /api/auth/sign-out", () => {
-  async function signOutFromMenu() {
-    vi.mocked(authClient.useSession).mockReturnValue({
-      data: { user: { id: "u1", name: "Ada", email: account.email, emailVerified: true } },
-      isPending: false,
-    } as never);
-    const user = userEvent.setup();
-    render(
-      <MemoryRouter>
-        <UserMenu />
-      </MemoryRouter>,
-    );
-    await user.click(screen.getByRole("button", { name: "Ada" }));
-    await user.click(await screen.findByRole("menuitem", { name: /sign out|se déconnecter/i }));
-  }
+describe("US-01 – POST /api/auth/sign-out : header", () => {
+  it("200 – should sign out and redirect to home", async () => {
+    signOutRespondsWith(200);
+    const user = renderNavBar(true);
 
-  it("200 – should redirect to home", async () => {
-    vi.mocked(authClient.signOut).mockImplementation((async (options: {
-      fetchOptions?: Callbacks;
-    }) => respondWith(200)(undefined, options?.fetchOptions)) as never);
-
-    await signOutFromMenu();
+    await user.click(screen.getByRole("button", { name: "Se déconnecter" }));
 
     await waitFor(() => {
-      expect(authClient.signOut).toHaveBeenCalled();
+      expect(authClient.signOut).toHaveBeenCalledOnce();
       expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
 
   it("401 – should redirect to login when there is no active session", async () => {
-    vi.mocked(authClient.signOut).mockImplementation((async (options: {
-      fetchOptions?: Callbacks;
-    }) => respondWith(401)(undefined, options?.fetchOptions)) as never);
+    signOutRespondsWith(401);
+    const user = renderNavBar(true);
 
-    await signOutFromMenu();
+    await user.click(screen.getByRole("button", { name: "Se déconnecter" }));
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith("/login");
