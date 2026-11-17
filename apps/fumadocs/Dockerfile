@@ -38,6 +38,10 @@ RUN mkdir -p apps/fumadocs/node_modules
 
 # react-router-serve runs on Node.
 FROM node:24-slim AS runner
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+# npm and corepack are not needed at runtime; their bundled dependencies trip the Trivy scan.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+  /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
@@ -46,5 +50,10 @@ COPY --from=deps /app/apps/fumadocs/node_modules ./apps/fumadocs/node_modules
 COPY --from=builder /app/apps/fumadocs/package.json ./apps/fumadocs/package.json
 COPY --from=builder /app/apps/fumadocs/build ./apps/fumadocs/build
 WORKDIR /app/apps/fumadocs
+# Resolve the server entry instead of hardcoding where the package manager put it;
+# the build fails here if it cannot be found.
+RUN ln -s "$(dirname "$(node -p "require.resolve('@react-router/serve/package.json')")")/bin.cjs" /usr/local/bin/react-router-serve.cjs \
+  && test -f /usr/local/bin/react-router-serve.cjs
+USER node
 EXPOSE 3000
-CMD ["node", "node_modules/@react-router/serve/bin.cjs", "./build/server/index.js"]
+CMD ["node", "/usr/local/bin/react-router-serve.cjs", "./build/server/index.js"]
