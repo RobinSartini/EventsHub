@@ -1,4 +1,5 @@
 import { useForm } from "@tanstack/react-form";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import z from "zod";
@@ -8,6 +9,7 @@ import { authErrorMessage } from "@/lib/auth-errors";
 
 import { AuthField } from "./auth-field";
 import Loader from "./loader";
+import { PasswordStrength } from "./password-strength";
 import { Button } from "./ui/button";
 
 // Règles du schéma UserRegister (contrat/openapi.yaml).
@@ -23,10 +25,12 @@ const signUpSchema = z.object({
 export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () => void }) {
   const navigate = useNavigate();
   const { isPending } = authClient.useSession();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm({
     defaultValues: { name: "", email: "", password: "" },
     onSubmit: async ({ value }) => {
+      setSubmitError(null);
       await authClient.signUp.email(
         { name: value.name, email: value.email, password: value.password },
         {
@@ -35,7 +39,9 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
             toast.success("Compte créé");
           },
           onError: ({ error }) => {
-            toast.error(authErrorMessage(error.status));
+            const message = authErrorMessage(error.status);
+            setSubmitError(message);
+            toast.error(message);
           },
         },
       );
@@ -49,11 +55,9 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2 text-center">
+      <div className="flex flex-col gap-2">
         <h1 className="font-display text-3xl font-extrabold">Créer un compte</h1>
-        <p className="text-muted-foreground text-sm">
-          Rejoins EventsHub pour découvrir les événements autour de toi.
-        </p>
+        <p className="text-muted-foreground text-sm">C'est gratuit et ça prend une minute.</p>
       </div>
 
       <form
@@ -75,14 +79,26 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
 
         <form.Field name="password">
           {(field) => (
-            <AuthField
-              field={field}
-              label="Mot de passe"
-              type="password"
-              autoComplete="new-password"
-            />
+            <div className="flex flex-col gap-2">
+              <AuthField
+                field={field}
+                label="Mot de passe"
+                type="password"
+                autoComplete="new-password"
+              />
+              <PasswordStrength value={field.state.value} />
+            </div>
           )}
         </form.Field>
+
+        {submitError && (
+          <p
+            role="alert"
+            className="bg-destructive/10 text-destructive rounded-2xl px-4 py-3 text-sm font-bold"
+          >
+            {submitError}
+          </p>
+        )}
 
         <form.Subscribe>
           {(state) => (
@@ -91,7 +107,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
               className="w-full"
               disabled={!state.canSubmit || state.isSubmitting}
             >
-              {state.isSubmitting ? "Création…" : "S'inscrire"}
+              {state.isSubmitting ? "Création…" : "Créer mon compte"}
             </Button>
           )}
         </form.Subscribe>
@@ -99,8 +115,14 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
 
       <p className="text-muted-foreground text-center text-sm">
         Déjà un compte ?{" "}
-        <Button variant="link" size="xs" onClick={onSwitchToSignIn} className="px-0">
-          Me connecter
+        <Button
+          type="button"
+          variant="link"
+          size="xs"
+          onClick={onSwitchToSignIn}
+          className="px-0 font-bold"
+        >
+          Se connecter
         </Button>
       </p>
     </div>

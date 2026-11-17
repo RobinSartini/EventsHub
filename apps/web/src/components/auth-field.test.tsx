@@ -66,4 +66,23 @@ describe("AuthField", () => {
     expect(field.handleChange).toHaveBeenCalledWith("a");
     expect(field.handleBlur).toHaveBeenCalledOnce();
   });
+
+  it("permet d'afficher puis de masquer un mot de passe", async () => {
+    const user = userEvent.setup();
+    render(<AuthField field={makeField("secret123")} label="Mot de passe" type="password" />);
+    const input = screen.getByLabelText("Mot de passe");
+    expect(input).toHaveAttribute("type", "password");
+
+    await user.click(screen.getByRole("button", { name: "Afficher" }));
+    expect(input).toHaveAttribute("type", "text");
+
+    await user.click(screen.getByRole("button", { name: "Masquer" }));
+    expect(input).toHaveAttribute("type", "password");
+  });
+
+  it("n'ajoute pas de bouton d'affichage aux champs qui ne sont pas des mots de passe", () => {
+    render(<AuthField field={makeField()} label="Email" type="email" />);
+
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
 });

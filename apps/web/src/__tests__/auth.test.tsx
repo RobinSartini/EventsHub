@@ -57,7 +57,7 @@ async function fillSignUp() {
   await user.type(screen.getByLabelText(/name|nom/i), account.name);
   await user.type(screen.getByLabelText(/email/i), account.email);
   await user.type(screen.getByLabelText(/password|mot de passe/i), account.password);
-  await user.click(screen.getByRole("button", { name: /^(sign up|s'inscrire)$/i }));
+  await user.click(screen.getByRole("button", { name: /^(sign up|créer mon compte)$/i }));
 }
 
 async function fillSignIn() {
@@ -154,6 +154,14 @@ describe("US-01 – POST /api/auth/sign-in/email", () => {
       expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/identifiants incorrects/i));
     });
     expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it("401 – should display the error message in the form", async () => {
+    vi.mocked(authClient.signIn.email).mockImplementation(respondWith(401) as never);
+
+    await fillSignIn();
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(/identifiants incorrects/i);
   });
 
   it("500 – should display a server error", async () => {

@@ -31,7 +31,7 @@ async function fillAndSubmit({
   await user.type(screen.getByLabelText("Nom"), name);
   await user.type(screen.getByLabelText("Email"), "ada@example.com");
   await user.type(screen.getByLabelText("Mot de passe"), password);
-  await user.click(screen.getByRole("button", { name: "S'inscrire" }));
+  await user.click(screen.getByRole("button", { name: "Créer mon compte" }));
 }
 
 describe("SignUpForm – validation alignée sur le serveur", () => {
