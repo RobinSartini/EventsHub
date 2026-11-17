@@ -2,7 +2,12 @@ import { z } from "zod";
 
 export const listEventsQuery = z
   .object({
-    q: z.string().trim().min(1).optional(),
+    q: z
+      .string()
+      .trim()
+      .max(100)
+      .optional()
+      .transform((value) => value || undefined),
     category: z.string().trim().min(1).optional(),
     from: z.iso.date().optional(),
     to: z.iso.date().optional(),

@@ -8,7 +8,7 @@ import type { ListEventsQuery } from "../../types/events";
 import { listEventsQuery } from "../../types/events";
 import { ApiError } from "../../utils/api-response";
 
-type EventWhere = NonNullable<Parameters<typeof prisma.event.findMany>[0]>["where"];
+type EventWhere = NonNullable<NonNullable<Parameters<typeof prisma.event.findMany>[0]>["where"]>;
 
 const eventSelect = {
   id: true,
@@ -28,15 +28,23 @@ const eventSelect = {
   updatedAt: true,
 } as const;
 
+function keywordFilter(term: string): EventWhere {
+  const match = { contains: term, mode: "insensitive" } as const;
+  return {
+    OR: [
+      { name: match },
+      { description: match },
+      { location: match },
+      { city: match },
+      { category: { is: { name: match } } },
+    ],
+  };
+}
+
 function eventFilters({ q, category, from, to, city }: ListEventsQuery): EventWhere {
   return {
     status: "published",
-    ...(q && {
-      OR: [
-        { name: { contains: q, mode: "insensitive" } },
-        { description: { contains: q, mode: "insensitive" } },
-      ],
-    }),
+    ...(q && { AND: q.split(/\s+/).map(keywordFilter) }),
     ...(category && { category: { is: { OR: [{ slug: category }, { id: category }] } } }),
     ...(city && { city: { equals: city, mode: "insensitive" } }),
     ...((from || to) && {
