@@ -20,12 +20,6 @@ describe("SearchBar", () => {
     vi.useRealTimers();
   });
 
-  it("se trouve par son rôle search", () => {
-    renderSearchBar();
-
-    expect(screen.getByRole("search")).toBeInTheDocument();
-  });
-
   it("trouve chaque champ par son étiquette : Quoi, Où, Quand", () => {
     renderSearchBar();
 

@@ -17,25 +17,25 @@ import {
   UtensilsIcon,
 } from "lucide-react";
 
-import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { Avatar } from "@/components/ui/avatar";
-import { CapacityBar } from "@/components/ui/capacity-bar";
-import { CategoryTabs } from "@/components/ui/category-tabs";
-import { CheckboxField, CheckboxGroup } from "@/components/ui/checkbox";
-import { FavoriteButton } from "@/components/ui/favorite-button";
+import { CapacityBar } from "@/components/event/capacity-bar";
+import { CategoryTabs } from "@/components/navigation/category-tabs";
+import { CheckboxField, CheckboxGroup } from "@/components/form/checkbox";
+import { FavoriteButton } from "@/components/event/favorite-button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
-import { DateBadge } from "@/components/ui/date-badge";
-import { EventCard, type EventCardEvent } from "@/components/ui/event-card";
-import { LiveBadge } from "@/components/ui/live-badge";
-import { QuantityStepper } from "@/components/ui/quantity-stepper";
-import { RangeSlider } from "@/components/ui/range-slider";
-import { SearchBar, type SearchValues } from "@/components/ui/search-bar";
-import { SegmentedControl } from "@/components/ui/segmented-control";
-import { Select } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { DateBadge } from "@/components/event/date-badge";
+import { EventCard, type EventCardEvent } from "@/components/event/event-card";
+import { LiveBadge } from "@/components/event/live-badge";
+import { QuantityStepper } from "@/components/form/quantity-stepper";
+import { RangeSlider } from "@/components/form/range-slider";
+import { SearchBar, type SearchValues } from "@/components/form/search-bar";
+import { SegmentedControl } from "@/components/form/segmented-control";
+import { Select } from "@/components/form/select";
+import { Switch } from "@/components/form/switch";
 import { formatPrice } from "@/lib/format-price";
 
 export function meta() {

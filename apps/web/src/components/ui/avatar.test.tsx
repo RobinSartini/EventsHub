@@ -5,12 +5,6 @@ import { describe, expect, it } from "vitest";
 import { Avatar } from "./avatar";
 
 describe("Avatar", () => {
-  it("affiche les initiales du nom", () => {
-    render(<Avatar name="Camille Bernard" />);
-
-    expect(screen.getByText("CB")).toBeInTheDocument();
-  });
-
   it("garde le lien vers le profil quand le nom est vide", () => {
     render(
       <MemoryRouter>

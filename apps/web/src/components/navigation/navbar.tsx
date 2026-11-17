@@ -5,7 +5,7 @@ import { useDarkTheme } from "@/components/theme-switch";
 import { focusRing } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
-import { Avatar } from "./avatar";
+import { Avatar } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import { Logo } from "./logo";
 
 type NavBarLink = {

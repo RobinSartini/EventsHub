@@ -3,7 +3,7 @@ import { MapContainer, Marker, TileLayer } from "react-leaflet";
 
 import { cn } from "@/lib/utils";
 
-import { Button } from "./button";
+import { Button } from "@/components/ui/button";
 
 export type MapMarker = {
   id: string;

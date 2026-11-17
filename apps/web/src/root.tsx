@@ -18,7 +18,7 @@ import {
 import type { Route } from "./+types/root";
 
 import { ThemeProvider } from "./components/theme-provider";
-import { NavBar } from "./components/ui/navbar";
+import { NavBar } from "./components/navigation/navbar";
 import { Toaster } from "./components/ui/sonner";
 import { authClient } from "./lib/auth-client";
 import { queryClient } from "./utils/trpc";

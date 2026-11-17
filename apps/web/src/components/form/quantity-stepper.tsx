@@ -4,7 +4,7 @@ import { formatPrice } from "@/lib/format-price";
 import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
-import { IconButton } from "./icon-button";
+import { IconButton } from "@/components/ui/icon-button";
 
 type QuantityStepperProps = {
   label: string;
