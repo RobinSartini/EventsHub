@@ -46,7 +46,10 @@ function AccountMenu({
   );
 
   return (
-    <div ref={pill} className="flex items-center gap-1 rounded-full border p-1 pl-2">
+    <div
+      ref={pill}
+      className="flex items-center gap-1 justify-self-end rounded-full border p-1 pl-2"
+    >
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label="Menu"
@@ -100,13 +103,14 @@ function NavBar({ links, user, onSignOut, className, children }: Readonly<NavBar
     <header data-slot="navbar" className={cn("bg-card border-b", className)}>
       <div
         className={cn(
-          "flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 md:px-8 lg:flex-nowrap",
-          children ? "pt-6 pb-3" : "py-3",
+          "flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 md:px-8",
+          // Grille 1fr auto 1fr : la recherche reste au centre exact de la page.
+          children ? "pt-6 pb-3 lg:grid lg:grid-cols-[1fr_auto_1fr]" : "py-3",
         )}
       >
         <Logo />
         {children ? (
-          <div className="order-last flex w-full justify-center lg:order-none lg:w-auto lg:flex-1">
+          <div className="order-last flex w-full justify-center lg:order-none lg:w-[40rem]">
             {children}
           </div>
         ) : null}
