@@ -131,7 +131,7 @@ function SearchBar({ defaultValues, onSearch, className }: Readonly<SearchBarPro
                 )}
               />
             </label>
-            <span aria-hidden="true" className="bg-border mx-6 h-px md:mx-0 md:h-9 md:w-px" />
+            <span aria-hidden="true" className="bg-border mx-6 h-px md:mx-0 md:h-10 md:w-px" />
           </Fragment>
         ))}
         <DateField defaultValue={defaultValues?.from} />

@@ -98,7 +98,12 @@ function AccountMenu({
 function NavBar({ links, user, onSignOut, className, children }: Readonly<NavBarProps>) {
   return (
     <header data-slot="navbar" className={cn("bg-card border-b", className)}>
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-3 md:px-10 lg:flex-nowrap">
+      <div
+        className={cn(
+          "flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 md:px-10 lg:flex-nowrap",
+          children ? "pt-5 pb-3" : "py-3",
+        )}
+      >
         <Logo />
         {children ? (
           <div className="order-last flex w-full justify-center lg:order-none lg:w-auto lg:flex-1">
