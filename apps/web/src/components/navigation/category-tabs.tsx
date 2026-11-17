@@ -41,10 +41,14 @@ function CategoryTabs({
           value={category}
           className={cn(
             focusRing,
-            "text-muted-foreground hover:text-foreground data-checked:border-primary data-checked:text-foreground flex shrink-0 cursor-pointer flex-col items-center gap-2 rounded-t-lg border-b-3 border-transparent px-3 pt-2 pb-3 text-xs font-bold transition-colors",
+            "group/tab text-muted-foreground hover:text-foreground data-checked:text-foreground after:bg-primary after:ease-signature relative flex shrink-0 cursor-pointer flex-col items-center gap-2 rounded-t-lg px-3 pt-2 pb-3 text-xs font-bold transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:scale-x-0 after:transition-transform after:duration-300 data-checked:after:scale-x-100",
           )}
         >
-          <Icon aria-hidden="true" className="size-6" strokeWidth={1.75} />
+          <Icon
+            aria-hidden="true"
+            className="ease-signature size-6 transition-transform duration-300 group-hover/tab:-translate-y-0.5"
+            strokeWidth={1.75}
+          />
           {label}
         </Radio.Root>
       ))}

@@ -158,8 +158,6 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
-  --radius-media: 28px;
-  --radius-media-tail: 6px;
   --radius-card: 32px;
   --radius-anchor: 10px;
   --radius-panel: 40px;
@@ -167,23 +165,26 @@
 
   --ease-signature: cubic-bezier(0.16, 1, 0.3, 1);
 
-  --animate-morph: morph 12s ease-in-out infinite;
+  --animate-rise: rise 0.5s var(--ease-signature) both;
 
-  @keyframes morph {
-    0%,
-    100% {
-      border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
-    }
-    33% {
-      border-radius: 63% 37% 38% 62% / 55% 61% 39% 45%;
-    }
-    66% {
-      border-radius: 35% 65% 52% 48% / 64% 36% 64% 36%;
+  @keyframes rise {
+    from {
+      opacity: 0;
+      translate: 0 12px;
     }
   }
 }
 
 @layer base {
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-delay: 0s !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
   * {
     @apply border-border outline-ring/50;
   }
@@ -204,12 +205,10 @@
   }
 }
 
-/* Découpe le visuel des cartes d'un seul tenant. Avec overflow-hidden ou clip-path seul, Chrome découpe
-   le fond et les formes séparément, et le fond dépasse en liseré sur les bords arrondis : le masque force
-   une découpe du bloc entier. */
 @utility clip-media {
+  overflow: clip;
   clip-path: inset(
-    0 round var(--radius-media) var(--radius-media) var(--radius-media) var(--radius-media-tail)
+    0 round var(--radius-card) var(--radius-card) var(--radius-card) var(--radius-anchor)
   );
   mask-image: linear-gradient(#000, #000);
 }

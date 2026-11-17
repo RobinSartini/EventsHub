@@ -1,9 +1,9 @@
-import { MenuIcon, UserIcon } from "lucide-react";
+import { UserIcon } from "lucide-react";
 import { type ReactNode, useRef } from "react";
 import { Link } from "react-router";
 
 import { useDarkTheme } from "@/components/theme-switch";
-import { focusRing } from "@/lib/styles";
+import { focusRing, pageWidth } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
 import { Avatar } from "@/components/ui/avatar";
@@ -30,7 +30,30 @@ type NavBarProps = {
   children?: ReactNode;
 };
 
-const menuItem = "rounded-xl px-3 py-2.5 text-sm font-bold";
+const menuItem =
+  "ease-signature px-4 py-3 text-sm font-bold transition-[color,translate] duration-200 focus:translate-x-1 focus:bg-transparent focus:text-primary";
+const burgerLine =
+  "ease-signature absolute h-0.5 w-[18px] rounded-full bg-current transition-[translate,rotate,opacity] duration-300";
+
+function BurgerIcon() {
+  return (
+    <span aria-hidden="true" className="relative grid size-5 place-items-center">
+      <span
+        className={cn(
+          burgerLine,
+          "-translate-y-1.5 group-data-popup-open/burger:translate-y-0 group-data-popup-open/burger:rotate-45",
+        )}
+      />
+      <span className={cn(burgerLine, "group-data-popup-open/burger:opacity-0")} />
+      <span
+        className={cn(
+          burgerLine,
+          "translate-y-1.5 group-data-popup-open/burger:translate-y-0 group-data-popup-open/burger:-rotate-45",
+        )}
+      />
+    </span>
+  );
+}
 
 function AccountMenu({
   links = [],
@@ -48,26 +71,26 @@ function AccountMenu({
   return (
     <div
       ref={pill}
-      className="flex items-center gap-1 justify-self-end rounded-full border p-1 pl-2"
+      className="hover:shadow-raised has-[[data-popup-open]]:shadow-raised flex items-center gap-1 justify-self-end rounded-full border p-1 pl-2 transition-shadow duration-300"
     >
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label="Menu"
           className={cn(
             focusRing,
-            "hover:bg-secondary grid size-8 place-items-center rounded-full",
+            "group/burger hover:text-primary data-popup-open:text-primary grid size-8 place-items-center rounded-full transition-colors",
           )}
         >
-          <MenuIcon className="size-5" />
+          <BurgerIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent
           anchor={pill}
           align="end"
           sideOffset={8}
-          className="bg-card shadow-float w-60 rounded-3xl p-2 ring-0"
+          className="bg-card shadow-float rounded-card rounded-tr-anchor w-60 p-2 ring-0"
         >
           {links.map((link) => linkItem(link.to, link.label))}
-          {links.length > 0 ? <DropdownMenuSeparator className="my-1" /> : null}
+          {links.length > 0 ? <DropdownMenuSeparator className="mx-4 my-1" /> : null}
           <DropdownMenuCheckboxItem className={menuItem} checked={dark} onCheckedChange={setDark}>
             Thème sombre
           </DropdownMenuCheckboxItem>
@@ -103,8 +126,8 @@ function NavBar({ links, user, onSignOut, className, children }: Readonly<NavBar
     <header data-slot="navbar" className={cn("bg-card border-b", className)}>
       <div
         className={cn(
-          "flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 md:px-8",
-          // Grille 1fr auto 1fr : la recherche reste au centre exact de la page.
+          pageWidth,
+          "flex flex-wrap items-center justify-between gap-x-6 gap-y-3",
           children ? "pt-6 pb-3 lg:grid lg:grid-cols-[1fr_auto_1fr]" : "py-3",
         )}
       >
