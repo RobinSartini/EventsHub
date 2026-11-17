@@ -111,4 +111,18 @@ describe("US-05 – Rechercher un événement par mot-clé", () => {
       expect(screen.getByText(/aucun résultat/i)).toBeInTheDocument();
     });
   });
+
+  it("500 – should display an error message", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => null }),
+    );
+
+    renderSearch();
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(/erreur/i);
+    });
+    expect(screen.queryByText(/aucun résultat/i)).not.toBeInTheDocument();
+  });
 });

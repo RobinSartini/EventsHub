@@ -62,4 +62,17 @@ describe("US-02 – Parcourir les événements à l'accueil", () => {
       expect(screen.getByText("Marathon Paris")).toBeInTheDocument();
     });
   });
+
+  it("500 – should display an error message", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => null }),
+    );
+
+    renderHome();
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(/erreur/i);
+    });
+  });
 });
