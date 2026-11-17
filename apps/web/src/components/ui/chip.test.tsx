@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { Chip, RemovableChip, SoftChip } from "./chip";
+import { Chip, RemovableChip } from "./chip";
 
 describe("Chip", () => {
   it("indique s'il est choisi", () => {
@@ -40,14 +40,5 @@ describe("RemovableChip", () => {
     await userEvent.click(screen.getByRole("button", { name: "Retirer le filtre Musique" }));
 
     expect(onRemove).toHaveBeenCalledOnce();
-  });
-});
-
-describe("SoftChip", () => {
-  it("affiche une info qui ne se clique pas", () => {
-    render(<SoftChip>Gratuit</SoftChip>);
-
-    expect(screen.getByText("Gratuit")).toBeInTheDocument();
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });

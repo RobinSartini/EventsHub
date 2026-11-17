@@ -5,29 +5,9 @@ import type { ListEventsQuery } from "@/types/events";
 
 import { listEventsQuery } from "@/types/events";
 import { validationError } from "@/errors";
+import { eventSelect } from "@/routes/events/event-select";
 
 type EventWhere = NonNullable<NonNullable<Parameters<typeof prisma.event.findMany>[0]>["where"]>;
-
-const eventSelect = {
-  id: true,
-  name: true,
-  description: true,
-  categoryId: true,
-  organizerId: true,
-  startDate: true,
-  endDate: true,
-  location: true,
-  city: true,
-  latitude: true,
-  longitude: true,
-  capacity: true,
-  status: true,
-  priceCents: true,
-  isAccessible: true,
-  isKidFriendly: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
 
 function keywordFilter(term: string): EventWhere {
   const match = { contains: term, mode: "insensitive" } as const;

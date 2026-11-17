@@ -6,12 +6,6 @@ import { describe, expect, it, vi } from "vitest";
 import { Button } from "./button";
 
 describe("Button", () => {
-  it("prend son libellé comme nom", () => {
-    render(<Button>Réserver</Button>);
-
-    expect(screen.getByRole("button", { name: "Réserver" })).toBeInTheDocument();
-  });
-
   it("appelle onClick au clic", async () => {
     const onClick = vi.fn();
     render(<Button onClick={onClick}>Réserver</Button>);

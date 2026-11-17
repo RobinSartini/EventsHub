@@ -12,12 +12,13 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigate,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 
 import { ThemeProvider } from "./components/theme-provider";
-import { NavBar } from "./components/ui/navbar";
+import { NavBar } from "./components/navigation/navbar";
 import { Toaster } from "./components/ui/sonner";
 import { authClient } from "./lib/auth-client";
 import { queryClient } from "./utils/trpc";
@@ -40,17 +41,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-const NAV_LINKS = [
-  { to: "/", label: "Explorer" },
-  { to: "/favorites", label: "Favoris" },
-  { to: "/tickets", label: "Mes billets" },
-  { to: "/organizer", label: "Espace organisateur" },
-] as const;
+const NAV_LINKS = [{ to: "/", label: "Explorer" }] as const;
 
 function AppNavBar() {
   const { data: session } = authClient.useSession();
+  const navigate = useNavigate();
   const user = session?.user ? { name: session.user.name } : null;
-  return <NavBar links={NAV_LINKS} user={user} />;
+  const signOut = () => authClient.signOut({ fetchOptions: { onSuccess: () => navigate("/") } });
+  return <NavBar links={NAV_LINKS} user={user} onSignOut={signOut} />;
 }
 
 export default function App() {

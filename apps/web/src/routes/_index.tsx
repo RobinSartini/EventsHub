@@ -1,17 +1,17 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { CheckboxField, CheckboxGroup } from "@/components/ui/checkbox";
+import { CheckboxField, CheckboxGroup } from "@/components/form/checkbox";
 import { RemovableChip } from "@/components/ui/chip";
-import type { EventCardEvent } from "@/components/ui/event-card";
-import { EventCard } from "@/components/ui/event-card";
-import type { MapMarker } from "@/components/ui/events-map";
-import { EventsMap } from "@/components/ui/events-map";
-import { RangeSlider } from "@/components/ui/range-slider";
-import { SearchBar } from "@/components/ui/search-bar";
-import { SegmentedControl } from "@/components/ui/segmented-control";
-import { Select } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import type { EventCardEvent } from "@/components/event/event-card";
+import { EventCard } from "@/components/event/event-card";
+import type { MapMarker } from "@/components/event/events-map";
+import { EventsMap } from "@/components/event/events-map";
+import { RangeSlider } from "@/components/form/range-slider";
+import { SearchBar } from "@/components/form/search-bar";
+import { SegmentedControl } from "@/components/form/segmented-control";
+import { Select } from "@/components/form/select";
+import { Switch } from "@/components/form/switch";
 import { formatPrice } from "@/lib/format-price";
 
 const MOCK_EVENTS: EventCardEvent[] = [
@@ -110,7 +110,7 @@ const RADIUS_KM = 10;
 
 export function meta() {
   return [
-    { title: "Événements – EventsHub" },
+    { title: "Événements - EventsHub" },
     { name: "description", content: `Découvrez les événements autour de ${CITY}` },
   ];
 }

@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎟️ EventHub
+# 🎟️ EventsHub
 
 **La plateforme qui révolutionne la gestion d'événements.**
 
@@ -18,7 +18,7 @@ Recherchez, créez et suivez des événements près de chez vous, sur le web com
 
 ## 📖 Histoire
 
-On en avait marre des événements mal organisés. C'est pourquoi nous avons créé **EventHub** : une application qui centralise la découverte, la création et la gestion d'événements, avec les inscriptions, les quotas et les billets à QR code.
+On en avait marre des événements mal organisés. C'est pourquoi nous avons créé **EventsHub** : une application qui centralise la découverte, la création et la gestion d'événements, avec les inscriptions, les quotas et les billets à QR code.
 
 ## ✨ Fonctionnalités principales
 
