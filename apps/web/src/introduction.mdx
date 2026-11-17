@@ -1,0 +1,84 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Introduction" />
+
+# EventsHub - design system
+
+Les composants de l'interface web d'EventsHub, avec leur documentation et des exemples. Chaque page de composant est générée depuis ses types TypeScript : les props affichées sont toujours celles du code.
+
+## Se repérer
+
+- **Fondations** : les couleurs et la typographie, lues directement depuis les variables du thème (`src/index.css`).
+- **Composants** : rangés par usage, comme dans le code.
+- **Barre d'outils** : taille d'écran (mobile, tablette, bureau), thème clair ou sombre.
+- **Onglet Accessibility** : vérifie chaque story (contrastes, noms accessibles, rôles ARIA).
+
+Les dossiers de `src/components` :
+
+- `ui/` : atomes génériques et primitives shadcn (Button, IconButton, Avatar, Chip).
+- `form/` : contrôles de saisie (Switch, Select, SearchBar).
+- `event/` : tout ce qui affiche un événement (EventCard, CapacityBar, DateBadge).
+- `navigation/` : se déplacer dans le site (NavBar, Breadcrumb, CategoryTabs).
+
+## Utiliser un composant
+
+```tsx
+import { Switch } from "@/components/form/switch";
+
+<Switch label="Accessible PMR" checked={accessible} onCheckedChange={setAccessible} />;
+```
+
+- Composer à partir des composants existants avant d'en créer un nouveau.
+- Les composants sont contrôlés : le parent garde l'état et le reçoit par le callback.
+- La logique (calcul, format, règle métier) vit dans `src/lib`, où elle est testée. Le composant l'affiche.
+
+## Règles de nommage
+
+### Fichiers
+
+- **Fichier** : kebab-case, `event-card.tsx`.
+- **Test** : à côté du composant, `event-card.test.tsx`.
+- **Story** : à côté du composant, `event-card.stories.tsx`.
+
+### Composants et props
+
+- **Composant** : PascalCase, export nommé, `export { EventCard }`.
+- **Type des props** : `NomProps`, reçu en `Readonly<>`, `Readonly<EventCardProps>`.
+- **Valeur contrôlée** : `value` + `onValueChange` (Select, RangeSlider, CategoryTabs).
+- **Case, interrupteur** : `checked` + `onCheckedChange` (Switch, CheckboxField).
+- **Choix à bascule** : `selected` + `onSelectedChange` (Chip).
+- **Booléen d'état** : préfixe `is`, `isFavorite`, `isPending`.
+- **Action** : préfixe `on` + verbe, `onSearch`, `onToggle`, `onRemove`.
+- **Style** : `className` toujours accepté, fusionné avec `cn()`.
+- **Élément racine** : `data-slot` au nom du composant, `data-slot="event-card"`.
+
+Les primitives shadcn de `ui/` (Input, Label, Card, DropdownMenu, Calendar, Sonner) gardent le code généré par `shadcn add`.
+
+### Textes
+
+- Le code est en anglais. Les textes de l'interface, les noms de tests et de stories sont en français.
+- Dans l'interface, on sépare avec « - » : `21:00 - Les Docks`.
+- Commits en anglais au format Conventional Commits (`feat(web): ...`), branches `type/description`.
+
+## Couleurs
+
+- Toujours passer par les tokens (`bg-primary`, `text-muted-foreground`...), jamais de couleur en dur dans un composant.
+- Le thème sombre s'active avec la classe `dark` : les tokens changent, les composants ne changent pas.
+- `primary` (bleu roi) porte les actions courantes. `signal` (rouge) attire l'œil sur un état ou une action à part : places limitées, en direct, créer un événement. Il ne sert pas de décor.
+
+## Typographie
+
+- **Unbounded** (`font-display`) : titres et logo.
+- **Nunito Sans** (`font-sans`) : texte courant et boutons.
+- **JetBrains Mono** (`font-mono`) : dates, prix, codes.
+
+## Accessibilité
+
+- Anneau de focus visible au clavier seulement : la classe `focusRing` de `@/lib/styles`.
+- Un bouton sans texte visible a un `aria-label` qui dit l'action. Les icônes décoratives sont en `aria-hidden`.
+- L'état passe par ARIA : `aria-pressed`, `aria-current`, rôle `radio`, et pas seulement par la couleur.
+- Avant une PR, vérifier l'onglet Accessibility des stories touchées.
+
+## Tests
+
+On teste un comportement : une condition, une interaction, un nom accessible, un état annoncé. On ne teste pas un texte qui s'affiche sans logique derrière. Les tests trouvent les éléments par rôle et par nom, comme un lecteur d'écran.
