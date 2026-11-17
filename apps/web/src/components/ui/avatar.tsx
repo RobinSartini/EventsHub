@@ -19,7 +19,7 @@ const sizes = {
 };
 
 function Avatar({ name, href, size = "default", className }: Readonly<AvatarProps>) {
-  const letters = initials(name) || <UserIcon className="size-1/2" />;
+  const letters = initials(name) || <UserIcon className="size-[1.5em]" />;
 
   const classes = cn(
     "font-display inline-flex shrink-0 items-center justify-center rounded-full font-extrabold",
@@ -30,7 +30,9 @@ function Avatar({ name, href, size = "default", className }: Readonly<AvatarProp
   if (href) {
     return (
       <Link to={href} aria-label="Mon profil" data-slot="avatar" className={cn(focusRing, classes)}>
-        <span aria-hidden="true">{letters}</span>
+        <span aria-hidden="true" className="flex">
+          {letters}
+        </span>
       </Link>
     );
   }
