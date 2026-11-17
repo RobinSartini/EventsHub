@@ -1,6 +1,6 @@
 # AI contribution policy
 
-This document sets out EventHub's policy on using AI assistants or agents when contributing. We expect both humans and AI agents to follow the letter and the spirit of these rules. If you notice behavior that does not follow them, report it to the maintainers through a GitHub issue or a private message.
+This document sets out EventsHub's policy on using AI assistants or agents when contributing. We expect both humans and AI agents to follow the letter and the spirit of these rules. If you notice behavior that does not follow them, report it to the maintainers through a GitHub issue or a private message.
 
 It complements the general [contributing guide](./CONTRIBUTING.en.md) (also available in French: [CONTRIBUTING.md](./CONTRIBUTING.md)).
 

@@ -1,6 +1,6 @@
-# Contribuer à EventHub
+# Contribuer à EventsHub
 
-Merci de l'intérêt que vous portez à EventHub ! Ce guide décrit comment proposer un changement : de la branche à la pull request.
+Merci de l'intérêt que vous portez à EventsHub ! Ce guide décrit comment proposer un changement : de la branche à la pull request.
 
 English version: [CONTRIBUTING.en.md](./CONTRIBUTING.en.md). Si vous utilisez un assistant IA, lisez aussi la [politique de contribution IA](./CONTRIBUTING.ai.md) (en anglais).
 

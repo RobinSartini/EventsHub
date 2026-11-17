@@ -1,6 +1,6 @@
-# Contributing to EventHub
+# Contributing to EventsHub
 
-Thank you for your interest in EventHub! This guide explains how to propose a change, from the branch to the pull request.
+Thank you for your interest in EventsHub! This guide explains how to propose a change, from the branch to the pull request.
 
 Version française : [CONTRIBUTING.md](./CONTRIBUTING.md). If you use an AI assistant, also read the [AI contribution policy](./CONTRIBUTING.ai.md).
 
