@@ -40,18 +40,15 @@ On en avait marre des événements mal organisés. C'est pourquoi nous avons cr�
 
 ## 🧱 Stack technique
 
-| Couche                    | Technologies                                                                         |
-| ------------------------- | ------------------------------------------------------------------------------------ |
-| **Web (front)**           | React, React Router v8, Zod, Zustand, shadcn/ui, DevIcon, TailwindCSS                |
-| **Back**                  | Node.js, Hono, Zod, Better Auth (authentification)                                   |
-| **Services tiers (back)** | Upstash Redis (+ rate limiting), Stripe (paiements), Anthropic API (IA)              |
-| **Mobile**                | SwiftUI (`apps/native`)                                                              |
-| **Base de données**       | PostgreSQL (`packages/db`)                                                           |
-| **Services externes**     | OpenStreetMap                                                                        |
-| **Outillage**             | Bun, Vite+, Docker Compose, Dev Container, GitHub Actions, Gitleaks, Fumadocs, Ruler |
-| **Pistes à confirmer**    | Usage exact de Redis (verrous de places, cache), service d'emails                    |
-
-> Les dépendances `better-auth`, `stripe`, `@upstash/redis`, `@upstash/ratelimit` et `@anthropic-ai/sdk` sont déclarées dans `apps/server`, et leurs variables d'environnement sont validées dans `packages/env`. Leur rôle fonctionnel dans EventHub reste à préciser.
+| Couche                 | Technologies                                                          |
+| ---------------------- | --------------------------------------------------------------------- |
+| **Web (front)**        | React, React Router v8, Zod, Zustand, shadcn/ui, DevIcon, TailwindCSS |
+| **Back**               | Node.js, Hono, Zod, Better Auth (authentification)                    |
+| **Mobile**             | SwiftUI (`apps/native`)                                               |
+| **Base de données**    | PostgreSQL (`packages/db`)                                            |
+| **Services externes**  | OpenStreetMap                                                         |
+| **Outillage**          | Bun, Vite+, Docker Compose, GitHub Actions, Gitleaks, Fumadocs, Ruler |
+| **Pistes à confirmer** | Usage exact de Redis (verrous de places, cache), service d'emails     |
 
 ---
 
@@ -73,9 +70,6 @@ flowchart LR
 
     subgraph Externe["Services externes"]
         OSM["🗺️ OpenStreetMap"]
-        REDIS[("Upstash Redis")]
-        STRIPE["💳 Stripe"]
-        AI["🤖 Anthropic API"]
     end
 
     subgraph Prevu["Pistes à confirmer"]
@@ -87,9 +81,6 @@ flowchart LR
     WEB -- "tuiles de carte" --> OSM
     MOB -- "tuiles de carte" --> OSM
     API --> DB
-    API --> REDIS
-    API --> STRIPE
-    API --> AI
     API -.-> MAIL
 ```
 
@@ -285,37 +276,93 @@ flowchart LR
 
 ### Prérequis
 
-- [Bun](https://bun.sh) pour les dépendances JavaScript (installées à la racine du workspace)
-- Pour l'app mobile : macOS, Xcode et [XcodeGen](https://github.com/yonaskolb/XcodeGen)
-- Docker (optionnel) pour lancer PostgreSQL via Docker Compose ou le Dev Container
+- [Bun](https://bun.sh) 1.3 ou plus récent
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) pour la base PostgreSQL locale
+- Git
+- Pour l'app mobile uniquement : macOS, Xcode et [XcodeGen](https://github.com/yonaskolb/XcodeGen)
 
-### Installation
+Sous Windows, désactivez la conversion des fins de ligne pour ce dépôt **avant** de travailler dessus, sinon le hook de pre-commit refuse des fichiers que vous n'avez pas modifiés :
 
 ```bash
-git clone https://github.com/<votre-compte>/eventhub.git
-cd eventhub
+git config core.autocrlf false
+```
 
+### 1. Installer
+
+```bash
+git clone https://github.com/RobinSartini/EventsHub.git
+cd EventsHub
 bun install
-(cd apps/native && xcodegen generate)
 ```
 
-Copiez ensuite le `.env.example` de chaque application en `.env` (quand il existe) et renseignez les identifiants de la base de données avant de démarrer les services qui en dépendent.
+### 2. Lancer
 
-### Développement
-
-Lance ensemble le front web et le back (si l'un s'arrête, les autres sont arrêtés) :
+Docker Desktop doit être démarré, puis :
 
 ```bash
-bun run dev
+bun dev
 ```
 
-L'application mobile se lance séparément, pour choisir un simulateur ou un appareil :
+Cette commande fait tout, à chaque lancement :
+
+1. crée `apps/server/.env` à partir de `apps/server/.env.example` s'il n'existe pas (les valeurs par défaut fonctionnent en local) ;
+2. démarre PostgreSQL dans Docker (port 5432) et attend qu'il soit prêt ;
+3. applique le schéma Prisma à la base ;
+4. ajoute les données de démonstration (4 catégories, 30 événements) si la base ne contient aucun événement ;
+5. lance le front web, l'API et la documentation.
+
+| Service       | URL                   |
+| ------------- | --------------------- |
+| Front web     | http://localhost:5173 |
+| API           | http://localhost:3000 |
+| Documentation | http://localhost:4000 |
+
+### 3. Devenir administrateur
+
+Les pages et routes `/admin/*` sont réservées aux administrateurs. Pour passer votre compte admin :
+
+1. Créez un compte depuis le front web.
+2. Lancez `bun db:studio`, ouvrez la table `user`, passez le champ `role` de votre compte à `admin` et enregistrez.
+3. Déconnectez-vous puis reconnectez-vous.
+
+### Tests et qualité
 
 ```bash
-cd apps/native && open BetterFullstackApp.xcodeproj
+bun run test
+bun run check
+bun run check-types
 ```
 
-Le web et le mobile communiquent avec l'API en HTTP. Voir le README et le fichier d'environnement de chaque application pour son endpoint local.
+Dans l'ordre : tous les tests, le lint et le formatage (comme le hook de pre-commit), puis le typage TypeScript. Utilisez bien `bun run test` et non `bun test`, qui lance un autre runner que Vitest.
+
+Les tests du back simulent la base de données : Docker n'est pas nécessaire pour les lancer.
+
+### Commandes de la base
+
+| Commande        | Effet                                                        |
+| --------------- | ------------------------------------------------------------ |
+| `bun db:start`  | Démarre PostgreSQL en arrière-plan et attend qu'il soit prêt |
+| `bun db:stop`   | Arrête PostgreSQL en gardant les données                     |
+| `bun db:down`   | Supprime le conteneur (les données restent dans le volume)   |
+| `bun db:push`   | Applique le schéma Prisma à la base                          |
+| `bun db:seed`   | Remplace les événements de démonstration par des neufs       |
+| `bun db:studio` | Ouvre Prisma Studio pour consulter et modifier les données   |
+
+### App mobile (macOS)
+
+```bash
+cd apps/native
+xcodegen generate
+open EventsHub.xcodeproj
+```
+
+En Debug, l'app appelle un serveur mock généré à partir du contrat d'API, sur le port 4010. Lancez-le depuis la racine du dépôt avant l'app :
+
+```bash
+npx @stoplight/prism-cli mock contrat/openapi.yaml -p 4010
+```
+
+Pour un appareil physique, voir [`apps/native/README.md`](apps/native/README.md).
 
 ## 🗂️ Structure du projet
 
