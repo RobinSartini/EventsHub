@@ -19,7 +19,7 @@ const categorySchema = z.object({
 });
 
 export type ApiEvent = z.infer<typeof eventSchema>;
-export type Category = z.infer<typeof categorySchema>;
+type Category = z.infer<typeof categorySchema>;
 
 async function get(path: string, signal?: AbortSignal): Promise<Response> {
   const response = await fetch(`${env.VITE_SERVER_URL}${path}`, { signal });

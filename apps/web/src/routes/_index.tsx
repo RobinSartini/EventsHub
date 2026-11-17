@@ -50,10 +50,8 @@ export function meta() {
 }
 
 function toCardEvent({ location, city, ...event }: ApiEvent): EventCardEvent {
-  const place = [location, city].filter(
-    (part, index, parts) => part && parts.indexOf(part) === index,
-  );
-  return { ...event, location: place.join(", ") || undefined };
+  const place = location === city ? location : [location, city].filter(Boolean).join(", ");
+  return { ...event, location: place || undefined };
 }
 
 export default function Home() {
@@ -84,7 +82,7 @@ export default function Home() {
       icon: CATEGORY_ICONS[slug] ?? SparklesIcon,
     })),
   ];
-  const hasFilters = Boolean(search.q || search.city || search.from || search.category);
+  const hasFilters = Object.values(search).some(Boolean);
   const list = events.data?.pages.flatMap((page) => page.events) ?? [];
   const total = events.data?.pages[0]?.total ?? 0;
   const remaining = total - list.length;

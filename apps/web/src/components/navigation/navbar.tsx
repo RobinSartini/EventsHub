@@ -120,4 +120,4 @@ function NavBar({ links, user, onSignOut, className, children }: Readonly<NavBar
   );
 }
 
-export { NavBar, type NavBarLink };
+export { NavBar };

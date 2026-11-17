@@ -5,7 +5,7 @@ export const TONIGHT = "ce-soir";
 export const PAGE_SIZE = 12;
 const MAX_LENGTH = 100;
 
-export type HomeSearch = {
+type HomeFilters = {
   q?: string;
   city?: string;
   from?: string;
@@ -16,7 +16,7 @@ function text(value: string | null): string | undefined {
   return value?.trim().slice(0, MAX_LENGTH) || undefined;
 }
 
-export function readHomeSearch(params: URLSearchParams): HomeSearch {
+export function readHomeSearch(params: URLSearchParams): HomeFilters {
   const from = params.get("from") ?? undefined;
 
   return {
@@ -27,7 +27,7 @@ export function readHomeSearch(params: URLSearchParams): HomeSearch {
   };
 }
 
-export function writeHomeSearch(fields: HomeSearch): URLSearchParams {
+export function writeHomeSearch(fields: HomeFilters): URLSearchParams {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(fields)) {
     if (value) params.set(key, value);
@@ -35,7 +35,7 @@ export function writeHomeSearch(fields: HomeSearch): URLSearchParams {
   return params;
 }
 
-export function eventsQuery({ category, from, ...search }: HomeSearch, today: Date, page: number) {
+export function eventsQuery({ category, from, ...search }: HomeFilters, today: Date, page: number) {
   const tonight = category === TONIGHT ? toIsoDay(today) : undefined;
   const params = writeHomeSearch({
     q: search.q,
