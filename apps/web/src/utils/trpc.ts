@@ -9,6 +9,8 @@ import { toast } from "sonner";
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error, query) => {
+      // Une requête marquée silent affiche son erreur dans la page.
+      if (query.meta?.silent) return;
       toast.error(error.message, {
         action: {
           label: "retry",

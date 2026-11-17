@@ -1,282 +1,188 @@
-import { useState } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  BikeIcon,
+  DramaIcon,
+  LayoutGridIcon,
+  type LucideIcon,
+  MoonStarIcon,
+  MusicIcon,
+  PaletteIcon,
+  SparklesIcon,
+} from "lucide-react";
+import { Link, useSearchParams } from "react-router";
 
-import { Button } from "@/components/ui/button";
-import { CheckboxField, CheckboxGroup } from "@/components/form/checkbox";
-import { RemovableChip } from "@/components/ui/chip";
-import type { EventCardEvent } from "@/components/event/event-card";
-import { EventCard } from "@/components/event/event-card";
-import type { MapMarker } from "@/components/event/events-map";
-import { EventsMap } from "@/components/event/events-map";
-import { RangeSlider } from "@/components/form/range-slider";
-import { SearchBar } from "@/components/form/search-bar";
-import { SegmentedControl } from "@/components/form/segmented-control";
-import { Select } from "@/components/form/select";
-import { Switch } from "@/components/form/switch";
-import { formatPrice } from "@/lib/format-price";
+import { EventCard, type EventCardEvent } from "@/components/event/event-card";
+import { SearchBar, type SearchValues } from "@/components/form/search-bar";
+import { CategoryTabs } from "@/components/navigation/category-tabs";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { type ApiEvent, fetchCategories, fetchEvents } from "@/lib/events-api";
+import {
+  eventsQuery,
+  type HomeSearch,
+  PAGE_SIZE,
+  readHomeSearch,
+  TONIGHT,
+  writeHomeSearch,
+} from "@/lib/home-search";
+import { plural } from "@/lib/plural";
 
-const MOCK_EVENTS: EventCardEvent[] = [
-  {
-    id: "1",
-    name: "Nuit Fluo",
-    startDate: "2026-11-14T20:00:00Z",
-    location: "Les Docks · 1,2 km",
-    capacity: 60,
-    ticketsSold: 32,
-    status: "published",
-  },
-  {
-    id: "2",
-    name: "Jam session acoustique",
-    startDate: "2026-11-13T19:30:00Z",
-    location: "Studio 26 · 2,1 km",
-    capacity: 26,
-    ticketsSold: 0,
-    status: "published",
-  },
-  {
-    id: "3",
-    name: "Soirée salsa",
-    startDate: "2026-11-12T19:30:00Z",
-    location: "Salle Tempo · 3,4 km",
-    capacity: 80,
-    ticketsSold: 75,
-    status: "published",
-  },
-  {
-    id: "4",
-    name: "Atelier DJ débutant",
-    startDate: "2026-11-14T14:00:00Z",
-    location: "Studio 26 · 900 m",
-    capacity: 10,
-    ticketsSold: 6,
-    status: "published",
-  },
-  {
-    id: "5",
-    name: "Blind test années 2000",
-    startDate: "2026-11-13T21:00:00Z",
-    location: "Le Comptoir · 600 m",
-    capacity: 50,
-    ticketsSold: 0,
-    status: "published",
-  },
-  {
-    id: "6",
-    name: "Open mic",
-    startDate: "2026-11-15T18:00:00Z",
-    location: "Café des Arts · 1,8 km",
-    capacity: 18,
-    ticketsSold: 0,
-    status: "published",
-  },
+const ALL = "all";
+
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  atelier: PaletteIcon,
+  musique: MusicIcon,
+  sport: BikeIcon,
+  theatre: DramaIcon,
+};
+
+const FIXED_TABS = [
+  { value: ALL, label: "Tout", icon: LayoutGridIcon },
+  { value: TONIGHT, label: "Ce soir", icon: MoonStarIcon },
 ];
-
-const CATEGORIES = [
-  { label: "Musique", count: 12 },
-  { label: "Ateliers", count: 8 },
-  { label: "Sport", count: 4 },
-  { label: "Conventions", count: 3 },
-  { label: "Expos", count: 9 },
-  { label: "Food & boissons", count: 10 },
-];
-
-const SORT_OPTIONS = [
-  { value: "date", label: "Date" },
-  { value: "distance", label: "Distance" },
-  { value: "relevance", label: "Pertinence" },
-] as const;
-
-type SortValue = "date" | "distance" | "relevance";
-
-const VIEW_OPTIONS = [
-  { value: "list", label: "Liste" },
-  { value: "list-map", label: "Liste + carte" },
-] as const;
-
-type ViewValue = "list" | "list-map";
-
-const MOCK_MARKERS: MapMarker[] = [
-  { id: "1", lat: 44.937, lng: 4.882, label: formatPrice(12) },
-  { id: "2", lat: 44.93, lng: 4.896, label: formatPrice(8) },
-  { id: "3", lat: 44.928, lng: 4.904, label: formatPrice(null), free: true },
-  { id: "4", lat: 44.935, lng: 4.912, label: formatPrice(15) },
-  { id: "5", lat: 44.924, lng: 4.887, label: formatPrice(null), free: true },
-  { id: "6", lat: 44.941, lng: 4.899, label: formatPrice(null), free: true },
-];
-
-const CITY = "Valence";
-const TOTAL_RESULTS = 48;
-const RADIUS_KM = 10;
 
 export function meta() {
   return [
     { title: "Événements - EventsHub" },
-    { name: "description", content: `Découvrez les événements autour de ${CITY}` },
+    { name: "description", content: "Tous les événements près de chez toi" },
   ];
 }
 
-export default function Home() {
-  const [view, setView] = useState<ViewValue>("list-map");
-  const [sortBy, setSortBy] = useState<SortValue>("date");
-  const [priceMax, setPriceMax] = useState(15);
-  const [freeOnly, setFreeOnly] = useState(false);
-  const [availableOnly, setAvailableOnly] = useState(true);
-  const [accessible, setAccessible] = useState(false);
-  const [kidsAdapted, setKidsAdapted] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(["Musique"]);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+function toCardEvent({ location, city, ...event }: ApiEvent): EventCardEvent {
+  const place = [location, city].filter(
+    (part, index, parts) => part && parts.indexOf(part) === index,
+  );
+  return { ...event, location: place.join(", ") || undefined };
+}
 
-  function toggleCategory(label: string, checked: boolean) {
-    setSelectedCategories((prev) => (checked ? [...prev, label] : prev.filter((c) => c !== label)));
-  }
-
-  function toggleFavorite(id: string) {
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }
-
-  const activeFilters = [
-    ...selectedCategories.map((c) => ({
-      key: `cat-${c}`,
-      label: c,
-      onRemove: () => toggleCategory(c, false),
-    })),
-    ...(priceMax < 50
-      ? [{ key: "price", label: `≤ ${priceMax} €`, onRemove: () => setPriceMax(50) }]
-      : []),
-    ...(availableOnly
-      ? [{ key: "available", label: "Places disponibles", onRemove: () => setAvailableOnly(false) }]
-      : []),
-  ];
-
-  function clearAllFilters() {
-    setSelectedCategories([]);
-    setPriceMax(50);
-    setFreeOnly(false);
-    setAvailableOnly(false);
-    setAccessible(false);
-    setKidsAdapted(false);
-  }
+function Pagination({ search, pageCount }: Readonly<{ search: HomeSearch; pageCount: number }>) {
+  if (pageCount <= 1) return null;
+  const pageLink = (page: number) => ({ search: writeHomeSearch({ ...search, page }).toString() });
 
   return (
-    <div className="flex h-full overflow-hidden">
-      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto px-10 py-6">
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="font-display text-3xl font-extrabold sm:text-4xl">
-              Événements autour de <span className="text-primary">{CITY}</span>
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {TOTAL_RESULTS} résultats · cette semaine · dans un rayon de {RADIUS_KM} km
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-3 pt-1">
-            <Select
-              label="Trier par"
-              options={SORT_OPTIONS}
-              value={sortBy}
-              onValueChange={setSortBy}
-            />
-            <SegmentedControl
-              label="Affichage"
-              options={VIEW_OPTIONS}
-              value={view}
-              onValueChange={setView}
-            />
-          </div>
-        </div>
+    <nav aria-label="Pagination" className="flex items-center justify-center gap-4">
+      {search.page > 1 ? (
+        <Link to={pageLink(search.page - 1)} className={buttonVariants({ variant: "outline" })}>
+          Page précédente
+        </Link>
+      ) : null}
+      <span className="text-muted-foreground text-sm font-bold">
+        Page {search.page} sur {pageCount}
+      </span>
+      {search.page < pageCount ? (
+        <Link to={pageLink(search.page + 1)} className={buttonVariants({ variant: "outline" })}>
+          Page suivante
+        </Link>
+      ) : null}
+    </nav>
+  );
+}
 
-        <SearchBar defaultValues={{ city: CITY }} onSearch={() => {}} className="mb-4" />
+export default function Home() {
+  const [params, setParams] = useSearchParams();
+  const search = readHomeSearch(params);
+  const query = eventsQuery(search, new Date());
 
-        {activeFilters.length > 0 && (
-          <div className="mb-6 flex flex-wrap items-center gap-2">
-            <span className="text-muted-foreground text-sm font-bold">Filtres actifs :</span>
-            {activeFilters.map((filter) => (
-              <RemovableChip key={filter.key} label={filter.label} onRemove={filter.onRemove} />
-            ))}
-            <Button variant="link" size="sm" onClick={clearAllFilters}>
+  const events = useQuery({
+    queryKey: ["events", query],
+    queryFn: ({ signal }) => fetchEvents(query, signal),
+    placeholderData: keepPreviousData,
+    meta: { silent: true },
+  });
+  const categories = useQuery({
+    queryKey: ["categories"],
+    queryFn: ({ signal }) => fetchCategories(signal),
+    staleTime: Number.POSITIVE_INFINITY,
+    meta: { silent: true },
+  });
+
+  const tabs = [
+    ...FIXED_TABS,
+    ...(categories.data ?? []).map(({ slug, name }) => ({
+      value: slug,
+      label: name,
+      icon: CATEGORY_ICONS[slug] ?? SparklesIcon,
+    })),
+  ];
+  const hasFilters = Boolean(search.q || search.city || search.from || search.category);
+  const total = events.data?.total ?? 0;
+
+  const onSearch = (values: SearchValues) =>
+    setParams(writeHomeSearch({ ...values, category: search.category }));
+  const onCategory = (category: string) =>
+    setParams(
+      writeHomeSearch({ ...search, category: category === ALL ? undefined : category, page: 1 }),
+    );
+  const clearAll = () => setParams(new URLSearchParams());
+
+  return (
+    <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 md:px-10">
+      <SearchBar
+        key={[search.q, search.city, search.from].join("|")}
+        defaultValues={search}
+        onSearch={onSearch}
+        className="self-center"
+      />
+      <CategoryTabs
+        categories={tabs}
+        value={search.category ?? ALL}
+        onValueChange={onCategory}
+        className="border-b"
+      />
+
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="font-display text-2xl font-extrabold">
+          {search.city ? `Événements à ${search.city}` : "Événements à venir"}
+        </h1>
+        <div className="flex items-baseline gap-4">
+          <p aria-live="polite" className="text-muted-foreground text-sm font-bold">
+            {events.data ? `${total} ${plural(total, "événement")}` : null}
+          </p>
+          {hasFilters ? (
+            <Button variant="link" size="sm" onClick={clearAll}>
               Tout effacer
             </Button>
-          </div>
-        )}
-
-        <div className="grid grid-cols-[220px_1fr] gap-6">
-          <aside className="flex flex-col gap-6">
-            <CheckboxGroup legend="Catégories">
-              {CATEGORIES.map(({ label, count }) => (
-                <CheckboxField
-                  key={label}
-                  checked={selectedCategories.includes(label)}
-                  onCheckedChange={(checked) => toggleCategory(label, checked)}
-                  label={label}
-                  count={count}
-                />
-              ))}
-            </CheckboxGroup>
-
-            <RangeSlider
-              label="Prix max"
-              min={0}
-              max={50}
-              step={1}
-              value={priceMax}
-              onValueChange={setPriceMax}
-              format={(v) => formatPrice(v === 0 ? null : v)}
-            />
-
-            <CheckboxField
-              checked={freeOnly}
-              onCheckedChange={setFreeOnly}
-              label="Gratuit uniquement"
-            />
-
-            <div className="flex flex-col gap-3">
-              <Switch
-                label="Places disponibles"
-                checked={availableOnly}
-                onCheckedChange={setAvailableOnly}
-              />
-              <Switch label="Accessible PMR" checked={accessible} onCheckedChange={setAccessible} />
-              <Switch
-                label="Adapté aux enfants"
-                checked={kidsAdapted}
-                onCheckedChange={setKidsAdapted}
-              />
-            </div>
-          </aside>
-
-          <main>
-            <div className={view === "list" ? "grid grid-cols-3 gap-4" : "grid grid-cols-2 gap-4"}>
-              {MOCK_EVENTS.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  isFavorite={favorites.has(event.id)}
-                  onToggleFavorite={() => toggleFavorite(event.id)}
-                />
-              ))}
-            </div>
-            <div className="mt-8 flex justify-center">
-              <Button variant="outline">
-                Voir {TOTAL_RESULTS - MOCK_EVENTS.length} événements de plus
-              </Button>
-            </div>
-          </main>
+          ) : null}
         </div>
       </div>
 
-      {view === "list-map" && (
-        <aside className="w-[420px] shrink-0 py-6 pr-10">
-          <EventsMap markers={MOCK_MARKERS} className="h-full w-full rounded-2xl overflow-hidden" />
-        </aside>
-      )}
-    </div>
+      {events.isError && !events.data ? (
+        <div role="alert" className="flex flex-col items-start gap-3">
+          <p>Une erreur est survenue pendant le chargement des événements.</p>
+          <Button variant="outline" onClick={() => events.refetch()}>
+            Réessayer
+          </Button>
+        </div>
+      ) : null}
+
+      {events.isPending ? (
+        <div aria-hidden="true" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }, (_, index) => (
+            <Skeleton key={index} className="h-72 rounded-card" />
+          ))}
+        </div>
+      ) : null}
+
+      {events.data?.events.length === 0 ? (
+        <p className="text-muted-foreground py-12 text-center">
+          Aucun événement ne correspond à ta recherche.
+        </p>
+      ) : null}
+
+      {events.data?.events.length ? (
+        <ul
+          aria-busy={events.isPlaceholderData}
+          className="grid gap-6 transition-opacity aria-busy:opacity-60 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        >
+          {events.data.events.map((event) => (
+            <li key={event.id}>
+              <EventCard event={toCardEvent(event)} className="h-full" />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      <Pagination search={search} pageCount={Math.ceil(total / PAGE_SIZE)} />
+    </main>
   );
 }
