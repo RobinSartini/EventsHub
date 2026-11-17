@@ -28,21 +28,16 @@ enum APIError: LocalizedError, Equatable {
 /// Client HTTP global : URL de base, session, vérification du statut et décodage JSON.
 ///
 /// L'URL de base vient de la clé Info.plist `EventsAPIBaseURL`, alimentée par le build setting
-/// `EVENTS_API_BASE_URL` (project.yml). En Debug, le défaut est le mock Prism
-/// (`prism mock contrat/openapi.yaml -p 4010`). En Release, aucune valeur par défaut :
-/// sans configuration, la requête échoue au lieu de viser `localhost`.
+/// `EVENTS_API_BASE_URL` (project.yml, surchargeable dans Config/Local.xcconfig). Aucun repli dans
+/// le code : sans valeur, la requête échoue avec `APIError.invalidURL` au lieu de viser `localhost`.
 struct APIClient: Sendable {
     var baseURL: URL? = Self.configuredBaseURL
     var session: URLSession = .shared
 
     static var configuredBaseURL: URL? {
         let raw = Bundle.main.object(forInfoDictionaryKey: "EventsAPIBaseURL") as? String
-        if let raw, !raw.isEmpty, let url = URL(string: raw) { return url }
-        #if DEBUG
-        return URL(string: "http://localhost:4010")
-        #else
-        return nil
-        #endif
+        guard let raw, !raw.isEmpty else { return nil }
+        return URL(string: raw)
     }
 
     /// Exécute la requête, vérifie le statut et renvoie le corps brut.
