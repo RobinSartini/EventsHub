@@ -1,5 +1,5 @@
 import { useTheme } from "@/components/theme-provider";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@/components/form/switch";
 
 function useDarkTheme() {
   const { resolvedTheme, setTheme } = useTheme();

@@ -6,8 +6,8 @@ import { formatDayLabel, fromIsoDay, toIsoDay } from "@/lib/format-date";
 import { focusRing } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
-import { Button } from "./button";
-import { Calendar } from "./calendar";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 
 type SearchValues = {
   q?: string;
