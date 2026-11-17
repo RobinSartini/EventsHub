@@ -68,26 +68,28 @@ describe("US-02 – Parcourir les événements à l'accueil", () => {
     expect(await screen.findByText(/aucun événement/i)).toBeInTheDocument();
   });
 
-  describe("Pagination", () => {
-    it("should request the next page", async () => {
+  describe("Afficher plus", () => {
+    it("should append the next events below the first ones", async () => {
       const fetchMock = stubApi({ events: mockEvents, total: 30 });
       const { user } = renderHome();
 
-      await user.click(await screen.findByRole("link", { name: "Page suivante" }));
+      expect(await screen.findByText("Encore 27 événements à découvrir")).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "Afficher plus" }));
 
       await waitFor(() => {
-        expect(lastEventsUrl(fetchMock)).toContain("page=2");
+        expect(screen.getAllByText("Concert Jazz")).toHaveLength(2);
       });
-      expect(screen.getByText("Page 2 sur 3")).toBeInTheDocument();
+      expect(lastEventsUrl(fetchMock)).toContain("page=2");
+      expect(screen.getByText("Encore 24 événements à découvrir")).toBeInTheDocument();
     });
 
-    it("should hide the pagination when everything fits on one page", async () => {
+    it("should hide the button when everything is loaded", async () => {
       stubApi({ events: mockEvents });
 
       renderHome();
 
       await screen.findByText("Concert Jazz");
-      expect(screen.queryByRole("navigation", { name: "Pagination" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Afficher plus" })).not.toBeInTheDocument();
     });
   });
 });

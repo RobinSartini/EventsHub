@@ -6,11 +6,15 @@ export const CATEGORIES = [
   { id: "c2", name: "Sport", slug: "sport" },
 ];
 
-type StubOptions = { events?: unknown[]; total?: number; status?: number };
+type StubEvent = { id: string } & Record<string, unknown>;
+type StubOptions = { events?: StubEvent[]; total?: number; status?: number };
 
 export function stubApi({ events = [], total = events.length, status = 200 }: StubOptions = {}) {
   const fetchMock = vi.fn((url: string) => {
-    const body = url.includes("/categories") ? CATEGORIES : events;
+    // Des ids différents par page, comme le vrai serveur.
+    const page = new URL(url, "http://localhost").searchParams.get("page") ?? "1";
+    const pageEvents = events.map((event) => ({ ...event, id: `${event.id}-p${page}` }));
+    const body = url.includes("/categories") ? CATEGORIES : pageEvents;
     return Promise.resolve(
       new Response(JSON.stringify(body), { status, headers: { "X-Total-Count": String(total) } }),
     );

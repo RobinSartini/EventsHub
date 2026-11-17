@@ -10,7 +10,6 @@ export type HomeSearch = {
   city?: string;
   from?: string;
   category?: string;
-  page: number;
 };
 
 function text(value: string | null): string | undefined {
@@ -19,27 +18,24 @@ function text(value: string | null): string | undefined {
 
 export function readHomeSearch(params: URLSearchParams): HomeSearch {
   const from = params.get("from") ?? undefined;
-  const page = Number(params.get("page"));
 
   return {
     q: text(params.get("q")),
     city: text(params.get("city")),
     from: fromIsoDay(from) ? from : undefined,
     category: text(params.get("category")),
-    page: Number.isInteger(page) && page > 1 ? page : 1,
   };
 }
 
-export function writeHomeSearch({ page = 1, ...fields }: Partial<HomeSearch>): URLSearchParams {
+export function writeHomeSearch(fields: HomeSearch): URLSearchParams {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(fields)) {
     if (value) params.set(key, value);
   }
-  if (page > 1) params.set("page", String(page));
   return params;
 }
 
-export function eventsQuery({ category, from, ...search }: HomeSearch, today: Date): string {
+export function eventsQuery({ category, from, ...search }: HomeSearch, today: Date, page: number) {
   const tonight = category === TONIGHT ? toIsoDay(today) : undefined;
   const params = writeHomeSearch({
     q: search.q,
@@ -49,7 +45,17 @@ export function eventsQuery({ category, from, ...search }: HomeSearch, today: Da
   });
 
   if (tonight) params.set("to", tonight);
-  params.set("page", String(search.page));
+  params.set("page", String(page));
   params.set("pageSize", String(PAGE_SIZE));
   return params.toString();
+}
+
+type LoadedPage = { events: readonly unknown[]; total: number };
+
+// Page suivante pour « Afficher plus », ou undefined quand tout est chargé.
+export function nextPage(pages: readonly LoadedPage[]): number | undefined {
+  const last = pages.at(-1);
+  const loaded = pages.reduce((count, page) => count + page.events.length, 0);
+  if (!last?.events.length || loaded >= last.total) return undefined;
+  return pages.length + 1;
 }

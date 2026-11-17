@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
   BikeIcon,
   DramaIcon,
@@ -9,16 +9,16 @@ import {
   PaletteIcon,
   SparklesIcon,
 } from "lucide-react";
-import { Link, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 
 import { EventCard, type EventCardEvent } from "@/components/event/event-card";
 import { CategoryTabs } from "@/components/navigation/category-tabs";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { type ApiEvent, fetchCategories, fetchEvents } from "@/lib/events-api";
 import {
   eventsQuery,
-  type HomeSearch,
+  nextPage,
   PAGE_SIZE,
   readHomeSearch,
   TONIGHT,
@@ -56,37 +56,16 @@ function toCardEvent({ location, city, ...event }: ApiEvent): EventCardEvent {
   return { ...event, location: place.join(", ") || undefined };
 }
 
-function Pagination({ search, pageCount }: Readonly<{ search: HomeSearch; pageCount: number }>) {
-  if (pageCount <= 1) return null;
-  const pageLink = (page: number) => ({ search: writeHomeSearch({ ...search, page }).toString() });
-
-  return (
-    <nav aria-label="Pagination" className="flex items-center justify-center gap-4">
-      {search.page > 1 ? (
-        <Link to={pageLink(search.page - 1)} className={buttonVariants({ variant: "outline" })}>
-          Page précédente
-        </Link>
-      ) : null}
-      <span className="text-muted-foreground text-sm font-bold">
-        Page {search.page} sur {pageCount}
-      </span>
-      {search.page < pageCount ? (
-        <Link to={pageLink(search.page + 1)} className={buttonVariants({ variant: "outline" })}>
-          Page suivante
-        </Link>
-      ) : null}
-    </nav>
-  );
-}
-
 export default function Home() {
   const [params, setParams] = useSearchParams();
   const search = readHomeSearch(params);
-  const query = eventsQuery(search, new Date());
+  const today = new Date();
 
-  const events = useQuery({
-    queryKey: ["events", query],
-    queryFn: ({ signal }) => fetchEvents(query, signal),
+  const events = useInfiniteQuery({
+    queryKey: ["events", eventsQuery(search, today, 1)],
+    queryFn: ({ pageParam, signal }) => fetchEvents(eventsQuery(search, today, pageParam), signal),
+    initialPageParam: 1,
+    getNextPageParam: (_last, pages) => nextPage(pages),
     placeholderData: keepPreviousData,
     meta: { silent: true },
   });
@@ -106,12 +85,12 @@ export default function Home() {
     })),
   ];
   const hasFilters = Boolean(search.q || search.city || search.from || search.category);
-  const total = events.data?.total ?? 0;
+  const list = events.data?.pages.flatMap((page) => page.events) ?? [];
+  const total = events.data?.pages[0]?.total ?? 0;
+  const remaining = total - list.length;
 
   const onCategory = (category: string) =>
-    setParams(
-      writeHomeSearch({ ...search, category: category === ALL ? undefined : category, page: 1 }),
-    );
+    setParams(writeHomeSearch({ ...search, category: category === ALL ? undefined : category }));
   const clearAll = () => setParams(new URLSearchParams());
 
   return (
@@ -160,18 +139,18 @@ export default function Home() {
           </div>
         ) : null}
 
-        {events.data?.events.length === 0 ? (
+        {events.data && list.length === 0 ? (
           <p className="text-muted-foreground py-12 text-center">
             Aucun événement ne correspond à ta recherche.
           </p>
         ) : null}
 
-        {events.data?.events.length ? (
+        {list.length > 0 ? (
           <ul
             aria-busy={events.isPlaceholderData}
             className={cn(grid, "transition-opacity aria-busy:opacity-60")}
           >
-            {events.data.events.map((event) => (
+            {list.map((event) => (
               <li key={event.id}>
                 <EventCard event={toCardEvent(event)} />
               </li>
@@ -179,7 +158,25 @@ export default function Home() {
           </ul>
         ) : null}
 
-        <Pagination search={search} pageCount={Math.ceil(total / PAGE_SIZE)} />
+        {events.hasNextPage ? (
+          <div className="flex flex-col items-center gap-3 pt-4">
+            <p className="text-muted-foreground text-sm font-bold">
+              Encore {remaining} {plural(remaining, "événement")} à découvrir
+            </p>
+            <Button
+              variant="outline"
+              disabled={events.isFetchingNextPage}
+              onClick={() => events.fetchNextPage()}
+            >
+              {events.isFetchingNextPage ? "Chargement" : "Afficher plus"}
+            </Button>
+            {events.isFetchNextPageError ? (
+              <p role="alert" className="text-signal-text text-sm font-bold">
+                Une erreur est survenue, réessaie.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </main>
     </div>
   );
