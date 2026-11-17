@@ -284,14 +284,36 @@ paths:
       description: >
         Supprime définitivement le compte de l'utilisateur connecté, ses sessions et ses données
         personnelles, et détache ses moyens de paiement Stripe. Requis par l'App Store pour toute
-        application qui permet de créer un compte.
+        application qui permet de créer un compte. Le mot de passe est redemandé pour confirmer.
       security:
         - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountDeletion"
       responses:
         "204":
           description: Compte supprimé.
+        "400":
+          description: Mot de passe manquant ou incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "401":
           description: Non authentifié.
+        "409":
+          description: >
+            Suppression impossible : l'utilisateur est `owner` d'une organisation, ou a des
+            réservations à venir. Le message d'erreur en donne la raison.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: Stripe indisponible, le compte n'est pas supprimé.
         "500":
           description: Erreur interne du serveur.
 
@@ -345,7 +367,8 @@ paths:
       summary: Récupérer mes moyens de paiement
       description: >
         Cartes enregistrées chez Stripe. Seuls la marque, les 4 derniers chiffres et l'expiration
-        sont exposés. Triées par date d'ajout décroissante.
+        sont exposés. Seules les cartes bancaires (`type: card`) sont renvoyées, les autres
+        moyens de paiement Stripe sont ignorés. Triées par date d'ajout décroissante.
       security:
         - cookieAuth: []
       responses:
@@ -622,7 +645,9 @@ paths:
       summary: "Changer le mot de passe"
       description: >
         Change le mot de passe de l'utilisateur connecté après vérification de l'ancien.
-        Avec `revokeOtherSessions`, toutes les autres sessions sont fermées.
+        Avec `revokeOtherSessions`, toutes les autres sessions sont fermées et la réponse pose
+        un nouveau cookie de session (`Set-Cookie`) que le client doit conserver à la place de l'ancien.
+        Les erreurs suivent le schéma `Error`.
       security:
         - cookieAuth: []
       requestBody:
@@ -633,7 +658,12 @@ paths:
               $ref: "#/components/schemas/PasswordChange"
       responses:
         "200":
-          description: Mot de passe changé.
+          description: Mot de passe changé (corps non utilisé).
+          headers:
+            Set-Cookie:
+              description: Présent uniquement avec `revokeOtherSessions`. Nouveau cookie de session.
+              schema:
+                type: string
         "400":
           description: Données invalides, ou ancien mot de passe incorrect.
           content:
@@ -1022,6 +1052,15 @@ components:
         - $ref: "#/components/schemas/User"
         - type: object
           required:
+            - id
+            - name
+            - email
+            - emailVerified
+            - role
+            - status
+            - createdAt
+            - updatedAt
+            - city
             - publicProfile
             - stats
             - organizations
@@ -1033,7 +1072,6 @@ components:
               example: Valence
             publicProfile:
               type: boolean
-              default: true
               description: Si faux, `GET /users/{id}/public` répond 404.
             stats:
               $ref: "#/components/schemas/ProfileStats"
@@ -1055,13 +1093,16 @@ components:
         image:
           type: string
           format: uri
+          pattern: "^https://"
+          maxLength: 2048
           nullable: true
-          description: URL de l'avatar. `null` le retire (l'app affiche alors les initiales).
+          description: URL https de l'avatar. `null` le retire (l'app affiche alors les initiales).
         city:
           type: string
           nullable: true
+          minLength: 1
           maxLength: 100
-          description: "`null` ou chaîne vide pour effacer."
+          description: "`null` pour effacer."
         publicProfile:
           type: boolean
 
@@ -1150,12 +1191,19 @@ components:
 
     PaymentMethodSetup:
       type: object
-      description: Valeurs à transmettre au PaymentSheet de Stripe.
+      description: >
+        Valeurs à transmettre au PaymentSheet de Stripe. La clé éphémère est créée avec la version
+        d'API Stripe du SDK iOS embarqué dans l'app.
       required:
+        - publishableKey
         - customerId
         - customerEphemeralKeySecret
         - setupIntentClientSecret
       properties:
+        publishableKey:
+          type: string
+          example: pk_test_xxxxxxxx
+          description: Clé publique Stripe (mode test ou live selon l'environnement du serveur).
         customerId:
           type: string
           example: cus_Pxxxxxxxx
@@ -1163,6 +1211,15 @@ components:
           type: string
         setupIntentClientSecret:
           type: string
+
+    AccountDeletion:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          format: password
 
     PasswordChange:
       type: object
