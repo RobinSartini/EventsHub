@@ -31,7 +31,7 @@ export const authRoutes = new Hono()
   .post("/sign-up/email", validateBody(signUpBody), forward)
   .post("/sign-in/email", validateBody(signInBody), forward)
   .post("/sign-out", requireSession, forward)
-  .get("/get-session", forward)
+  .get("/get-session", requireSession, forward)
   .post("/refresh", requireSession, async (c) => {
     const { token } = await auth.api.getToken({ headers: c.req.raw.headers });
     const data: RefreshResponse = {
