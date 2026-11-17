@@ -116,11 +116,11 @@ export default function Home() {
 
   return (
     <div>
-      <div className="bg-card border-b px-4 md:px-10">
+      <div className="bg-card border-b px-4 md:px-8">
         <CategoryTabs categories={tabs} value={search.category ?? ALL} onValueChange={onCategory} />
       </div>
 
-      <main className="flex flex-col gap-6 px-4 py-8 md:px-10">
+      <main className="flex flex-col gap-6 px-4 py-8 md:px-8">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
           <h1 aria-live="polite" className="font-display text-3xl font-extrabold md:text-4xl">
             {events.data ? `${total} ${plural(total, "événement")}` : "Événements"}

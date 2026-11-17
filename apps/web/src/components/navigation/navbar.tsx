@@ -100,8 +100,8 @@ function NavBar({ links, user, onSignOut, className, children }: Readonly<NavBar
     <header data-slot="navbar" className={cn("bg-card border-b", className)}>
       <div
         className={cn(
-          "flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 md:px-10 lg:flex-nowrap",
-          children ? "pt-5 pb-3" : "py-3",
+          "flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 md:px-8 lg:flex-nowrap",
+          children ? "pt-6 pb-3" : "py-3",
         )}
       >
         <Logo />

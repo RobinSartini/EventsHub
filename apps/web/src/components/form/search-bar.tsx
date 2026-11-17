@@ -35,7 +35,7 @@ const TEXT_FIELDS = [
 
 const SEARCH_KEYS = ["q", "city", "from"] as const;
 
-const field = "flex min-w-0 flex-1 flex-col gap-0.5 rounded-full px-6 py-1.5";
+const field = "flex min-w-0 flex-1 flex-col rounded-full px-6 py-2";
 const fieldLabel = "text-foreground text-xs font-extrabold";
 const fieldText = "w-full truncate text-base leading-5";
 
