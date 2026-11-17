@@ -60,12 +60,7 @@ function EventCard({ event, isFavorite, onToggleFavorite, className }: Readonly<
         className,
       )}
     >
-      <div
-        className={cn(
-          "relative aspect-[20/19] overflow-hidden rounded-media rounded-bl-media-tail",
-          theme.media,
-        )}
-      >
+      <div className={cn("clip-media relative aspect-[20/19]", theme.media)}>
         <div
           aria-hidden="true"
           className={cn(blob, theme.first, "-top-[20%] -right-[25%] size-[85%]")}
