@@ -74,7 +74,7 @@ afterEach(() => {
 });
 
 describe("US-01 – POST /api/auth/sign-up/email", () => {
-  it.fails("200 – should send name, email and password and redirect to home", async () => {
+  it("200 – should send name, email and password and redirect to home", async () => {
     vi.mocked(authClient.signUp.email).mockImplementation(respondWith(200) as never);
 
     await fillSignUp();
@@ -85,7 +85,7 @@ describe("US-01 – POST /api/auth/sign-up/email", () => {
     });
   });
 
-  it.fails("400 – should display an invalid data error", async () => {
+  it("400 – should display an invalid data error", async () => {
     vi.mocked(authClient.signUp.email).mockImplementation(respondWith(400) as never);
 
     await fillSignUp();
@@ -96,7 +96,7 @@ describe("US-01 – POST /api/auth/sign-up/email", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it.fails("422 – should tell the email is already used", async () => {
+  it("422 – should tell the email is already used", async () => {
     vi.mocked(authClient.signUp.email).mockImplementation(respondWith(422) as never);
 
     await fillSignUp();
@@ -107,7 +107,7 @@ describe("US-01 – POST /api/auth/sign-up/email", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it.fails("500 – should display a server error", async () => {
+  it("500 – should display a server error", async () => {
     vi.mocked(authClient.signUp.email).mockImplementation(respondWith(500) as never);
 
     await fillSignUp();
@@ -120,7 +120,7 @@ describe("US-01 – POST /api/auth/sign-up/email", () => {
 });
 
 describe("US-01 – POST /api/auth/sign-in/email", () => {
-  it.fails("200 – should send email and password and redirect to home", async () => {
+  it("200 – should send email and password and redirect to home", async () => {
     vi.mocked(authClient.signIn.email).mockImplementation(respondWith(200) as never);
 
     await fillSignIn();
@@ -134,7 +134,7 @@ describe("US-01 – POST /api/auth/sign-in/email", () => {
     });
   });
 
-  it.fails("400 – should display an invalid data error", async () => {
+  it("400 – should display an invalid data error", async () => {
     vi.mocked(authClient.signIn.email).mockImplementation(respondWith(400) as never);
 
     await fillSignIn();
@@ -145,7 +145,7 @@ describe("US-01 – POST /api/auth/sign-in/email", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it.fails("401 – should tell the credentials are wrong", async () => {
+  it("401 – should tell the credentials are wrong", async () => {
     vi.mocked(authClient.signIn.email).mockImplementation(respondWith(401) as never);
 
     await fillSignIn();
@@ -156,7 +156,7 @@ describe("US-01 – POST /api/auth/sign-in/email", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it.fails("500 – should display a server error", async () => {
+  it("500 – should display a server error", async () => {
     vi.mocked(authClient.signIn.email).mockImplementation(respondWith(500) as never);
 
     await fillSignIn();
