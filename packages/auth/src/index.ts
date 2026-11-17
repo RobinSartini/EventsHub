@@ -36,8 +36,9 @@ export const auth = betterAuth({
   },
   advanced: {
     defaultCookieAttributes: {
-      sameSite: "none",
-      secure: true,
+      ...(env.CORS_ORIGIN.startsWith("https://")
+        ? { sameSite: "none" as const, secure: true }
+        : { sameSite: "lax" as const, secure: false }),
       httpOnly: true,
     },
   },
