@@ -1,74 +1,232 @@
 openapi: 3.0.3
 info:
   title: EventsHub API
-  version: 1.0.0
-paths:                                                                                                                                                                            
-   
-    /events:                                                                                                                                                                        
-      get:        
-        summary: Récupérer la liste des événements
-        description: Récupère les événements avec filtrage optionnel.
-        parameters:
-          - name: q
-            in: query
-            schema:
-              type: string
-            description: Recherche par mot-clé
-          - name: category
-            in: query
-            schema:
-              type: string
-            description: Filtrer par catégorie
-          - name: from
-            in: query
-            schema:
-              type: string
-              format: date
-            description: Date de début (incluse)
-          - name: to
-            in: query
-            schema:
-              type: string
-              format: date
-            description: Date de fin (incluse)
-          - name: city
-            in: query
-            schema:
-              type: string
-            description: Filtrer par ville
-        responses:
-          "200":
-            description: Liste des événements récupérée.
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/Event"
-          "500":
-            description: Erreur interne du serveur.
+  version: 1.1.0
+paths:
+  /events:
+    get:
+      summary: Récupérer la liste des événements
+      description: Récupère les événements publiés, triés par date de début croissante, avec filtrage optionnel.
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: Recherche par mot-clé (nom ou description, insensible à la casse)
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filtrer par catégorie (slug ou id)
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Date de début (incluse)
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Date de fin (incluse)
+        - name: city
+          in: query
+          schema:
+            type: string
+          description: Filtrer par ville (insensible à la casse)
+        - $ref: "#/components/parameters/Page"
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 12
+          description: Nombre d'événements par page
+      responses:
+        "200":
+          description: Liste des événements récupérée.
+          headers:
+            X-Total-Count:
+              $ref: "#/components/headers/XTotalCount"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+        "400":
+          description: Paramètres invalides (page, pageSize, date malformée, from après to).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
 
-    /users:
-      get:
-        summary: Récupérer la liste des utilisateurs (admin)
-        description: Réservé aux administrateurs.
-        security:
-          - cookieAuth: []
-        responses:
-          "200":
-            description: Liste des utilisateurs récupérée.
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/User"
-          "401":
-            description: Non authentifié.
-          "403":
-            description: Accès refusé (rôle admin requis).
-          "500":
-            description: Erreur interne du serveur.
+  /users:
+    get:
+      summary: Récupérer la liste des utilisateurs (admin)
+      description: Réservé aux administrateurs. Triée par date de création décroissante.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Nombre d'utilisateurs par page
+      responses:
+        "200":
+          description: Liste des utilisateurs récupérée.
+          headers:
+            X-Total-Count:
+              $ref: "#/components/headers/XTotalCount"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "400":
+          description: Paramètres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+        "403":
+          description: Accès refusé (rôle admin requis).
+        "500":
+          description: Erreur interne du serveur.
+
+  /users/{id}:
+    patch:
+      summary: Modifier le rôle ou le statut d'un utilisateur (admin)
+      description: >
+        Réservé aux administrateurs. Un administrateur ne peut pas modifier son propre compte.
+        Passer un utilisateur en `suspended` supprime toutes ses sessions et bloque ses connexions.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Utilisateur modifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Données invalides, ou modification de son propre compte.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+        "403":
+          description: Accès refusé (rôle admin requis).
+        "404":
+          description: Utilisateur introuvable.
+        "500":
+          description: Erreur interne du serveur.
+
+  /api/auth/sign-up/email:
+    post:
+      summary: "Inscription d'un utilisateur"
+      description: Crée un nouveau compte (rôle `user`, statut `active`) via Better Auth. La session est établie via un cookie httpOnly.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegister"
+      responses:
+        "200":
+          description: "Compte créé, session ouverte."
+          headers:
+            Set-Cookie:
+              description: Cookie de session httpOnly posé par Better Auth.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Données invalides (champ manquant, email malformé…).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: "L'email est déjà utilisé."
+        "500":
+          description: Erreur interne du serveur.
+
+  /api/auth/sign-in/email:
+    post:
+      summary: "Connexion d'un utilisateur"
+      description: Authentifie un utilisateur via Better Auth. La session est établie via un cookie httpOnly.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLogin"
+      responses:
+        "200":
+          description: Authentification réussie.
+          headers:
+            Set-Cookie:
+              description: Cookie de session httpOnly posé par Better Auth.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Données invalides.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Identifiants incorrects.
+        "403":
+          description: Compte suspendu.
+        "500":
+          description: Erreur interne du serveur.
+
+  /api/auth/sign-out:
+    post:
+      summary: "Déconnexion"
+      description: Invalide la session courante.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Déconnecté avec succès.
+        "401":
+          description: Aucune session active.
 
     /admin/events:
       get:
@@ -171,94 +329,73 @@ paths:
         description: Crée un nouveau compte via Better Auth. La session est établie via un cookie httpOnly.
         requestBody:
           required: true
+  /api/auth/get-session:
+    get:
+      summary: "Récupérer la session courante"
+      description: Retourne l'utilisateur et la session associés au cookie présent.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Session valide.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserRegister"
-        responses:
-          "200":
-            description: "Compte créé, session ouverte."
-            headers:
-              Set-Cookie:
-                description: Cookie de session httpOnly posé par Better Auth.
-                schema:
-                  type: string
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/AuthResponse"
-          "400":
-            description: Données invalides (champ manquant, email malformé…).
-          "422":
-            description: "L'email est déjà utilisé."
-          "500":
-            description: Erreur interne du serveur.
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Non authentifié.
 
-    /api/auth/sign-in/email:
-      post:
-        summary: "Connexion d'un utilisateur"
-        description: Authentifie un utilisateur via Better Auth. La session est établie via un cookie httpOnly.
-        requestBody:
-          required: true
+  /api/auth/refresh:
+    post:
+      summary: "Obtenir un access token"
+      description: >
+        La session (cookie httpOnly) sert de refresh token. Retourne un access token JWT
+        de courte durée (15 min), signé en EdDSA et vérifiable avec les clés de `/api/auth/jwks`.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Access token émis.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserLogin"
-        responses:
-          "200":
-            description: Authentification réussie.
-            headers:
-              Set-Cookie:
-                description: Cookie de session httpOnly posé par Better Auth.
-                schema:
-                  type: string
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/AuthResponse"
-          "400":
-            description: Données invalides.
-          "401":
-            description: Identifiants incorrects.
-          "500":
-            description: Erreur interne du serveur.
+                $ref: "#/components/schemas/RefreshResponse"
+        "401":
+          description: Aucune session active.
 
-    /api/auth/sign-out:
-      post:
-        summary: "Déconnexion"
-        description: Invalide la session courante.
-        security:
-          - cookieAuth: []
-        responses:
-          "200":
-            description: Déconnecté avec succès.
-          "401":
-            description: Aucune session active.
-
-    /api/auth/get-session:
-      get:
-        summary: "Récupérer la session courante"
-        description: Retourne l'utilisateur et la session associés au cookie présent.
-        security:
-          - cookieAuth: []
-        responses:
-          "200":
-            description: Session valide.
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/AuthResponse"
-          "401":
-            description: Non authentifié.
+  /api/auth/jwks:
+    get:
+      summary: "Clés publiques de signature des access tokens"
+      description: JSON Web Key Set servant à vérifier les access tokens émis par `/api/auth/refresh`.
+      responses:
+        "200":
+          description: Jeu de clés publiques.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      type: object
 
 components:
-    securitySchemes:
-      cookieAuth:
-        type: apiKey
-        in: cookie
-        name: better-auth.session_token
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
 
-    schemas:
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: Numéro de page
 
       Event:
         type: object
@@ -397,56 +534,145 @@ components:
             type: string
             format: date-time
 
-      UserRegister:
-        type: object
-        required:
-          - name
-          - email
-          - password
-        properties:
-          name:
-            type: string
-          email:
-            type: string
-            format: email
-          password:
-            type: string
-            format: password
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "cuid_abc123"
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        emailVerified:
+          type: boolean
+        image:
+          type: string
+          nullable: true
+        role:
+          type: string
+          enum: [user, admin]
+          default: user
+        status:
+          type: string
+          enum: [active, suspended]
+          default: active
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
-      UserLogin:
-        type: object
-        required:
-          - email
-          - password
-        properties:
-          email:
-            type: string
-            format: email
-          password:
-            type: string
-            format: password
+    UserUpdate:
+      type: object
+      description: Au moins un des deux champs. Aucun autre champ n'est accepté.
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        role:
+          type: string
+          enum: [user, admin]
+        status:
+          type: string
+          enum: [active, suspended]
 
-      Session:
-        type: object
-        properties:
-          id:
-            type: string
-          userId:
-            type: string
-          expiresAt:
-            type: string
-            format: date-time
-          ipAddress:
-            type: string
-            nullable: true
-          userAgent:
-            type: string
-            nullable: true
+    UserRegister:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          minLength: 2
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
 
-      AuthResponse:
-        type: object
-        properties:
-          user:
-            $ref: "#/components/schemas/User"
-          session:
-            $ref: "#/components/schemas/Session"
+    UserLogin:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        ipAddress:
+          type: string
+          nullable: true
+        userAgent:
+          type: string
+          nullable: true
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        session:
+          $ref: "#/components/schemas/Session"
+
+    RefreshResponse:
+      type: object
+      required:
+        - accessToken
+        - tokenType
+        - expiresIn
+      properties:
+        accessToken:
+          type: string
+          description: "JWT à envoyer dans l'en-tête `Authorization: Bearer <token>`."
+        tokenType:
+          type: string
+          enum: [Bearer]
+        expiresIn:
+          type: integer
+          description: Durée de validité en secondes.
+          example: 900
+
+    Error:
+      type: object
+      required:
+        - success
+        - status
+        - error
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: Invalid query
+        details:
+          type: object
+          description: Erreurs de validation par champ.
+          additionalProperties:
+            type: array
+            items:
+              type: string
