@@ -3,13 +3,15 @@ title: API
 description: Les endpoints exposés par apps/server.
 ---
 
-La source de vérité est le contrat OpenAPI [`contrat/openapi.yaml`](https://github.com/RobinSartini/EventsHub/blob/main/contrat/openapi.yaml). Il se met à jour dans la même PR que le code.
+La source de vérité est le contrat OpenAPI [`contrat/openapi.yaml`](https://github.com/RobinSartini/EventsHub/blob/dev/contrat/openapi.yaml). Il se modifie dans une PR dédiée, validée avant l'implémentation (voir [`docs/contrat.md`](https://github.com/RobinSartini/EventsHub/blob/dev/docs/contrat.md)).
 
 L'authentification passe par le cookie de session posé par Better Auth. Les routes admin répondent `401` sans session et `403` sans le rôle `admin`.
 
 | Méthode  | Route                     | Accès    | Rôle                               |
 | -------- | ------------------------- | -------- | ---------------------------------- |
 | `GET`    | `/events`                 | public   | Liste des événements publiés       |
+| `GET`    | `/events/{id}`            | public   | Fiche d'un événement               |
+| `GET`    | `/categories`             | public   | Liste des catégories               |
 | `POST`   | `/api/auth/sign-up/email` | public   | Inscription                        |
 | `POST`   | `/api/auth/sign-in/email` | public   | Connexion                          |
 | `POST`   | `/api/auth/sign-out`      | connecté | Déconnexion                        |
