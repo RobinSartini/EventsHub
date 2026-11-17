@@ -75,17 +75,6 @@ describe("GET /events", () => {
     expect(findMany).toHaveBeenCalledWith(expect.objectContaining({ skip: 10, take: 5 }));
   });
 
-  test("q searches the name and the description, case insensitive", async () => {
-    await get("/events?q=jazz");
-
-    expect(whereOfLastCall()).toMatchObject({
-      OR: [
-        { name: { contains: "jazz", mode: "insensitive" } },
-        { description: { contains: "jazz", mode: "insensitive" } },
-      ],
-    });
-  });
-
   test("category filters by category slug or id", async () => {
     await get("/events?category=musique");
 

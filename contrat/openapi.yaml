@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: EventsHub API
-  version: 1.1.0
+  version: 1.2.0
 paths:
   /events:
     get:
@@ -12,7 +12,11 @@ paths:
           in: query
           schema:
             type: string
-          description: Recherche par mot-clé (nom ou description, insensible à la casse)
+            maxLength: 100
+          description: >
+            Recherche par mot-clé, insensible à la casse, dans le nom, la description, le lieu,
+            la ville et le nom de la catégorie. Avec plusieurs mots, chaque mot doit correspondre.
+            Une recherche vide est ignorée. Aucun résultat : tableau vide et `X-Total-Count: 0`.
         - name: category
           in: query
           schema:
