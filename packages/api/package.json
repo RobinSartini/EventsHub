@@ -28,11 +28,9 @@
   },
   "devDependencies": {
     "@EventsHub/config": "workspace:*",
-    "@playwright/test": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
     "jsdom": "catalog:",
-    "playwright": "catalog:",
     "typescript": "^6.0.3",
     "vitest": "catalog:"
   }
