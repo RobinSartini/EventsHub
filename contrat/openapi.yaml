@@ -23,6 +23,7 @@ paths:
           in: query
           schema:
             type: string
+            maxLength: 100
           description: Filtrer par catégorie (slug ou id)
         - name: from
           in: query
@@ -40,6 +41,7 @@ paths:
           in: query
           schema:
             type: string
+            maxLength: 100
           description: Filtrer par ville (insensible à la casse)
         - name: sort
           in: query
@@ -89,7 +91,8 @@ paths:
                   $ref: "#/components/schemas/Event"
         "400":
           description: >
-            Paramètres invalides (page, pageSize, date malformée, from après to, `lat` sans `lng`
+            Paramètres invalides (page, pageSize, date malformée, from après to, `q`, `category` ou `city` de plus de
+            100 caractères, `lat` sans `lng`
             ou l'inverse, `sort=distance` sans position).
           content:
             application/json:
