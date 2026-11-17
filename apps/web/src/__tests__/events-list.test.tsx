@@ -1,3 +1,4 @@
+// it.fails : rouge tant que la fonctionnalité n'est pas développée. Retirer .fails au fur et à mesure.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
@@ -47,7 +48,7 @@ describe("US-02 – Parcourir les événements à l'accueil", () => {
     vi.unstubAllGlobals();
   });
 
-  it("should display events list without being authenticated", async () => {
+  it.fails("should display events list without being authenticated", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -66,7 +67,7 @@ describe("US-02 – Parcourir les événements à l'accueil", () => {
     });
   });
 
-  it("500 – should display an error message", async () => {
+  it.fails("500 – should display an error message", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => null }),

@@ -1,3 +1,4 @@
+// it.fails : rouge tant que la fonctionnalité n'est pas développée. Retirer .fails au fur et à mesure.
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
@@ -73,7 +74,7 @@ afterEach(() => {
 });
 
 describe("US-01 – POST /api/auth/sign-up/email", () => {
-  it("200 – should send name, email and password and redirect to home", async () => {
+  it.fails("200 – should send name, email and password and redirect to home", async () => {
     vi.mocked(authClient.signUp.email).mockImplementation(respondWith(200) as never);
 
     await fillSignUp();
@@ -84,7 +85,7 @@ describe("US-01 – POST /api/auth/sign-up/email", () => {
     });
   });
 
-  it("400 – should display an invalid data error", async () => {
+  it.fails("400 – should display an invalid data error", async () => {
     vi.mocked(authClient.signUp.email).mockImplementation(respondWith(400) as never);
 
     await fillSignUp();
@@ -95,7 +96,7 @@ describe("US-01 – POST /api/auth/sign-up/email", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it("422 – should tell the email is already used", async () => {
+  it.fails("422 – should tell the email is already used", async () => {
     vi.mocked(authClient.signUp.email).mockImplementation(respondWith(422) as never);
 
     await fillSignUp();
@@ -106,7 +107,7 @@ describe("US-01 – POST /api/auth/sign-up/email", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it("500 – should display a server error", async () => {
+  it.fails("500 – should display a server error", async () => {
     vi.mocked(authClient.signUp.email).mockImplementation(respondWith(500) as never);
 
     await fillSignUp();
@@ -119,7 +120,7 @@ describe("US-01 – POST /api/auth/sign-up/email", () => {
 });
 
 describe("US-01 – POST /api/auth/sign-in/email", () => {
-  it("200 – should send email and password and redirect to home", async () => {
+  it.fails("200 – should send email and password and redirect to home", async () => {
     vi.mocked(authClient.signIn.email).mockImplementation(respondWith(200) as never);
 
     await fillSignIn();
@@ -133,7 +134,7 @@ describe("US-01 – POST /api/auth/sign-in/email", () => {
     });
   });
 
-  it("400 – should display an invalid data error", async () => {
+  it.fails("400 – should display an invalid data error", async () => {
     vi.mocked(authClient.signIn.email).mockImplementation(respondWith(400) as never);
 
     await fillSignIn();
@@ -144,7 +145,7 @@ describe("US-01 – POST /api/auth/sign-in/email", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it("401 – should tell the credentials are wrong", async () => {
+  it.fails("401 – should tell the credentials are wrong", async () => {
     vi.mocked(authClient.signIn.email).mockImplementation(respondWith(401) as never);
 
     await fillSignIn();
@@ -155,7 +156,7 @@ describe("US-01 – POST /api/auth/sign-in/email", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it("500 – should display a server error", async () => {
+  it.fails("500 – should display a server error", async () => {
     vi.mocked(authClient.signIn.email).mockImplementation(respondWith(500) as never);
 
     await fillSignIn();
@@ -190,14 +191,14 @@ function signOutRespondsWith(status: number) {
 }
 
 describe("US-01 – GET /api/auth/get-session : header", () => {
-  it("200 – should show the sign-out button and no sign-in link when signed in", () => {
+  it.fails("200 – should show the sign-out button and no sign-in link when signed in", () => {
     renderNavBar(true);
 
     expect(screen.getByRole("button", { name: "Se déconnecter" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Se connecter" })).not.toBeInTheDocument();
   });
 
-  it("401 – should show the sign-in link and no sign-out button when signed out", () => {
+  it.fails("401 – should show the sign-in link and no sign-out button when signed out", () => {
     renderNavBar(false);
 
     expect(screen.getByRole("link", { name: "Se connecter" })).toHaveAttribute("href", "/login");
@@ -206,7 +207,7 @@ describe("US-01 – GET /api/auth/get-session : header", () => {
 });
 
 describe("US-01 – POST /api/auth/sign-out : header", () => {
-  it("200 – should sign out and redirect to home", async () => {
+  it.fails("200 – should sign out and redirect to home", async () => {
     signOutRespondsWith(200);
     const user = renderNavBar(true);
 
@@ -218,7 +219,7 @@ describe("US-01 – POST /api/auth/sign-out : header", () => {
     });
   });
 
-  it("401 – should redirect to login when there is no active session", async () => {
+  it.fails("401 – should redirect to login when there is no active session", async () => {
     signOutRespondsWith(401);
     const user = renderNavBar(true);
 

@@ -1,3 +1,4 @@
+// it.fails : rouge tant que la fonctionnalité n'est pas développée. Retirer .fails au fur et à mesure.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -75,14 +76,14 @@ describe("US-05 – Rechercher un événement par mot-clé", () => {
     searchParams.current = new URLSearchParams();
   });
 
-  it("should display the search bar", () => {
+  it.fails("should display the search bar", () => {
     renderSearch();
 
     expect(screen.getByRole("search")).toBeInTheDocument();
     expect(screen.getByRole("searchbox")).toBeInTheDocument();
   });
 
-  it("should navigate to /search with the keyword when submitting the search bar", async () => {
+  it.fails("should navigate to /search with the keyword when submitting the search bar", async () => {
     const { user } = renderSearch();
 
     await user.type(screen.getByRole("searchbox"), "jazz");
@@ -91,7 +92,7 @@ describe("US-05 – Rechercher un événement par mot-clé", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/search?q=jazz");
   });
 
-  it("should request GET /events with the q parameter from the URL", async () => {
+  it.fails("should request GET /events with the q parameter from the URL", async () => {
     searchParams.current = new URLSearchParams("q=jazz");
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -107,7 +108,7 @@ describe("US-05 – Rechercher un événement par mot-clé", () => {
     });
   });
 
-  it("should display results matching the keyword", async () => {
+  it.fails("should display results matching the keyword", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -126,7 +127,7 @@ describe("US-05 – Rechercher un événement par mot-clé", () => {
     });
   });
 
-  it("should display an empty state message when no results", async () => {
+  it.fails("should display an empty state message when no results", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -143,7 +144,7 @@ describe("US-05 – Rechercher un événement par mot-clé", () => {
     });
   });
 
-  it("500 – should display an error message", async () => {
+  it.fails("500 – should display an error message", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => null }),

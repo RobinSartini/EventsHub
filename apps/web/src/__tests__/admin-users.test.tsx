@@ -1,3 +1,4 @@
+// it.fails : rouge tant que la fonctionnalité n'est pas développée. Retirer .fails au fur et à mesure.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -115,7 +116,7 @@ describe("US-03 – Gérer les utilisateurs (admin) – GET /users", () => {
     mockNavigate.mockReset();
   });
 
-  it("200 – should display users list for admin", async () => {
+  it.fails("200 – should display users list for admin", async () => {
     vi.mocked(authClient.useSession).mockReturnValue(adminSession as never);
     mockFetch(200, mockUsers);
 
@@ -129,7 +130,7 @@ describe("US-03 – Gérer les utilisateurs (admin) – GET /users", () => {
     });
   });
 
-  it("200 – should display an empty state when there are no users", async () => {
+  it.fails("200 – should display an empty state when there are no users", async () => {
     vi.mocked(authClient.useSession).mockReturnValue(adminSession as never);
     mockFetch(200, []);
 
@@ -140,7 +141,7 @@ describe("US-03 – Gérer les utilisateurs (admin) – GET /users", () => {
     });
   });
 
-  it("401 – should redirect unauthenticated user to login", async () => {
+  it.fails("401 – should redirect unauthenticated user to login", async () => {
     vi.mocked(authClient.useSession).mockReturnValue({
       data: null,
       isPending: false,
@@ -154,7 +155,7 @@ describe("US-03 – Gérer les utilisateurs (admin) – GET /users", () => {
     });
   });
 
-  it("403 – should redirect non-admin user to home", async () => {
+  it.fails("403 – should redirect non-admin user to home", async () => {
     vi.mocked(authClient.useSession).mockReturnValue(userSession as never);
     mockFetch(403);
 
@@ -166,7 +167,7 @@ describe("US-03 – Gérer les utilisateurs (admin) – GET /users", () => {
     expect(screen.queryByText("Bob")).not.toBeInTheDocument();
   });
 
-  it("500 – should display an error message", async () => {
+  it.fails("500 – should display an error message", async () => {
     vi.mocked(authClient.useSession).mockReturnValue(adminSession as never);
     mockFetch(500);
 

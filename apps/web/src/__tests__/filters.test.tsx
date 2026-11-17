@@ -1,3 +1,4 @@
+// it.fails : rouge tant que la fonctionnalité n'est pas développée. Retirer .fails au fur et à mesure.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -97,7 +98,7 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
   });
 
   describe("Requête GET /events", () => {
-    it("should fetch events with the city typed in the search bar", async () => {
+    it.fails("should fetch events with the city typed in the search bar", async () => {
       const fetchMock = stubFetch();
       const { user } = renderHome();
 
@@ -108,7 +109,7 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       });
     });
 
-    it("should fetch events from the date chosen in the search bar", async () => {
+    it.fails("should fetch events from the date chosen in the search bar", async () => {
       const fetchMock = stubFetch();
       const { user } = renderHome();
 
@@ -119,7 +120,7 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       });
     });
 
-    it("should fetch events of the category checked in the filter panel", async () => {
+    it.fails("should fetch events of the category checked in the filter panel", async () => {
       const fetchMock = stubFetch();
       const { user } = renderHome();
 
@@ -130,7 +131,7 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       });
     });
 
-    it("should combine category, date and city filters in one request", async () => {
+    it.fails("should combine category, date and city filters in one request", async () => {
       const fetchMock = stubFetch();
       const { user } = renderHome();
 
@@ -146,7 +147,7 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       });
     });
 
-    it("should display the events returned for the combined filters", async () => {
+    it.fails("should display the events returned for the combined filters", async () => {
       stubFetch();
       const { user } = renderHome();
 
@@ -183,7 +184,7 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       ).not.toBeInTheDocument();
     });
 
-    it("should clear all filters and request events without category when reset is clicked", async () => {
+    it.fails("should clear all filters and request events without category when reset is clicked", async () => {
       const fetchMock = stubFetch();
       const { user } = renderHome();
       await user.click(screen.getByRole("checkbox", { name: /Sport/ }));
