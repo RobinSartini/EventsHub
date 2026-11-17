@@ -38,6 +38,7 @@ RUN if [ -f bun.lock ]; then bun install --production --omit=peer --frozen-lockf
 RUN mkdir -p apps/server/node_modules
 
 FROM oven/bun:1.3.14-slim AS runner
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
@@ -46,5 +47,6 @@ COPY --from=deps /app/apps/server/node_modules ./apps/server/node_modules
 COPY --from=builder /app/apps/server/package.json ./apps/server/package.json
 COPY --from=builder /app/apps/server/dist ./apps/server/dist
 WORKDIR /app/apps/server
+USER bun
 EXPOSE 3000
 CMD ["bun", "run", "dist/index.mjs"]
