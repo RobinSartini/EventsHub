@@ -12,7 +12,7 @@ import { Button } from "./ui/button";
 
 // Règles du schéma UserRegister (contrat/openapi.yaml).
 const signUpSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+  name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères"),
   email: z.email("Adresse email invalide"),
   password: z
     .string()

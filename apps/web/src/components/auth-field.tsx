@@ -35,10 +35,10 @@ export function AuthField({ field, label, type = "text", autoComplete }: AuthFie
         onChange={(e) => field.handleChange(e.target.value)}
         aria-invalid={errors.length > 0 || undefined}
         aria-describedby={errors.length > 0 ? errorId : undefined}
-        className="h-11 rounded-xl px-3 text-sm md:text-sm"
+        className="border-border bg-card h-12 rounded-full border-2 px-[18px] text-sm md:text-sm"
       />
       {errors.length > 0 && (
-        <p id={errorId} className="text-destructive text-sm">
+        <p id={errorId} role="alert" className="text-destructive text-sm">
           {errors[0]?.message}
         </p>
       )}
