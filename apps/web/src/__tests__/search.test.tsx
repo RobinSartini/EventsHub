@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import Header from "@/components/header";
@@ -72,7 +73,11 @@ describe("US-05 – Rechercher un événement par mot-clé", () => {
   });
 
   it("should display a search bar in the header", () => {
-    render(<Header />);
+    render(
+      <MemoryRouter>
+        <Header />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByRole("searchbox")).toBeInTheDocument();
   });

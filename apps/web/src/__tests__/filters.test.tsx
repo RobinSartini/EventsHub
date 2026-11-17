@@ -80,13 +80,20 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       });
       vi.stubGlobal("fetch", fetchMock);
 
-      renderSearchFilters();
+      const { user } = renderSearchFilters();
+
+      await user.type(screen.getByLabelText(/catégorie/i), "music");
+      await user.type(screen.getByLabelText(/date de début|du/i), "2026-12-01");
+      await user.type(screen.getByLabelText(/date de fin|au/i), "2026-12-31");
+      await user.type(screen.getByLabelText(/ville/i), "Paris");
+      await user.click(screen.getByRole("button", { name: /appliquer|filtrer/i }));
 
       await waitFor(() => {
-        expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("category=music"));
-        expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("from=2026-12-01"));
-        expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("to=2026-12-31"));
-        expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("city=Paris"));
+        const url = fetchMock.mock.calls.at(-1)?.[0] as string;
+        expect(url).toContain("category=music");
+        expect(url).toContain("from=2026-12-01");
+        expect(url).toContain("to=2026-12-31");
+        expect(url).toContain("city=Paris");
       });
     });
 
@@ -102,8 +109,8 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
 
       const { user } = renderSearchFilters();
 
-      await user.selectOptions(screen.getByRole("combobox", { name: /catégorie/i }), "music");
-      await user.type(screen.getByRole("textbox", { name: /ville/i }), "Paris");
+      await user.type(screen.getByLabelText(/catégorie/i), "music");
+      await user.type(screen.getByLabelText(/ville/i), "Paris");
       await user.click(screen.getByRole("button", { name: /appliquer|filtrer/i }));
 
       await waitFor(() => {
@@ -113,12 +120,6 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
     });
   });
 
-  // GET /categories n'est pas défini dans contrat/openapi.yaml
-  describe("Catégories", () => {
-    it.todo("should load categories from GET /categories");
-    it.todo("should display categories in filter panel");
-  });
-
   describe("Filtres actifs", () => {
     it("should display active filters as visible tags", async () => {
       vi.stubGlobal(
@@ -126,17 +127,17 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
         vi.fn().mockResolvedValue({
           ok: true,
           status: 200,
-          json: async () => parisJazzEvents,
+          json: async () => [],
         }),
       );
 
       const { user } = renderSearchFilters();
 
-      await user.type(screen.getByRole("textbox", { name: /ville/i }), "Paris");
+      await user.type(screen.getByLabelText(/ville/i), "Paris");
       await user.click(screen.getByRole("button", { name: /appliquer|filtrer/i }));
 
       await waitFor(() => {
-        expect(screen.getByText(/Paris/i)).toBeInTheDocument();
+        expect(screen.getByText("Paris")).toBeInTheDocument();
       });
     });
 
@@ -152,12 +153,13 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
 
       const { user } = renderSearchFilters();
 
-      await user.type(screen.getByRole("textbox", { name: /ville/i }), "Paris");
+      await user.type(screen.getByLabelText(/ville/i), "Paris");
       await user.click(screen.getByRole("button", { name: /appliquer|filtrer/i }));
       await user.click(screen.getByRole("button", { name: /réinitialiser|effacer/i }));
 
       await waitFor(() => {
-        expect(screen.queryByText(/Paris/i)).not.toBeInTheDocument();
+        expect(screen.queryByText("Paris")).not.toBeInTheDocument();
+        expect(screen.getByLabelText(/ville/i)).toHaveValue("");
       });
     });
   });
