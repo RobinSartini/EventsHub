@@ -11,13 +11,31 @@
 ### Création de la page d'accueil qui fonctionne sur un mock basée sur le contract
 
 - Preuve: 18h
-- Qui: Corentin (Mobile) / Safia(Web)
+- Qui: Corentin (Mobile) / Safia (Web)
 - Pourquoi: Un utilisateur doit pouvoir voir les différents évènements autour de lui
 
 ### Création du dashboard d'organisateur qui fonctionne sur un mock basée sur le contract
 
 - Preuve : Demain 18h
-- Qui : Eddin/Safia
+- Qui : Eddin / Safia
+- Pourquoi : Un organisateur doit pouvoir voir les informations de son organisation et de ses événements.
+
+### Création du formulaire d'inscription et de connexion
+
+- Preuve : 13h
+- Qui : Corentin (Mobile) / Safia (Web)
+- Pourquoi : Un utilisateur doit pouvoir s'authentifier sur la plateforme
+
+### Création de la page profile de l'utilisateur
+
+- Preuve: 18h
+- Qui: Corentin (Mobile) / Safia (Web)
+- Pourquoi: Un utilisateur doit pouvoir voir son profil
+
+### Création du dashboard d'organisateur qui fonctionne sur l'api
+
+- Preuve : 18h
+- Qui : Eddin
 - Pourquoi : Un organisateur doit pouvoir voir les informations de son organisation et de ses événements.
 
 ## Backend :
