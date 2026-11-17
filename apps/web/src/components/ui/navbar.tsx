@@ -26,7 +26,7 @@ function NavBar({ links, user, className }: Readonly<NavBarProps>) {
         <Logo />
         <nav
           aria-label="Navigation principale"
-          className="order-last -mx-4 flex w-[calc(100%+2rem)] gap-1 overflow-x-auto px-4 md:order-none md:mx-0 md:w-auto md:p-0"
+          className="order-last flex w-full gap-1 overflow-x-auto md:order-none md:w-auto"
         >
           {links.map((link) => (
             <NavLink

@@ -22,8 +22,14 @@ type SearchBarProps = {
 };
 
 const TEXT_FIELDS = [
-  { name: "q", label: "Quoi", type: "search", placeholder: "Concert, atelier..." },
-  { name: "city", label: "Où", type: "text", placeholder: "Une ville" },
+  {
+    name: "q",
+    label: "Quoi",
+    type: "search",
+    placeholder: "Concert, atelier...",
+    width: "md:flex-[1.4]",
+  },
+  { name: "city", label: "Où", type: "text", placeholder: "Une ville", width: "" },
 ] as const;
 
 const SEARCH_KEYS: readonly (keyof SearchValues)[] = [...TEXT_FIELDS.map((f) => f.name), "from"];
@@ -110,7 +116,7 @@ function SearchBar({ defaultValues, onSearch, className }: Readonly<SearchBarPro
       <div className="flex flex-1 flex-col md:flex-row md:items-center">
         {TEXT_FIELDS.map((textField) => (
           <Fragment key={textField.name}>
-            <label className={cn(field, "cursor-text", textField.name === "q" && "md:flex-[1.4]")}>
+            <label className={cn(field, "cursor-text", textField.width)}>
               <span className={fieldLabel}>{textField.label}</span>
               <input
                 name={textField.name}

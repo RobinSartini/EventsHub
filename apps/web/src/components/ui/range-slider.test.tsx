@@ -1,51 +1,36 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { RangeSlider } from "./range-slider";
 
-const euros = (value: number) => `${value} €`;
-
-function PriceMax({ onValueChange }: Readonly<{ onValueChange: (value: number) => void }>) {
-  const [value, setValue] = useState(15);
-  return (
+function renderPriceMax() {
+  const onValueChange = vi.fn();
+  render(
     <RangeSlider
       label="Prix max"
       min={0}
       max={50}
-      value={value}
-      format={euros}
-      onValueChange={(next) => {
-        onValueChange(next);
-        setValue(next);
-      }}
-    />
+      value={15}
+      format={(value) => `${value} €`}
+      onValueChange={onValueChange}
+    />,
   );
+  return { onValueChange, slider: screen.getByRole("slider", { name: "Prix max" }) };
 }
 
 describe("RangeSlider", () => {
-  it("vaut 15 au départ pour Prix max", () => {
-    render(<PriceMax onValueChange={vi.fn()} />);
+  it("renvoie la nouvelle valeur en nombre quand on le déplace", () => {
+    const { onValueChange, slider } = renderPriceMax();
 
-    expect(screen.getByRole("slider", { name: "Prix max" })).toHaveValue("15");
-  });
-
-  it("affiche 20 € et prévient le parent après être passé à 20", () => {
-    const onValueChange = vi.fn();
-    render(<PriceMax onValueChange={onValueChange} />);
-
-    fireEvent.change(screen.getByRole("slider", { name: "Prix max" }), { target: { value: "20" } });
+    fireEvent.change(slider, { target: { value: "20" } });
 
     expect(onValueChange).toHaveBeenCalledExactlyOnceWith(20);
-    expect(screen.getByRole("status")).toHaveTextContent("20 €");
   });
 
-  it("annonce l'unité dans aria-valuetext", () => {
-    render(<PriceMax onValueChange={vi.fn()} />);
+  it("affiche et annonce la valeur avec son unité", () => {
+    const { slider } = renderPriceMax();
 
-    expect(screen.getByRole("slider", { name: "Prix max" })).toHaveAttribute(
-      "aria-valuetext",
-      "15 €",
-    );
+    expect(slider).toHaveAttribute("aria-valuetext", "15 €");
+    expect(screen.getByRole("status")).toHaveTextContent("15 €");
   });
 });
