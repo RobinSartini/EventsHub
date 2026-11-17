@@ -35,9 +35,9 @@ const TEXT_FIELDS = [
 
 const SEARCH_KEYS = ["q", "city", "from"] as const;
 
-const field = "flex min-w-0 flex-1 flex-col gap-1 rounded-full px-6 py-3 md:px-8";
+const field = "flex min-w-0 flex-1 flex-col gap-0.5 rounded-full px-6 py-2";
 const fieldLabel = "text-foreground text-sm font-extrabold";
-const fieldText = "w-full truncate text-base leading-6";
+const fieldText = "w-full truncate text-base leading-5";
 
 function DateField({ defaultValue }: Readonly<{ defaultValue?: string }>) {
   const [open, setOpen] = useState(false);
@@ -131,13 +131,13 @@ function SearchBar({ defaultValues, onSearch, className }: Readonly<SearchBarPro
                 )}
               />
             </label>
-            <span aria-hidden="true" className="bg-border mx-6 h-px md:mx-0 md:h-12 md:w-px" />
+            <span aria-hidden="true" className="bg-border mx-6 h-px md:mx-0 md:h-9 md:w-px" />
           </Fragment>
         ))}
         <DateField defaultValue={defaultValues?.from} />
       </div>
-      <Button type="submit" className="md:size-16 md:shrink-0 md:px-0">
-        <SearchIcon className="md:size-6" strokeWidth={2.5} />
+      <Button type="submit" className="md:size-14 md:shrink-0 md:px-0">
+        <SearchIcon className="md:size-5" strokeWidth={2.5} />
         <span className="md:sr-only">Rechercher</span>
       </Button>
     </form>
