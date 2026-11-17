@@ -89,9 +89,10 @@ eventhub/
 
 ## Workflow Git
 
-1. Créez une branche depuis `master` à jour.
+1. Créez une branche depuis `dev` à jour.
 2. Committez par petits changements cohérents.
-3. Poussez et ouvrez une pull request vers `master`.
+3. Poussez et ouvrez une pull request vers `dev`.
+4. `dev` est ensuite promue vers `staging`, puis vers `main`.
 
 ### Nommage des branches
 
@@ -147,7 +148,7 @@ Ajoutez ou mettez à jour des tests pour tout comportement nouveau ou corrigé. 
 
 ### Intégration continue (CI)
 
-La CI GitHub Actions (`.github/workflows/ci.yml`) se déclenche sur chaque push et chaque PR vers `master`. Elle exécute dans l'ordre : `vp check`, `vp run -r check-types`, `vp run -r build`, puis `vp run -r test`.
+La CI GitHub Actions (`.github/workflows/ci.yml`) se déclenche sur chaque push et chaque PR vers `main`. Elle exécute dans l'ordre : `vp check`, `vp run -r check-types`, `vp run -r build`, puis `vp run -r test`.
 
 - **Une PR ne peut être fusionnée que si la CI est verte.** Une CI rouge ou en cours bloque le merge, même avec une approbation.
 - Si la CI échoue, corrigez sur votre branche et poussez ; ne relancez pas en boucle une exécution qui échoue pour une vraie raison.
@@ -159,7 +160,7 @@ La CI GitHub Actions (`.github/workflows/ci.yml`) se déclenche sur chaque push 
 
 Avant d'ouvrir la PR :
 
-- [ ] la branche est à jour avec `master` ;
+- [ ] la branche est à jour avec `dev` ;
 - [ ] les commits respectent Conventional Commits ;
 - [ ] `check`, `check-types`, `test` et `build` passent en local, et la CI est verte sur la PR ;
 - [ ] les tests couvrent le changement ;
