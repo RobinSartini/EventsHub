@@ -20,8 +20,8 @@
   "dependencies": {
     "@EventsHub/db": "workspace:*",
     "@EventsHub/env": "workspace:*",
-    "@better-auth/core": "1.6.22",
-    "@better-auth/prisma-adapter": "1.6.22",
+    "@better-auth/core": "1.7.25",
+    "@better-auth/prisma-adapter": "1.7.25",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "zod": "catalog:"

@@ -62,7 +62,7 @@ Variables d'environnement du serveur (`apps/server/.env.example`) :
 
 Ces variables sont validées par Zod dans `packages/env` : toute nouvelle variable s'y déclare et s'ajoute au `.env.example` **et** à la section `env` de `.github/workflows/ci.yml`. Ne committez jamais un `.env`.
 
-Alternative : `docker-compose.yml` fournit un environnement prêt à l'emploi. Pour forcer l'architecture des images Docker, copiez `.env.example` en `.env` à la racine et renseignez `DOCKER_PLATFORM` (`linux/arm64` sur Mac Apple Silicon, `linux/amd64` sur Windows, Linux ou serveur) ; vide, Docker utilise l'architecture de la machine. Pour le mobile (macOS uniquement) : `cd apps/native && xcodegen generate`, puis ouvrez le projet dans Xcode.
+Alternative : `docker-compose.yml` fournit un environnement prêt à l'emploi. Ses valeurs sensibles (identifiants PostgreSQL `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`) viennent du `.env` à la racine, créé par `bun dev` à partir de `.env.example` : n'écrivez jamais de secret en dur dans un `docker-compose.yml` ou un `Dockerfile`. Si vous changez `POSTGRES_PASSWORD`, reportez-le dans `DATABASE_URL` de `apps/server/.env`. Pour forcer l'architecture des images Docker, renseignez `DOCKER_PLATFORM` dans ce même `.env` (`linux/arm64` sur Mac Apple Silicon, `linux/amd64` sur Windows, Linux ou serveur) ; vide, Docker utilise l'architecture de la machine. Pour le mobile (macOS uniquement) : `cd apps/native && xcodegen generate`, puis ouvrez le projet dans Xcode.
 
 Commandes utiles : `bun db:studio` (interface base de données), `bun db:generate` / `bun db:migrate` (Prisma), `bun dev:web`, `bun dev:server`, `bun dev:docs`.
 
@@ -145,13 +145,36 @@ Ajoutez ou mettez à jour des tests pour tout comportement nouveau ou corrigé. 
 
 ### Intégration continue (CI)
 
-La CI GitHub Actions (`.github/workflows/ci.yml`) se déclenche sur chaque push et chaque PR vers `main`, `staging` et `dev`. Elle exécute dans l'ordre : `vp check`, `vp run -r check-types`, `vp run -r build`, puis `vp run -r test`.
+La CI GitHub Actions (`.github/workflows/ci.yml`) se déclenche sur chaque push et chaque PR vers `main`, `staging` et `dev`. Elle exécute dans l'ordre : l'audit des dépendances, le scan Trivy du dépôt, `vp check`, `vp run -r check-types`, `vp run -r build`, puis `vp run -r test`.
 
 - **Une PR ne peut être fusionnée que si la CI est verte.** Une CI rouge ou en cours bloque le merge, même avec une approbation.
 - Si la CI échoue, corrigez sur votre branche et poussez ; ne relancez pas en boucle une exécution qui échoue pour une vraie raison.
 - Reproduisez la CI en local avec les commandes ci-dessus avant de demander une review.
 - Un test instable (_flaky_) ne se désactive pas en silence : ouvrez une issue et référencez-la.
 - Les variables d'environnement de la CI sont factices ; n'y mettez jamais de vrai secret.
+
+### Images Docker et rollback
+
+Après une CI verte sur un push vers `dev`, `staging` ou `main`, la CI publie les images `server` et `web` sur GHCR (`ghcr.io/robinsartini/eventshub-server` et `-web`) avec deux tags : `<branche>-<sha court>` (fixe, ex. `dev-3d566f6`) et `<branche>` (la dernière version de la branche).
+
+Pour déployer une version, ou revenir à une version précédente, sur une machine connectée à GHCR (`docker login ghcr.io`) :
+
+```bash
+EVENTSHUB_TAG=dev-3d566f6 docker compose pull server web
+EVENTSHUB_TAG=dev-3d566f6 docker compose up -d --no-build server web
+```
+
+Sans `EVENTSHUB_TAG`, `docker compose up --build` construit en local comme avant (tag `local`). Réglage du dépôt : la variable `VITE_SERVER_URL` (URL de l'API compilée dans l'image web, `http://localhost:3001` par défaut).
+
+### Sécurité (audit et Trivy)
+
+La CI bloque sur toute faille de sévérité haute ou critique :
+
+- `vp pm audit --level high` : failles connues des dépendances npm (`bun audit`) ;
+- Trivy sur le dépôt : secrets et erreurs de configuration (Dockerfiles, compose, workflows) ;
+- Trivy sur chaque image avant publication : paquets système et dépendances embarquées (failles corrigées en amont uniquement).
+
+Une faille non exploitable chez nous peut être acceptée dans `.trivyignore` (lu aussi par l'audit), avec la justification et une date d'expiration (`exp:AAAA-MM-JJ`). Sinon, mettez à jour la dépendance.
 
 ## Pull requests et review
 

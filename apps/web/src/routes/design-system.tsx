@@ -1,25 +1,45 @@
 import { type ReactNode, useState } from "react";
 
-import { ArrowRightIcon, MinusIcon, PlusIcon, SearchIcon, Share2Icon } from "lucide-react";
+import {
+  ActivityIcon,
+  ArrowRightIcon,
+  CompassIcon,
+  GiftIcon,
+  ImageIcon,
+  MinusIcon,
+  MoonIcon,
+  MusicIcon,
+  PaletteIcon,
+  PlusIcon,
+  SearchIcon,
+  Share2Icon,
+  TicketIcon,
+  UtensilsIcon,
+} from "lucide-react";
 
+import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { ThemeSwitch } from "@/components/theme-switch";
 import { Avatar } from "@/components/ui/avatar";
-import { CapacityBar } from "@/components/ui/capacity-bar";
-import { CheckboxField, CheckboxGroup } from "@/components/ui/checkbox";
-import { FavoriteButton } from "@/components/ui/favorite-button";
+import { CapacityBar } from "@/components/event/capacity-bar";
+import { CategoryTabs } from "@/components/navigation/category-tabs";
+import { CheckboxField, CheckboxGroup } from "@/components/form/checkbox";
+import { FavoriteButton } from "@/components/event/favorite-button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Chip, RemovableChip, SoftChip } from "@/components/ui/chip";
-import { DateBadge } from "@/components/ui/date-badge";
-import { EventCard, type EventCardEvent } from "@/components/ui/event-card";
-import { LiveBadge } from "@/components/ui/live-badge";
-import { QuantityStepper } from "@/components/ui/quantity-stepper";
-import { SearchBar, type SearchValues } from "@/components/ui/search-bar";
-import { SegmentedControl } from "@/components/ui/segmented-control";
-import { Select } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { DateBadge } from "@/components/event/date-badge";
+import { EventCard, type EventCardEvent } from "@/components/event/event-card";
+import { LiveBadge } from "@/components/event/live-badge";
+import { QuantityStepper } from "@/components/form/quantity-stepper";
+import { RangeSlider } from "@/components/form/range-slider";
+import { SearchBar, type SearchValues } from "@/components/form/search-bar";
+import { SegmentedControl } from "@/components/form/segmented-control";
+import { Select } from "@/components/form/select";
+import { Switch } from "@/components/form/switch";
+import { formatPrice } from "@/lib/format-price";
 
 export function meta() {
-  return [{ title: "Design system - EventsHub" }];
+  return [{ title: "Design system - EventHub" }];
 }
 
 function Section({
@@ -258,16 +278,61 @@ function EventCardDemo() {
   );
 }
 
+function RangeSliderDemo() {
+  const [priceMax, setPriceMax] = useState(15);
+  const [radius, setRadius] = useState(10);
+
+  return (
+    <div className="flex w-full max-w-sm flex-col gap-6">
+      <RangeSlider
+        label="Prix max"
+        min={0}
+        max={50}
+        value={priceMax}
+        onValueChange={setPriceMax}
+        format={formatPrice}
+      />
+      <RangeSlider
+        label="Rayon"
+        min={1}
+        max={50}
+        value={radius}
+        onValueChange={setRadius}
+        format={(km) => `${km} km`}
+      />
+    </div>
+  );
+}
+
+const EVENT_CATEGORIES = [
+  { value: "all", label: "Tout", icon: CompassIcon },
+  { value: "tonight", label: "Ce soir", icon: MoonIcon },
+  { value: "music", label: "Musique", icon: MusicIcon },
+  { value: "workshops", label: "Ateliers", icon: PaletteIcon },
+  { value: "sport", label: "Sport", icon: ActivityIcon },
+  { value: "conventions", label: "Conventions", icon: TicketIcon },
+  { value: "expos", label: "Expos", icon: ImageIcon },
+  { value: "food", label: "Food", icon: UtensilsIcon },
+  { value: "free", label: "Gratuit", icon: GiftIcon },
+] as const;
+
+function CategoryTabsDemo() {
+  const [category, setCategory] = useState("all");
+  return (
+    <CategoryTabs categories={EVENT_CATEGORIES} value={category} onValueChange={setCategory} />
+  );
+}
+
 export default function DesignSystem() {
   return (
     <main className="mx-auto w-full max-w-[1360px] px-4 py-10 sm:px-6 lg:px-10">
       <header className="flex flex-col gap-2 pb-4">
-        <p className="text-signal-text font-mono text-xs font-bold uppercase">EventsHub</p>
+        <p className="text-signal-text font-mono text-xs font-bold uppercase">EventHub</p>
         <h1 className="font-display text-3xl font-extrabold sm:text-4xl">Design system</h1>
         <p className="text-muted-foreground max-w-prose">
-          Les composants du site, tels qu'ils s'affichent. Le bouton de thème en haut à droite
-          bascule entre clair et sombre.
+          Les composants du site, tels qu'ils s'affichent, en clair comme en sombre.
         </p>
+        <ThemeSwitch className="mt-2 w-fit" />
       </header>
 
       <Section
@@ -333,6 +398,33 @@ export default function DesignSystem() {
         description="Combien de places ? Moins, plus, et le compteur suit. Plus passe en bleu roi dès qu'un billet est choisi."
       >
         <QuantityStepperDemo />
+      </Section>
+
+      <Section
+        title="CategoryTabs"
+        description="Une rangée de catégories à icônes, la catégorie active soulignée. Sur téléphone, la rangée défile."
+      >
+        <CategoryTabsDemo />
+      </Section>
+
+      <Section
+        title="Breadcrumb"
+        description="D'où l'on vient, et comment y retourner. La page courante n'est pas un lien."
+      >
+        <Breadcrumb
+          items={[
+            { label: "Explorer", href: "/" },
+            { label: "Musique", href: "/?category=music" },
+            { label: "Nuit Fluo" },
+          ]}
+        />
+      </Section>
+
+      <Section
+        title="RangeSlider"
+        description="Glisser pour fixer une limite : prix maximum, rayon autour de soi. L'unité est annoncée aux lecteurs d'écran."
+      >
+        <RangeSliderDemo />
       </Section>
 
       <Section
