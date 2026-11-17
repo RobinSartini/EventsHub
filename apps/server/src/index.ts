@@ -8,6 +8,7 @@ import { logger } from "hono/logger";
 
 import { adminEventRoutes } from "@/routes/admin/events";
 import { authRoutes } from "@/routes/auth";
+import { categoryRoutes } from "@/routes/categories";
 import { eventRoutes } from "@/routes/events";
 import { userRoutes } from "@/routes/users";
 import { errorHandler } from "@/errors";
@@ -30,6 +31,7 @@ app.use(
 
 app.route("/api/auth", authRoutes);
 app.route("/events", eventRoutes);
+app.route("/categories", categoryRoutes);
 app.route("/users", userRoutes);
 app.route("/admin/events", adminEventRoutes);
 
