@@ -1,9 +1,9 @@
 import prisma from "@EventsHub/db";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import type { User } from "../../../src/types/users";
+import type { User } from "@/types/users";
 
-import { json, patch, signInAs } from "../../helpers";
+import { json, patch, signInAs } from "@tests/helpers";
 
 const findUnique = vi.mocked(prisma.user.findUnique);
 const update = vi.mocked(prisma.user.update);
@@ -82,6 +82,23 @@ describe("PATCH /users/:id", () => {
 
     expect(res.status).toBe(400);
     expect(update).not.toHaveBeenCalled();
+  });
+
+  test("validation errors list field errors and form errors under _form", async () => {
+    const { cookie } = await signInAs("admin");
+
+    const empty = await patch("/users/u2", {}, cookie);
+    const badRole = await patch("/users/u2", { role: "superadmin" }, cookie);
+
+    expect(await empty.json()).toEqual({
+      success: false,
+      status: 400,
+      error: "Invalid request body",
+      details: { _form: ["Provide role or status"] },
+    });
+    expect(await badRole.json()).toMatchObject({
+      details: { role: [expect.any(String)] },
+    });
   });
 
   test("an admin cannot change their own role or status", async () => {

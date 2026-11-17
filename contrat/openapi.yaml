@@ -657,7 +657,9 @@ components:
           example: Invalid query
         details:
           type: object
-          description: Erreurs de validation par champ.
+          description: >
+            Erreurs de validation par champ (`{ "champ": ["message"] }`). Les erreurs qui ne
+            concernent pas un champ précis sont sous la clé `_form`.
           additionalProperties:
             type: array
             items:

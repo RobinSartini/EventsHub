@@ -1,7 +1,7 @@
 import { createMiddleware } from "hono/factory";
-import { z } from "zod";
+import type { z } from "zod";
 
-import { ApiError } from "../utils/api-response";
+import { validationError } from "@/errors";
 
 export function validateBody(schema: z.ZodType) {
   return createMiddleware(async (c, next) => {
@@ -11,7 +11,7 @@ export function validateBody(schema: z.ZodType) {
       .catch(() => undefined);
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
-      throw new ApiError(400, "Invalid request body", z.flattenError(parsed.error).fieldErrors);
+      throw validationError("Invalid request body", parsed.error);
     }
     await next();
   });

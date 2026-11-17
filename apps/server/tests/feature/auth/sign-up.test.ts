@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 
-import type { AuthResponse } from "../../../src/types/auth";
+import type { AuthResponse } from "@/types/auth";
 
-import { json, post, signUp, user } from "../../helpers";
+import { json, post, signUp, user } from "@tests/helpers";
 
 describe("POST /api/auth/sign-up/email", () => {
   test("a visitor can create an account", async () => {

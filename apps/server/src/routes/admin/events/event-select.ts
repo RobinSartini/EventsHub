@@ -1,7 +1,5 @@
 import prisma from "@EventsHub/db";
-import { z } from "zod";
-
-import { ApiError } from "../../../utils/api-response";
+import { notFound } from "@/errors";
 
 export const eventSelect = {
   id: true,
@@ -24,18 +22,13 @@ export const eventSelect = {
   updatedAt: true,
 } as const;
 
-export function invalid(message: string, error: z.ZodError) {
-  const { formErrors, fieldErrors } = z.flattenError(error);
-  return new ApiError(400, message, { formErrors, fieldErrors });
-}
-
 export async function findEventOr404(id: string) {
   const existing = await prisma.event.findUnique({
     where: { id },
     select: { id: true, startDate: true, endDate: true },
   });
   if (!existing) {
-    throw new ApiError(404, "Event not found");
+    throw notFound("Event");
   }
   return existing;
 }

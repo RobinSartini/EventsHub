@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 
-import type { AuthResponse } from "../../../src/types/auth";
+import type { AuthResponse } from "@/types/auth";
 
-import { get, json, signIn, user } from "../../helpers";
+import { get, json, signIn, user } from "@tests/helpers";
 
 describe("GET /api/auth/get-session", () => {
   test("returns the user and the session of a signed in user", async () => {

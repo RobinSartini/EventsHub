@@ -1,1 +1,1 @@
-export { WelcomeEmail } from "./welcome.js";
+export { WelcomeEmail } from "@/emails/welcome.js";

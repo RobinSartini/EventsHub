@@ -1,7 +1,7 @@
 import prisma from "@EventsHub/db";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { del, signInAs } from "../../helpers";
+import { del, signInAs } from "@tests/helpers";
 
 const findUnique = vi.mocked(prisma.event.findUnique);
 const remove = vi.mocked(prisma.event.delete);

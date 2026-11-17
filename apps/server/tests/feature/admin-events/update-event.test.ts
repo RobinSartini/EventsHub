@@ -1,9 +1,9 @@
 import prisma from "@EventsHub/db";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import type { AdminEvent } from "../../../src/types/events";
+import type { AdminEvent } from "@/types/events";
 
-import { json, patch, signInAs } from "../../helpers";
+import { json, patch, signInAs } from "@tests/helpers";
 
 const findUnique = vi.mocked(prisma.event.findUnique);
 const update = vi.mocked(prisma.event.update);

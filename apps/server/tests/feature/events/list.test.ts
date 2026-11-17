@@ -1,9 +1,9 @@
 import prisma from "@EventsHub/db";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import type { Event } from "../../../src/types/events";
+import type { Event } from "@/types/events";
 
-import { get, json } from "../../helpers";
+import { get, json } from "@tests/helpers";
 
 const findMany = vi.mocked(prisma.event.findMany);
 const count = vi.mocked(prisma.event.count);
