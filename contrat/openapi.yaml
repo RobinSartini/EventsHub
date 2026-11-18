@@ -29,14 +29,30 @@ paths:
           in: query
           schema:
             type: string
-            format: date
-          description: Date de début (incluse)
+          examples:
+            date:
+              value: "2027-01-10"
+            localDay:
+              value: "2027-01-10T00:00:00+01:00"
+          description: >
+            Borne basse incluse sur `startDate`. Une date seule (`AAAA-MM-JJ`) vaut le début de
+            la journée **UTC**. Pour une journée locale, envoyer une date-heure RFC 3339 avec
+            décalage (`2027-01-10T00:00:00+01:00` ou `Z`) : elle est prise telle quelle. Le `+`
+            doit être encodé en `%2B` dans l'URL. Une date-heure sans décalage est refusée (400).
         - name: to
           in: query
           schema:
             type: string
-            format: date
-          description: Date de fin (incluse)
+          examples:
+            date:
+              value: "2027-01-10"
+            localDay:
+              value: "2027-01-10T23:59:59.999+01:00"
+          description: >
+            Borne haute incluse sur `startDate`. Une date seule (`AAAA-MM-JJ`) vaut la fin de la
+            journée **UTC** (`23:59:59.999Z`). Une date-heure RFC 3339 avec décalage est prise
+            telle quelle (même règle que `from`). `from` doit être antérieur ou égal à `to`,
+            sinon 400.
         - name: city
           in: query
           schema:
