@@ -3,7 +3,8 @@ import { Link } from "react-router";
 import { focusRing } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
-function Logo({ className }: Readonly<{ className?: string }>) {
+/** `inverted` : pour un fond de la couleur principale (panneau de marque), la tache passe en clair. */
+function Logo({ className, inverted }: Readonly<{ className?: string; inverted?: boolean }>) {
   return (
     <Link
       to="/"
@@ -16,7 +17,10 @@ function Logo({ className }: Readonly<{ className?: string }>) {
     >
       <span
         aria-hidden="true"
-        className="bg-primary grid size-8 place-items-center rounded-[55%_45%_50%_50%/50%_55%_45%_50%]"
+        className={cn(
+          "grid size-8 place-items-center rounded-[55%_45%_50%_50%/50%_55%_45%_50%]",
+          inverted ? "bg-primary-foreground" : "bg-primary",
+        )}
       >
         <span className="bg-signal size-2.5 rounded-full" />
       </span>

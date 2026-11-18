@@ -56,15 +56,15 @@ async function fillSignUp() {
   render(<SignUpForm onSwitchToSignIn={vi.fn()} />);
   await user.type(screen.getByLabelText(/name|nom/i), account.name);
   await user.type(screen.getByLabelText(/email/i), account.email);
-  await user.type(screen.getByLabelText(/password|mot de passe/i), account.password);
-  await user.click(screen.getByRole("button", { name: /^(sign up|s'inscrire)$/i }));
+  await user.type(screen.getByLabelText(/^(password|mot de passe)$/i), account.password);
+  await user.click(screen.getByRole("button", { name: /^(sign up|créer mon compte)$/i }));
 }
 
 async function fillSignIn() {
   const user = userEvent.setup();
   render(<SignInForm onSwitchToSignUp={vi.fn()} />);
   await user.type(screen.getByLabelText(/email/i), account.email);
-  await user.type(screen.getByLabelText(/password|mot de passe/i), account.password);
+  await user.type(screen.getByLabelText(/^(password|mot de passe)$/i), account.password);
   await user.click(screen.getByRole("button", { name: /^(sign in|se connecter)$/i }));
 }
 
@@ -91,7 +91,7 @@ describe("US-01 – POST /api/auth/sign-up/email", () => {
     await fillSignUp();
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/données invalides/i));
+      expect(screen.getByRole("alert")).toHaveTextContent(/données invalides/i);
     });
     expect(mockNavigate).not.toHaveBeenCalled();
   });
@@ -102,7 +102,7 @@ describe("US-01 – POST /api/auth/sign-up/email", () => {
     await fillSignUp();
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/email.*déjà utilisé/i));
+      expect(screen.getByRole("alert")).toHaveTextContent(/email.*déjà utilisé/i);
     });
     expect(mockNavigate).not.toHaveBeenCalled();
   });
@@ -113,7 +113,7 @@ describe("US-01 – POST /api/auth/sign-up/email", () => {
     await fillSignUp();
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/erreur/i));
+      expect(screen.getByRole("alert")).toHaveTextContent(/erreur/i);
     });
     expect(mockNavigate).not.toHaveBeenCalled();
   });
@@ -140,7 +140,7 @@ describe("US-01 – POST /api/auth/sign-in/email", () => {
     await fillSignIn();
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/données invalides/i));
+      expect(screen.getByRole("alert")).toHaveTextContent(/données invalides/i);
     });
     expect(mockNavigate).not.toHaveBeenCalled();
   });
@@ -151,8 +151,10 @@ describe("US-01 – POST /api/auth/sign-in/email", () => {
     await fillSignIn();
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/identifiants incorrects/i));
+      expect(screen.getByRole("alert")).toHaveTextContent(/identifiants incorrects/i);
     });
+    // Une seule annonce : l'alerte du formulaire, pas de toast en double.
+    expect(toast.error).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
@@ -162,7 +164,7 @@ describe("US-01 – POST /api/auth/sign-in/email", () => {
     await fillSignIn();
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/erreur/i));
+      expect(screen.getByRole("alert")).toHaveTextContent(/erreur/i);
     });
     expect(mockNavigate).not.toHaveBeenCalled();
   });
