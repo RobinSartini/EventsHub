@@ -16,6 +16,7 @@ This file provides context about the project for AI assistants.
 - Framework: react-router
 - CSS: tailwind
 - UI Library: shadcn-ui
+- Component docs: storybook
 
 ### Backend
 
@@ -57,6 +58,8 @@ EventsHub/
 - `bun run test` - Run tests
 - `bun db:push` - Push database schema
 - `bun db:studio` - Open database UI
+- `bun run --filter web storybook` - Start Storybook on port 6006
+- `bun run --filter web build-storybook` - Build the static Storybook
 
 ## Better Fullstack project context
 
