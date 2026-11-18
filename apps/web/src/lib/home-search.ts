@@ -35,6 +35,9 @@ export function writeHomeSearch(fields: HomeFilters): URLSearchParams {
 }
 
 export function eventsQuery({ category, from, ...search }: HomeFilters, today: Date, page: number) {
+  // Le jour envoyé est le jour local du navigateur, mais le serveur lit `from` et `to`
+  // comme des jours UTC (00:00Z à 23:59Z). En France, « Ce soir » est donc décalé d'une
+  // ou deux heures : un événement à 0h30 heure locale tombe dans le mauvais jour.
   const tonight = category === TONIGHT ? toIsoDay(today) : undefined;
   const params = writeHomeSearch({
     q: search.q,
