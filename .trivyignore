@@ -5,3 +5,6 @@
 GHSA-587h-7wmj-h5pm exp:2026-12-31
 GHSA-5gmw-xhrv-c9v3 exp:2026-12-31
 GHSA-85c8-ppgw-ccpr exp:2026-12-31
+
+# picomatch ReDoS on attacker-controlled globs, no patched release yet; pulled only by build/test tooling.
+GHSA-fc5q-39xc-vjpf exp:2026-12-31
