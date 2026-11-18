@@ -147,6 +147,23 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       });
     });
 
+    it("should keep the category when only the city is cleared", async () => {
+      const fetchMock = stubFetch();
+      const { user } = renderHome();
+      await user.click(await screen.findByRole("radio", { name: "Sport" }));
+      await searchCity(user, "Paris");
+
+      await user.clear(screen.getByLabelText("Où"));
+      await user.click(screen.getByRole("button", { name: "Rechercher" }));
+
+      expect(screen.getByRole("radio", { name: "Sport" })).toBeChecked();
+      await waitFor(() => {
+        const url = lastRequestedUrl(fetchMock);
+        expect(url).toMatch(/category=sport/i);
+        expect(url).not.toContain("city=");
+      });
+    });
+
     it("should clear all filters and request events without category when reset is clicked", async () => {
       const fetchMock = stubFetch();
       const { user } = renderHome();
