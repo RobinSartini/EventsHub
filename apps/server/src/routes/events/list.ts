@@ -30,8 +30,8 @@ function eventFilters({ q, category, from, to, city }: ListEventsQuery): EventWh
     ...(city && { city: { equals: city, mode: "insensitive" } }),
     ...((from || to) && {
       startDate: {
-        ...(from && { gte: new Date(`${from}T00:00:00.000Z`) }),
-        ...(to && { lte: new Date(`${to}T23:59:59.999Z`) }),
+        ...(from && { gte: from }),
+        ...(to && { lte: to }),
       },
     }),
   };

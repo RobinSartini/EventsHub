@@ -100,6 +100,31 @@ describe("GET /events", () => {
     });
   });
 
+  test("from and to with an offset bound the user's local day", async () => {
+    const from = encodeURIComponent("2027-01-10T00:00:00+01:00");
+    const to = encodeURIComponent("2027-01-10T23:59:59.999+01:00");
+
+    await get(`/events?from=${from}&to=${to}`);
+
+    expect(whereOfLastCall()).toMatchObject({
+      startDate: {
+        gte: new Date("2027-01-09T23:00:00.000Z"),
+        lte: new Date("2027-01-10T22:59:59.999Z"),
+      },
+    });
+  });
+
+  test("a date and a date-time can be mixed", async () => {
+    await get("/events?from=2027-01-10&to=2027-01-10T18:00:00Z");
+
+    expect(whereOfLastCall()).toMatchObject({
+      startDate: {
+        gte: new Date("2027-01-10T00:00:00.000Z"),
+        lte: new Date("2027-01-10T18:00:00.000Z"),
+      },
+    });
+  });
+
   test("filters combine and apply to the total too", async () => {
     await get("/events?city=Lyon&category=sport&from=2027-02-01");
 
@@ -129,6 +154,12 @@ describe("GET /events", () => {
     { reason: "pageSize too large", query: "pageSize=500" },
     { reason: "malformed date", query: "from=01-02-2027" },
     { reason: "from after to", query: "from=2027-02-01&to=2027-01-01" },
+    {
+      reason: "from after to across offsets",
+      query: `from=${encodeURIComponent("2027-01-10T00:30:00+01:00")}&to=2027-01-09T23:00:00Z`,
+    },
+    { reason: "date-time without offset", query: "from=2027-01-10T18:00:00" },
+    { reason: "unencoded + offset", query: "from=2027-01-10T18:00:00+01:00" },
     { reason: "city over 100 characters", query: `city=${"a".repeat(101)}` },
     { reason: "category over 100 characters", query: `category=${"a".repeat(101)}` },
   ])("an invalid query is rejected with 400 ($reason)", async ({ query }) => {

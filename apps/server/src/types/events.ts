@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+const dateOrDateTime = z.iso.date().or(z.iso.datetime({ offset: true }));
+const isDateOnly = (value: string) => value.length === 10;
+
 export const listEventsQuery = z
   .object({
     q: z
@@ -9,8 +12,12 @@ export const listEventsQuery = z
       .optional()
       .transform((value) => value || undefined),
     category: z.string().trim().min(1).max(100).optional(),
-    from: z.iso.date().optional(),
-    to: z.iso.date().optional(),
+    from: dateOrDateTime
+      .transform((value) => new Date(isDateOnly(value) ? `${value}T00:00:00.000Z` : value))
+      .optional(),
+    to: dateOrDateTime
+      .transform((value) => new Date(isDateOnly(value) ? `${value}T23:59:59.999Z` : value))
+      .optional(),
     city: z.string().trim().min(1).max(100).optional(),
     sort: z.enum(["date", "distance"]).default("date"),
     lat: z.coerce.number().min(-90).max(90).optional(),
