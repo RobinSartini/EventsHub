@@ -11,8 +11,6 @@ const meta = {
       name: "Nuit Fluo",
       startDate: "2026-11-14T20:00:00Z",
       location: "Les Docks",
-      capacity: 80,
-      ticketsSold: 62,
       priceCents: 1200,
     },
     isFavorite: true,
@@ -33,7 +31,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = { name: "Par défaut" };
 
 export const Free: Story = {
-  name: "Gratuit, sans jauge",
+  name: "Gratuit",
   args: {
     event: {
       id: "expo-lumiere",
@@ -54,8 +52,6 @@ export const Cancelled: Story = {
       name: "Atelier céramique",
       startDate: "2026-11-22T13:00:00Z",
       location: "La Croix-Rousse",
-      capacity: 12,
-      ticketsSold: 5,
       priceCents: 3500,
       status: "cancelled",
     },
