@@ -1,28 +1,48 @@
-name: BetterFullstackApp
+name: EventsHub
 options:
-  bundleIdPrefix: com.betterfullstack
+  bundleIdPrefix: com.sugow.eventshub
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "27.0"
+configFiles:
+  Debug: Config/Shared.xcconfig
+  Release: Config/Shared.xcconfig
 settings:
   base:
     SWIFT_VERSION: "6.0"
 targets:
-  BetterFullstackApp:
+  EventsHub:
     type: application
     platform: iOS
     sources: [Sources]
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.betterfullstack.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.sugow.eventshub.app
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         TARGETED_DEVICE_FAMILY: "1,2"
+      configs:
+        Debug:
+          EVENTS_API_BASE_URL: http://localhost:3001
+          EVENTS_API_ORIGIN: http://localhost:3000
+        Release:
+          EVENTS_API_BASE_URL: ""
+          EVENTS_API_ORIGIN: ""
+    info:
+      path: Config/Info.plist
+      properties:
+        EventsAPIBaseURL: $(EVENTS_API_BASE_URL)
+        EventsAPIOrigin: $(EVENTS_API_ORIGIN)
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
     scheme:
-      testTargets: [BetterFullstackAppTests]
-  BetterFullstackAppTests:
+      testTargets: [EventsHubTests]
+  EventsHubTests:
     type: bundle.unit-test
     platform: iOS
     sources: [Tests]
     dependencies:
-      - target: BetterFullstackApp
+      - target: EventsHub
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES

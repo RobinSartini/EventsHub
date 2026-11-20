@@ -42,7 +42,6 @@ function Content({
   const page = docs.getPage(path);
   if (!page) throw new Error(`unknown page: ${path}`);
 
-  // content is loaded lazily, call `page.preload()` in your loader to avoid suspending
   const { toc } = use(page.load());
   const Mdx = page.body;
 
@@ -57,7 +56,7 @@ function Content({
         <MarkdownCopyButton markdownUrl={markdownUrl} />
         <ViewOptionsPopover
           markdownUrl={markdownUrl}
-          githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/content/docs/${path}`}
+          githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/apps/fumadocs/content/docs/${path}`}
         />
       </div>
       <DocsBody>

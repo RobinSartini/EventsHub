@@ -1,6 +1,6 @@
-# Contributing to EventHub
+# Contributing to EventsHub
 
-Thank you for your interest in EventHub! This guide explains how to propose a change, from the branch to the pull request.
+Thank you for your interest in EventsHub! This guide explains how to propose a change, from the branch to the pull request.
 
 Version française : [CONTRIBUTING.md](./CONTRIBUTING.md). If you use an AI assistant, also read the [AI contribution policy](./CONTRIBUTING.ai.md).
 
@@ -56,18 +56,15 @@ bun dev       # starts the web app and the server
 
 Server environment variables (`apps/server/.env.example`):
 
-| Variable                                              | Purpose                              |
-| ----------------------------------------------------- | ------------------------------------ |
-| `DATABASE_URL`                                        | PostgreSQL connection                |
-| `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL`              | Authentication (secret of 32+ chars) |
-| `CORS_ORIGIN`                                         | Allowed front-end origin             |
-| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`         | Payments                             |
-| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Redis and rate limiting              |
-| `ANTHROPIC_API_KEY`                                   | Anthropic API                        |
+| Variable                                 | Purpose                              |
+| ---------------------------------------- | ------------------------------------ |
+| `DATABASE_URL`                           | PostgreSQL connection                |
+| `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL` | Authentication (secret of 32+ chars) |
+| `CORS_ORIGIN`                            | Allowed front-end origin             |
 
 These variables are validated with Zod in `packages/env`: declare any new variable there, and add it to `.env.example` **and** to the `env` section of `.github/workflows/ci.yml`. Never commit a `.env` file.
 
-Alternatives: the **Dev Container** (`.devcontainer/`) or `docker-compose.yml` provide a ready-to-use environment. For mobile (macOS only): `cd apps/native && xcodegen generate`, then open the project in Xcode.
+Alternative: `docker-compose.yml` provides a ready-to-use environment. For mobile (macOS only): `cd apps/native && xcodegen generate`, then open the project in Xcode.
 
 Useful commands: `bun db:studio` (database UI), `bun db:generate` / `bun db:migrate` (Prisma), `bun dev:web`, `bun dev:server`, `bun dev:docs`.
 
@@ -140,7 +137,7 @@ Before pushing:
 ```bash
 bun check         # lint + formatting (vp check)
 bun check-types   # TypeScript type checking
-bun test          # tests (Vitest, Playwright)
+bun run test      # tests (Vitest)
 bun build         # production build
 bun secrets:scan  # secret detection (Gitleaks)
 ```

@@ -1,0 +1,110 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+
+import { AuthField } from "./auth-field";
+
+function makeField(value = "", errors: Array<{ message?: string }> = []) {
+  return {
+    name: "email",
+    state: { value, meta: { errors } },
+    handleBlur: vi.fn(),
+    handleChange: vi.fn(),
+  };
+}
+
+describe("AuthField", () => {
+  it("associe le libellé au champ", () => {
+    render(<AuthField field={makeField()} label="Email" type="email" />);
+
+    expect(screen.getByLabelText("Email")).toHaveAttribute("type", "email");
+  });
+
+  it("n'affiche aucune erreur ni attribut d'erreur quand le champ est valide", () => {
+    render(<AuthField field={makeField("ada@example.com")} label="Email" />);
+
+    const input = screen.getByLabelText("Email");
+    expect(input).not.toHaveAttribute("aria-invalid");
+    expect(input).not.toHaveAttribute("aria-describedby");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("signale le champ invalide et le relie à son message d'erreur", () => {
+    render(
+      <AuthField
+        field={makeField("nope", [{ message: "Adresse email invalide" }])}
+        label="Email"
+      />,
+    );
+
+    const input = screen.getByLabelText("Email");
+    const alert = screen.getByRole("alert");
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    expect(alert).toHaveTextContent("Adresse email invalide");
+    expect(input).toHaveAttribute("aria-describedby", alert.id);
+  });
+
+  it("n'affiche que la première erreur", () => {
+    render(
+      <AuthField
+        field={makeField("", [{ message: "Première" }, { message: "Seconde" }])}
+        label="Email"
+      />,
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Première");
+    expect(screen.queryByText("Seconde")).not.toBeInTheDocument();
+  });
+
+  it("transmet la saisie et la perte de focus au champ", async () => {
+    const field = makeField();
+    render(<AuthField field={field} label="Email" />);
+
+    await userEvent.type(screen.getByLabelText("Email"), "a");
+    await userEvent.tab();
+
+    expect(field.handleChange).toHaveBeenCalledWith("a");
+    expect(field.handleBlur).toHaveBeenCalledOnce();
+  });
+
+  it("permet d'afficher puis de masquer un mot de passe", async () => {
+    const user = userEvent.setup();
+    render(<AuthField field={makeField("secret123")} label="Mot de passe" type="password" />);
+    const input = screen.getByLabelText("Mot de passe");
+    expect(input).toHaveAttribute("type", "password");
+
+    await user.click(screen.getByRole("button", { name: "Afficher le mot de passe" }));
+    expect(input).toHaveAttribute("type", "text");
+
+    expect(screen.getByRole("button", { name: "Afficher le mot de passe" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Afficher le mot de passe" }));
+    expect(input).toHaveAttribute("type", "password");
+  });
+
+  it("remasque le mot de passe à l'envoi du formulaire", async () => {
+    const user = userEvent.setup();
+    render(
+      <form onSubmit={(event) => event.preventDefault()}>
+        <AuthField field={makeField("secret123")} label="Mot de passe" type="password" />
+        <button type="submit">Envoyer</button>
+      </form>,
+    );
+    const input = screen.getByLabelText("Mot de passe");
+    await user.click(screen.getByRole("button", { name: "Afficher le mot de passe" }));
+    expect(input).toHaveAttribute("type", "text");
+
+    await user.click(screen.getByRole("button", { name: "Envoyer" }));
+
+    expect(input).toHaveAttribute("type", "password");
+  });
+
+  it("n'ajoute pas de bouton d'affichage aux champs qui ne sont pas des mots de passe", () => {
+    render(<AuthField field={makeField()} label="Email" type="email" />);
+
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+});

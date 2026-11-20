@@ -1,14 +1,23 @@
 import { useState } from "react";
 
+import { AuthLayout } from "@/components/auth-layout";
 import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
 
-export default function Login() {
-  const [showSignIn, setShowSignIn] = useState(false);
+export function meta() {
+  return [{ title: "Connexion - EventsHub" }];
+}
 
-  return showSignIn ? (
-    <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-  ) : (
-    <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+export default function Login() {
+  const [showSignIn, setShowSignIn] = useState(true);
+
+  return (
+    <AuthLayout variant={showSignIn ? "sign-in" : "sign-up"}>
+      {showSignIn ? (
+        <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+      ) : (
+        <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+      )}
+    </AuthLayout>
   );
 }

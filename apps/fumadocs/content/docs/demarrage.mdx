@@ -1,0 +1,102 @@
+---
+title: Démarrer le projet
+description: Du clone du dépôt à l'application qui tourne en local.
+---
+
+## En une ligne
+
+Avec les prérequis ci-dessous installés et Docker Desktop démarré :
+
+```bash
+git clone https://github.com/RobinSartini/EventsHub.git && cd EventsHub && bun install && bun dev
+```
+
+## Prérequis
+
+- [Bun](https://bun.sh) 1.3 ou plus récent
+- [Node.js](https://nodejs.org) 24, utilisé par le build du front (`bun run build`)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/), démarré
+- Git
+
+Sous Windows, désactivez la conversion des fins de ligne pour ce dépôt, sinon le hook de pre-commit refuse des fichiers que vous n'avez pas modifiés :
+
+```bash
+git config core.autocrlf false
+```
+
+## Installer et lancer
+
+```bash
+git clone https://github.com/RobinSartini/EventsHub.git
+cd EventsHub
+bun install
+bun dev
+```
+
+`bun dev` crée `.env` et `apps/server/.env` à partir de leur `.env.example` s'ils manquent (ou leur ajoute les variables manquantes), démarre PostgreSQL dans Docker, applique le schéma Prisma, ajoute les données de démonstration si la base est vide, puis lance toutes les applications.
+
+| Service       | URL                   |
+| ------------- | --------------------- |
+| Front web     | http://localhost:5173 |
+| API           | http://localhost:3000 |
+| Documentation | http://localhost:4000 |
+
+## Tout lancer dans Docker
+
+Pour tester l'application comme en production (images construites, sans rechargement à chaud) :
+
+| Commande               | Effet                                                                                    |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| `bun run docker:up`    | Construit les images, prépare la base (schéma + données de démo si vide) et lance tout   |
+| `bun run docker:down`  | Arrête et supprime les conteneurs, en gardant les données                                |
+| `bun run docker:reset` | Supprime conteneurs, images **et données**, puis reconstruit tout (demande confirmation) |
+
+Le web est alors sur http://localhost:3000 et l'API sur http://localhost:3001. `bun dev` arrête automatiquement ces conteneurs, qui occupent le port 3000.
+
+## Base de données
+
+`bun dev` et `bun run docker:up` préparent la base tout seuls à chaque lancement :
+
+1. démarrage de PostgreSQL dans Docker (identifiants lus dans `.env`) ;
+2. application du schéma Prisma (`packages/db/prisma/schema/*.prisma`) avec `prisma db push` ;
+3. ajout des données de démonstration si la base ne contient aucun événement.
+
+Après un changement de schéma (le vôtre ou celui d'un `git pull`), relancez simplement `bun dev`.
+
+Le projet n'a pas encore de migrations : `db push` aligne directement la base sur le schéma, sans historique. C'est adapté au développement local, pas à une base de production. Un changement destructif (colonne supprimée, type modifié) est refusé par `db push` pour éviter de perdre des données : lisez le message, puis relancez `bun db:push --accept-data-loss` si la perte est voulue, ou `bun run docker:reset` pour repartir d'une base vide.
+
+L'utilisateur PostgreSQL local (`POSTGRES_USER`) est le super-utilisateur créé par l'image Docker : il a tous les droits nécessaires au schéma, au seed et aux migrations.
+
+| Commande          | Effet                                                        |
+| ----------------- | ------------------------------------------------------------ |
+| `bun db:start`    | Démarre PostgreSQL en arrière-plan et attend qu'il soit prêt |
+| `bun db:stop`     | Arrête PostgreSQL en gardant les données                     |
+| `bun db:down`     | Supprime le conteneur (les données restent dans le volume)   |
+| `bun db:push`     | Applique le schéma Prisma à la base                          |
+| `bun db:seed`     | Remplace les événements de démonstration par des neufs       |
+| `bun db:studio`   | Ouvre Prisma Studio pour consulter et modifier les données   |
+| `bun db:generate` | Régénère le client Prisma (fait aussi par `bun install`)     |
+| `bun db:migrate`  | Crée et applique une migration (pas encore utilisé)          |
+
+## Devenir administrateur
+
+1. Créez un compte depuis le front web.
+2. Lancez `bun db:studio`, ouvrez la table `user`, passez le champ `role` de votre compte à `admin` et enregistrez.
+3. Déconnectez-vous puis reconnectez-vous.
+
+## Tests et qualité
+
+```bash
+bun run test
+bun run check
+bun run check-types
+```
+
+Utilisez `bun run test` et non `bun test`, qui lance un autre runner que Vitest. Les tests du back simulent la base de données : Docker n'est pas nécessaire pour les lancer.
+
+## Versionnage
+
+- **Branches** : on part de `dev` pour chaque changement et on y revient par une PR. `dev` est ensuite promue vers `staging`, puis vers `main`.
+- **Commits et titres de PR** : [Conventional Commits](https://www.conventionalcommits.org/fr/) (`feat`, `fix`, `docs`, `refactor`, `test`, `ci`…), en anglais.
+- **Contrat d'API** : versionné en SemVer dans `info.version` de `contrat/openapi.yaml`. Voir [Contrat d'API](/docs/contrat).
+- **Images Docker** : chaque push validé sur `dev`, `staging` ou `main` publie des images taguées `<branche>-<sha court>`. Voir [CI](/docs/ci).

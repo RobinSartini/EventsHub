@@ -1,0 +1,75 @@
+---
+title: "CI"
+description: "Ce que vérifie la CI, les images Docker, le déploiement et le retour arrière."
+---
+
+Un seul workflow GitHub Actions : [`.github/workflows/ci.yml`](https://github.com/RobinSartini/EventsHub/blob/dev/.github/workflows/ci.yml). Les runs sont visibles dans l'onglet [Actions](https://github.com/RobinSartini/EventsHub/actions/workflows/ci.yml).
+
+## Quand elle tourne
+
+Sur chaque pull request et chaque push vers `dev`, `staging` et `main`.
+
+## Job « Lint, Type Check & Build »
+
+Il tourne sur les PR comme sur les push, dans cet ordre :
+
+| Étape                 | Commande                                 | Bloque si                                                                                                          |
+| --------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Installation          | `vp install`                             | le lockfile ne correspond pas                                                                                      |
+| Audit des dépendances | `vp pm audit --level high` (`bun audit`) | une faille haute ou critique n'est pas listée dans `.trivyignore`                                                  |
+| Trivy sur le dépôt    | `trivy fs --scanners secret,misconfig`   | un secret est commité, ou un Dockerfile, le compose ou un workflow a une erreur de configuration haute ou critique |
+| Lint et formatage     | `vp check`                               | un fichier n'est pas formaté ou le lint échoue                                                                     |
+| Types                 | `vp run -r check-types`                  | erreur TypeScript dans un paquet                                                                                   |
+| Build                 | `vp run -r build`                        | un paquet ne compile pas                                                                                           |
+| Tests                 | `vp run -r test`                         | un test échoue                                                                                                     |
+
+Les variables d'environnement de ce job sont factices : les tests n'ont besoin ni de base ni de secret.
+
+## Job « Docker image »
+
+Il tourne seulement sur un push vers `dev`, `staging` ou `main`, après le job précédent, pour `server` et `web` :
+
+1. construit l'image (`linux/amd64`, cache GitHub Actions) ;
+2. la scanne avec Trivy : une faille haute ou critique corrigée en amont bloque la publication ;
+3. la pousse sur GHCR : `ghcr.io/robinsartini/eventshub-server` et `ghcr.io/robinsartini/eventshub-web`, avec deux tags :
+   - `<branche>-<sha court>` (ex. `dev-99a734e`) : fixe, sert à déployer ou revenir à une version ;
+   - `<branche>` : la dernière version de la branche.
+
+Déployer ou revenir à une version, sur une machine connectée à GHCR (`docker login ghcr.io`) :
+
+```bash
+EVENTSHUB_TAG=dev-99a734e docker compose pull server web
+EVENTSHUB_TAG=dev-99a734e docker compose up -d --no-build server web
+```
+
+## Réglages du dépôt
+
+| Nom               | Type        | Rôle                                                                        |
+| ----------------- | ----------- | --------------------------------------------------------------------------- |
+| `VITE_SERVER_URL` | variable    | URL de l'API compilée dans l'image web (`http://localhost:3001` par défaut) |
+| `GITHUB_TOKEN`    | automatique | publication des images sur GHCR                                             |
+
+## Failles acceptées
+
+[`.trivyignore`](https://github.com/RobinSartini/EventsHub/blob/dev/.trivyignore) liste les failles jugées non exploitables chez nous. Il est lu par Trivy et par l'audit. Chaque entrée a une justification en commentaire et une date d'expiration (`exp:AAAA-MM-JJ`) : passé cette date, la CI bloque à nouveau. La bonne réponse reste de mettre à jour la dépendance ; on n'ajoute une exception que si la faille ne nous concerne pas.
+
+## Reproduire la CI en local
+
+```bash
+bun run check
+bun run check-types
+bun run build
+bun run test
+```
+
+Trivy en local, avec Docker :
+
+```bash
+docker run --rm -v "$PWD:/repo" -w /repo aquasec/trivy:0.69.3 fs --scanners secret,misconfig --severity HIGH,CRITICAL --skip-dirs node_modules .
+```
+
+## Si la CI échoue
+
+- Ouvrez le run depuis l'onglet « Checks » de la PR et lisez l'étape en rouge.
+- Un job qui échoue en quelques secondes sans aucune étape exécutée vient en général de GitHub (facturation, quota de minutes), pas du code : regardez les annotations du job.
+- Après un merge sur `dev`, une PR testée avec l'ancien `dev` peut devenir rouge : « Update branch » relance la CI sur la version à jour.

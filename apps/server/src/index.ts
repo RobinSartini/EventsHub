@@ -1,26 +1,39 @@
 import { createContext } from "@EventsHub/api/context";
 import { appRouter } from "@EventsHub/api/routers/index";
-import { auth } from "@EventsHub/auth";
 import { env } from "@EventsHub/env/server";
 import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
+import { adminEventRoutes } from "@/routes/admin/events";
+import { authRoutes } from "@/routes/auth";
+import { categoryRoutes } from "@/routes/categories";
+import { eventRoutes } from "@/routes/events";
+import { userRoutes } from "@/routes/users";
+import { errorHandler } from "@/errors";
+
 const app = new Hono();
+
+app.onError(errorHandler);
 
 app.use(logger());
 app.use(
   "/*",
   cors({
     origin: env.CORS_ORIGIN,
-    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
+    exposeHeaders: ["X-Total-Count"],
     credentials: true,
   }),
 );
 
-app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
+app.route("/api/auth", authRoutes);
+app.route("/events", eventRoutes);
+app.route("/categories", categoryRoutes);
+app.route("/users", userRoutes);
+app.route("/admin/events", adminEventRoutes);
 
 app.use(
   "/trpc/*",

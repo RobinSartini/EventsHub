@@ -1,11 +1,12 @@
 <div align="center">
 
-# 🎟️ EventHub
+# 🎟️ EventsHub
 
 **La plateforme qui révolutionne la gestion d'événements.**
 
 Recherchez, créez et suivez des événements près de chez vous, sur le web comme sur mobile.
 
+[![CI](https://github.com/RobinSartini/EventsHub/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/RobinSartini/EventsHub/actions/workflows/ci.yml?query=branch%3Adev)
 ![React](https://img.shields.io/badge/React-Router_v8-61DAFB?logo=react&logoColor=black)
 ![Hono](https://img.shields.io/badge/Hono-Node.js-E36002?logo=hono&logoColor=white)
 ![Tailwind](https://img.shields.io/badge/TailwindCSS-38B2AC?logo=tailwindcss&logoColor=white)
@@ -16,9 +17,10 @@ Recherchez, créez et suivez des événements près de chez vous, sur le web com
 
 ---
 
-## 📖 Histoire
+## 📖 Introduction
 
-On en avait marre des événements mal organisés. C'est pourquoi nous avons créé **EventHub** : une application qui centralise la découverte, la création et la gestion d'événements, avec les inscriptions, les quotas et les billets à QR code.
+**EventsHub** centralise la découverte, la création et la gestion d'événements, sur le web et sur iOS.
+On y trouve les événements autour de soi, on s'y inscrit, et les organisateurs gèrent quotas et billets à QR code.
 
 ## ✨ Fonctionnalités principales
 
@@ -40,18 +42,15 @@ On en avait marre des événements mal organisés. C'est pourquoi nous avons cr�
 
 ## 🧱 Stack technique
 
-| Couche                    | Technologies                                                                         |
-| ------------------------- | ------------------------------------------------------------------------------------ |
-| **Web (front)**           | React, React Router v8, Zod, Zustand, shadcn/ui, DevIcon, TailwindCSS                |
-| **Back**                  | Node.js, Hono, Zod, Better Auth (authentification)                                   |
-| **Services tiers (back)** | Upstash Redis (+ rate limiting), Stripe (paiements), Anthropic API (IA)              |
-| **Mobile**                | SwiftUI (`apps/native`)                                                              |
-| **Base de données**       | PostgreSQL (`packages/db`)                                                           |
-| **Services externes**     | OpenStreetMap                                                                        |
-| **Outillage**             | Bun, Vite+, Docker Compose, Dev Container, GitHub Actions, Gitleaks, Fumadocs, Ruler |
-| **Pistes à confirmer**    | Usage exact de Redis (verrous de places, cache), service d'emails                    |
-
-> Les dépendances `better-auth`, `stripe`, `@upstash/redis`, `@upstash/ratelimit` et `@anthropic-ai/sdk` sont déclarées dans `apps/server`, et leurs variables d'environnement sont validées dans `packages/env`. Leur rôle fonctionnel dans EventHub reste à préciser.
+| Couche                 | Technologies                                                          |
+| ---------------------- | --------------------------------------------------------------------- |
+| **Web (front)**        | React, React Router v8, Zod, Zustand, shadcn/ui, DevIcon, TailwindCSS |
+| **Back**               | Node.js, Hono, Zod, Better Auth (authentification)                    |
+| **Mobile**             | SwiftUI (`apps/native`)                                               |
+| **Base de données**    | PostgreSQL (`packages/db`)                                            |
+| **Services externes**  | OpenStreetMap                                                         |
+| **Outillage**          | Bun, Vite+, Docker Compose, GitHub Actions, Gitleaks, Fumadocs, Ruler |
+| **Pistes à confirmer** | Usage exact de Redis (verrous de places, cache), service d'emails     |
 
 ---
 
@@ -73,9 +72,6 @@ flowchart LR
 
     subgraph Externe["Services externes"]
         OSM["🗺️ OpenStreetMap"]
-        REDIS[("Upstash Redis")]
-        STRIPE["💳 Stripe"]
-        AI["🤖 Anthropic API"]
     end
 
     subgraph Prevu["Pistes à confirmer"]
@@ -87,9 +83,6 @@ flowchart LR
     WEB -- "tuiles de carte" --> OSM
     MOB -- "tuiles de carte" --> OSM
     API --> DB
-    API --> REDIS
-    API --> STRIPE
-    API --> AI
     API -.-> MAIL
 ```
 
@@ -283,39 +276,149 @@ flowchart LR
 
 ## 🚀 Démarrage
 
+### En une ligne
+
+Avec les prérequis ci-dessous installés et Docker Desktop démarré :
+
+```bash
+git clone https://github.com/RobinSartini/EventsHub.git && cd EventsHub && bun install && bun dev
+```
+
+Le front est ensuite sur http://localhost:5173, l'API sur http://localhost:3000 et la documentation sur http://localhost:4000. Le détail des étapes suit.
+
 ### Prérequis
 
-- [Bun](https://bun.sh) pour les dépendances JavaScript (installées à la racine du workspace)
-- Pour l'app mobile : macOS, Xcode et [XcodeGen](https://github.com/yonaskolb/XcodeGen)
-- Docker (optionnel) pour lancer PostgreSQL via Docker Compose ou le Dev Container
+- [Bun](https://bun.sh) 1.3 ou plus récent
+- [Node.js](https://nodejs.org) 24, utilisé par le build du front (`bun run build`)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) pour la base PostgreSQL locale
+- Git
+- Pour l'app mobile uniquement : macOS, Xcode et [XcodeGen](https://github.com/yonaskolb/XcodeGen)
 
-### Installation
+Sous Windows, désactivez la conversion des fins de ligne pour ce dépôt **avant** de travailler dessus, sinon le hook de pre-commit refuse des fichiers que vous n'avez pas modifiés :
 
 ```bash
-git clone https://github.com/<votre-compte>/eventhub.git
-cd eventhub
+git config core.autocrlf false
+```
 
+### 1. Installer
+
+```bash
+git clone https://github.com/RobinSartini/EventsHub.git
+cd EventsHub
 bun install
-(cd apps/native && xcodegen generate)
 ```
 
-Copiez ensuite le `.env.example` de chaque application en `.env` (quand il existe) et renseignez les identifiants de la base de données avant de démarrer les services qui en dépendent.
+### 2. Lancer
 
-### Développement
-
-Lance ensemble le front web et le back (si l'un s'arrête, les autres sont arrêtés) :
+Docker Desktop doit être démarré, puis :
 
 ```bash
-bun run dev
+bun dev
 ```
 
-L'application mobile se lance séparément, pour choisir un simulateur ou un appareil :
+Cette commande fait tout, à chaque lancement :
+
+1. crée `.env` (identifiants PostgreSQL pour Docker) et `apps/server/.env` (configuration de l'API) à partir de leur `.env.example` s'ils n'existent pas, ou leur ajoute les variables manquantes sans toucher aux valeurs existantes. Les valeurs par défaut fonctionnent en local ;
+2. démarre PostgreSQL dans Docker (port 5432) et attend qu'il soit prêt ;
+3. applique le schéma Prisma à la base ;
+4. ajoute les données de démonstration (4 catégories, 30 événements) si la base ne contient aucun événement ;
+5. lance le front web, l'API et la documentation.
+
+| Service       | URL                   |
+| ------------- | --------------------- |
+| Front web     | http://localhost:5173 |
+| API           | http://localhost:3000 |
+| Documentation | http://localhost:4000 |
+
+### 3. Devenir administrateur
+
+Les pages et routes `/admin/*` sont réservées aux administrateurs. Pour passer votre compte admin :
+
+1. Créez un compte depuis le front web.
+2. Lancez `bun db:studio`, ouvrez la table `user`, passez le champ `role` de votre compte à `admin` et enregistrez.
+3. Déconnectez-vous puis reconnectez-vous.
+
+### Tests et qualité
 
 ```bash
-cd apps/native && open BetterFullstackApp.xcodeproj
+bun run test
+bun run check
+bun run check-types
 ```
 
-Le web et le mobile communiquent avec l'API en HTTP. Voir le README et le fichier d'environnement de chaque application pour son endpoint local.
+Dans l'ordre : tous les tests, le lint et le formatage (comme le hook de pre-commit), puis le typage TypeScript. Utilisez bien `bun run test` et non `bun test`, qui lance un autre runner que Vitest.
+
+Les tests du back simulent la base de données : Docker n'est pas nécessaire pour les lancer.
+
+### Tout lancer dans Docker
+
+Pour tester l'application comme en production (images construites, sans rechargement à chaud) :
+
+| Commande               | Effet                                                                                    |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| `bun run docker:up`    | Construit les images, prépare la base (schéma + données de démo si vide) et lance tout   |
+| `bun run docker:down`  | Arrête et supprime les conteneurs, en gardant les données                                |
+| `bun run docker:reset` | Supprime conteneurs, images **et données**, puis reconstruit tout (demande confirmation) |
+
+Le web est alors sur http://localhost:3000 et l'API sur http://localhost:3001. `bun dev` arrête automatiquement ces conteneurs, qui occupent le port 3000.
+
+### Base de données
+
+`bun dev` et `bun run docker:up` préparent la base tout seuls à chaque lancement :
+
+1. démarrage de PostgreSQL dans Docker (identifiants lus dans `.env`) ;
+2. application du schéma Prisma (`packages/db/prisma/schema/*.prisma`) avec `prisma db push` ;
+3. ajout des données de démonstration si la base ne contient aucun événement.
+
+Après un changement de schéma (le vôtre ou celui d'un `git pull`), relancez simplement `bun dev`.
+
+Le projet n'a pas encore de migrations : `db push` aligne directement la base sur le schéma, sans historique. C'est adapté au développement local, pas à une base de production. Un changement destructif (colonne supprimée, type modifié) est refusé par `db push` pour éviter de perdre des données : lisez le message, puis relancez `bun db:push --accept-data-loss` si la perte est voulue, ou `bun run docker:reset` pour repartir d'une base vide.
+
+L'utilisateur PostgreSQL local (`POSTGRES_USER`) est le super-utilisateur créé par l'image Docker : il a tous les droits nécessaires au schéma, au seed et aux migrations.
+
+| Commande          | Effet                                                        |
+| ----------------- | ------------------------------------------------------------ |
+| `bun db:start`    | Démarre PostgreSQL en arrière-plan et attend qu'il soit prêt |
+| `bun db:stop`     | Arrête PostgreSQL en gardant les données                     |
+| `bun db:down`     | Supprime le conteneur (les données restent dans le volume)   |
+| `bun db:push`     | Applique le schéma Prisma à la base                          |
+| `bun db:seed`     | Remplace les événements de démonstration par des neufs       |
+| `bun db:studio`   | Ouvre Prisma Studio pour consulter et modifier les données   |
+| `bun db:generate` | Régénère le client Prisma (fait aussi par `bun install`)     |
+| `bun db:migrate`  | Crée et applique une migration (pas encore utilisé)          |
+
+### App mobile (macOS)
+
+```bash
+cd apps/native
+xcodegen generate
+open EventsHub.xcodeproj
+```
+
+En Debug, l'app appelle un serveur mock généré à partir du contrat d'API, sur le port 4010. Lancez-le depuis la racine du dépôt avant l'app :
+
+```bash
+npx @stoplight/prism-cli mock contrat/openapi.yaml -p 4010
+```
+
+Pour un appareil physique, voir [`apps/native/README.md`](apps/native/README.md).
+
+## 🏷️ Versionnage
+
+- **Branches** : on part de `dev` pour chaque changement et on y revient par une PR. `dev` est ensuite promue vers `staging`, puis vers `main`.
+- **Commits et titres de PR** : [Conventional Commits](https://www.conventionalcommits.org/fr/) (`feat`, `fix`, `docs`, `refactor`, `test`, `ci`…), en anglais.
+- **Contrat d'API** : versionné en SemVer dans `info.version` de `contrat/openapi.yaml` (mineure pour un ajout, majeure pour un changement cassant). Historique dans [`docs/contrat.md`](docs/contrat.md).
+- **Images Docker** : chaque push validé sur `dev`, `staging` ou `main` publie des images taguées `<branche>-<sha court>`, qui servent à déployer ou revenir à une version. Voir [`docs/ci.md`](docs/ci.md).
+
+## 📚 Documentation
+
+| Document                                 | Contenu                                                                             |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- |
+| [`docs/contrat.md`](docs/contrat.md)     | Le contrat d'API : où le lire, ses conventions, comment le modifier, son historique |
+| [`docs/decisions.md`](docs/decisions.md) | Les choix techniques, leur raison et la PR qui les a introduits                     |
+| [`docs/ci.md`](docs/ci.md)               | Ce que vérifie la CI, les images Docker, le déploiement et le rollback              |
+| [`docs/test.md`](docs/test.md)           | Lancer et écrire les tests, back, web et iOS                                        |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md)     | Branches, commits, pull requests et review                                          |
 
 ## 🗂️ Structure du projet
 

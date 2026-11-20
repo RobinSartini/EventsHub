@@ -1,50 +1,50 @@
 import { useForm } from "@tanstack/react-form";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
+import { authErrorMessage } from "@/lib/auth-errors";
 
+import { AuthField } from "./auth-field";
 import Loader from "./loader";
+import { PasswordStrength } from "./password-strength";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+
+// Règles du schéma UserRegister (contrat/openapi.yaml).
+const signUpSchema = z.object({
+  name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères"),
+  email: z.email("Adresse email invalide"),
+  password: z
+    .string()
+    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
+    .max(128, "Le mot de passe doit contenir au plus 128 caractères"),
+});
 
 export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () => void }) {
   const navigate = useNavigate();
   const { isPending } = authClient.useSession();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-      name: "",
-    },
+    defaultValues: { name: "", email: "", password: "" },
     onSubmit: async ({ value }) => {
+      setSubmitError(null);
       await authClient.signUp.email(
-        {
-          email: value.email,
-          password: value.password,
-          name: value.name,
-        },
+        { name: value.name, email: value.email, password: value.password },
         {
           onSuccess: () => {
-            navigate("/dashboard");
-            toast.success("Sign up successful");
+            navigate("/");
+            toast.success("Compte créé");
           },
-          onError: (error) => {
-            toast.error(error.error.message || error.error.statusText);
+          onError: ({ error }) => {
+            setSubmitError(authErrorMessage(error.status));
           },
         },
       );
     },
-    validators: {
-      onSubmit: z.object({
-        name: z.string().min(2, "Name must be at least 2 characters"),
-        email: z.email("Invalid email address"),
-        password: z.string().min(8, "Password must be at least 8 characters"),
-      }),
-    },
+    validators: { onSubmit: signUpSchema },
   });
 
   if (isPending) {
@@ -52,84 +52,51 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display text-3xl font-extrabold">Créer un compte</h1>
+        <p className="text-muted-foreground text-sm">C'est gratuit et ça prend une minute.</p>
+      </div>
 
       <form
+        noValidate
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="space-y-4"
+        className="flex flex-col gap-4"
       >
-        <div>
-          <form.Field name="name">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Name</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
+        <form.Field name="name">
+          {(field) => <AuthField field={field} label="Nom" autoComplete="name" />}
+        </form.Field>
 
-        <div>
-          <form.Field name="email">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="email"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
+        <form.Field name="email">
+          {(field) => <AuthField field={field} label="Email" type="email" autoComplete="email" />}
+        </form.Field>
 
-        <div>
-          <form.Field name="password">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="password"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
+        <form.Field name="password">
+          {(field) => (
+            <div className="flex flex-col gap-2">
+              <AuthField
+                field={field}
+                label="Mot de passe"
+                type="password"
+                autoComplete="new-password"
+              />
+              <PasswordStrength value={field.state.value} />
+            </div>
+          )}
+        </form.Field>
+
+        {submitError && (
+          <p
+            role="alert"
+            className="bg-destructive/10 text-destructive rounded-2xl px-4 py-3 text-sm font-bold"
+          >
+            {submitError}
+          </p>
+        )}
 
         <form.Subscribe>
           {(state) => (
@@ -138,21 +105,24 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
               className="w-full"
               disabled={!state.canSubmit || state.isSubmitting}
             >
-              {state.isSubmitting ? "Submitting..." : "Sign Up"}
+              {state.isSubmitting ? "Création…" : "Créer mon compte"}
             </Button>
           )}
         </form.Subscribe>
       </form>
 
-      <div className="mt-4 text-center">
+      <p className="text-muted-foreground text-center text-sm">
+        Déjà un compte ?{" "}
         <Button
+          type="button"
           variant="link"
+          size="xs"
           onClick={onSwitchToSignIn}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="px-0 font-bold"
         >
-          Already have an account? Sign In
+          Se connecter
         </Button>
-      </div>
+      </p>
     </div>
   );
 }

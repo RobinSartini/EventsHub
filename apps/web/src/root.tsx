@@ -1,6 +1,9 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
+import "@fontsource-variable/jetbrains-mono";
+import "@fontsource-variable/nunito-sans";
+import "@fontsource-variable/unbounded";
 import "./index.css";
 import {
   isRouteErrorResponse,
@@ -9,27 +12,22 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
+  useNavigate,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 
-import Header from "./components/header";
 import { ThemeProvider } from "./components/theme-provider";
+import { HomeSearch } from "./components/navigation/home-search";
+import { NavBar } from "./components/navigation/navbar";
 import { Toaster } from "./components/ui/sonner";
+import { authClient } from "./lib/auth-client";
 import { queryClient } from "./utils/trpc";
-
-export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-  },
-];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -45,6 +43,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AppNavBar() {
+  const { data: session } = authClient.useSession();
+  const navigate = useNavigate();
+  const isHome = useLocation().pathname === "/";
+  const user = session?.user ? { name: session.user.name } : null;
+  const signOut = () => authClient.signOut({ fetchOptions: { onSuccess: () => navigate("/") } });
+  return (
+    <NavBar
+      user={user}
+      onSignOut={signOut}
+      className={isHome ? "relative z-10 border-b-0" : undefined}
+    >
+      {isHome ? <HomeSearch /> : null}
+    </NavBar>
+  );
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -55,7 +70,7 @@ export default function App() {
         storageKey="vite-ui-theme"
       >
         <div className="grid grid-rows-[auto_1fr] h-svh">
-          <Header />
+          <AppNavBar />
           <Outlet />
         </div>
         <Toaster richColors />
