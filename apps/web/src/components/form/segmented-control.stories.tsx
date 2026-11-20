@@ -22,3 +22,16 @@ type Story = StoryObj<typeof meta>;
 export const List: Story = { name: "Liste choisie" };
 
 export const Map: Story = { name: "Carte choisie", args: { value: "map" } };
+
+export const VisibleLabel: Story = {
+  name: "Libellé visible",
+  args: {
+    label: "Trier par",
+    showLabel: true,
+    options: [
+      { value: "date", label: "Date" },
+      { value: "distance", label: "Distance" },
+    ],
+    value: "date",
+  },
+};

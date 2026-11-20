@@ -70,11 +70,9 @@ function FiltersDialog({ sort, onApply }: Readonly<FiltersDialogProps>) {
           </div>
 
           <div className="flex flex-col gap-3">
-            <p aria-hidden="true" className="text-sm font-bold">
-              Trier par
-            </p>
             <SegmentedControl
               label="Trier par"
+              showLabel
               options={SORT_OPTIONS}
               value={draft}
               onValueChange={setDraft}
