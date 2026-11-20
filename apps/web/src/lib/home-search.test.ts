@@ -6,13 +6,19 @@ const read = (search: string) => readHomeSearch(new URLSearchParams(search));
 const today = new Date(2026, 10, 17);
 
 describe("readHomeSearch", () => {
-  it("lit la recherche, la ville, la date et la catégorie", () => {
-    expect(read("q=jazz&city=Lyon&from=2026-12-05&category=musique")).toEqual({
+  it("lit la recherche, la ville, la période et la catégorie", () => {
+    expect(read("q=jazz&city=Lyon&from=2026-12-05&to=2026-12-12&category=musique")).toEqual({
       q: "jazz",
       city: "Lyon",
       from: "2026-12-05",
+      to: "2026-12-12",
       category: "musique",
     });
+  });
+
+  it("ignore une fin de période qui n'est pas après le début", () => {
+    expect(read("from=2026-12-12&to=2026-12-05").to).toBeUndefined();
+    expect(read("to=2026-12-05").to).toBeUndefined();
   });
 
   it("ignore les champs vides et coupe à 100 caractères comme le contrat", () => {
@@ -24,6 +30,11 @@ describe("readHomeSearch", () => {
 
   it("ignore une date mal formée", () => {
     expect(read("from=2026-02-31").from).toBeUndefined();
+  });
+
+  it("ne garde que le tri par distance, le tri par date étant celui par défaut", () => {
+    expect(read("sort=distance").sort).toBe("distance");
+    expect(read("sort=prix").sort).toBeUndefined();
   });
 });
 
@@ -41,6 +52,13 @@ describe("eventsQuery", () => {
     const params = query("q=jazz&city=Lyon&category=musique", today, 2);
 
     expect(params.toString()).toBe("q=jazz&city=Lyon&category=musique&page=2&pageSize=12");
+  });
+
+  it("envoie la période du début du premier jour local à la fin du dernier", () => {
+    const params = query("from=2026-12-05&to=2026-12-12", today);
+
+    expect(params.get("from")).toBe(new Date(2026, 11, 5).toISOString());
+    expect(params.get("to")).toBe(new Date(2026, 11, 12, 23, 59, 59, 999).toISOString());
   });
 
   it("traduit « Ce soir » en soirée locale, de 18h à minuit, à la place de la date choisie", () => {

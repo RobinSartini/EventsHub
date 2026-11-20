@@ -9,21 +9,34 @@ export type HomeFilters = {
   q?: string;
   city?: string;
   from?: string;
+  to?: string;
   category?: string;
+  sort?: Sort;
 };
+
+export type Sort = "date" | "distance";
+
+export type Position = { lat: number; lng: number };
 
 function text(value: string | null): string | undefined {
   return value?.trim().slice(0, MAX_LENGTH) || undefined;
 }
 
+function isoDay(value: string | null): string | undefined {
+  return value && fromIsoDay(value) ? value : undefined;
+}
+
 export function readHomeSearch(params: URLSearchParams): HomeFilters {
-  const from = params.get("from") ?? undefined;
+  const from = isoDay(params.get("from"));
+  const to = isoDay(params.get("to"));
 
   return {
     q: text(params.get("q")),
     city: text(params.get("city")),
-    from: fromIsoDay(from) ? from : undefined,
+    from,
+    to: from && to && to > from ? to : undefined,
     category: text(params.get("category")),
+    sort: params.get("sort") === "distance" ? "distance" : undefined,
   };
 }
 
@@ -39,21 +52,41 @@ export function writeHomeSearch(fields: HomeFilters): URLSearchParams {
   return toSearchParams(fields);
 }
 
+function endOfDay(day: Date) {
+  const end = new Date(day);
+  end.setHours(23, 59, 59, 999);
+  return end;
+}
+
 function tonightRange(now: Date) {
   const start = new Date(now);
   start.setHours(Math.max(now.getHours(), TONIGHT_HOUR), 0, 0, 0);
-  const end = new Date(now);
-  end.setHours(23, 59, 59, 999);
-  return { from: start.toISOString(), to: end.toISOString() };
+  return { from: start.toISOString(), to: endOfDay(now).toISOString() };
 }
 
-export function eventsQuery({ category, from, ...search }: HomeFilters, now: Date, page: number) {
+function daysRange(from: string | undefined, to: string | undefined) {
+  const first = fromIsoDay(from);
+  const last = fromIsoDay(to) ?? first;
+  return { from: first?.toISOString(), to: last && endOfDay(last).toISOString() };
+}
+
+export function eventsQuery(
+  { category, from, to, sort, ...search }: HomeFilters,
+  now: Date,
+  page: number,
+  position?: Position,
+) {
   const tonight = category === TONIGHT ? tonightRange(now) : undefined;
+  const days = tonight ?? daysRange(from, to);
+  const near = sort === "distance" ? position : undefined;
   return toSearchParams({
     ...search,
-    from: tonight?.from ?? fromIsoDay(from)?.toISOString(),
-    to: tonight?.to,
+    from: days.from,
+    to: days.to,
     category: tonight ? undefined : category,
+    sort: near && sort,
+    lat: near && String(near.lat),
+    lng: near && String(near.lng),
     page: String(page),
     pageSize: String(PAGE_SIZE),
   }).toString();

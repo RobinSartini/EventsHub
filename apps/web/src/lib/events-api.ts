@@ -9,6 +9,7 @@ const eventSchema = z.object({
   city: z.string().optional(),
   priceCents: z.number().int().optional(),
   status: z.enum(["published", "cancelled"]).optional(),
+  distanceKm: z.number().nullable().optional(),
 });
 
 const categorySchema = z.object({

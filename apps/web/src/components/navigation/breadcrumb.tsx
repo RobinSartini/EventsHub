@@ -27,7 +27,7 @@ function Breadcrumb({ items, className }: Readonly<BreadcrumbProps>) {
               {item.href && !isCurrent ? (
                 <Link
                   to={item.href}
-                  className={cn(focusRing, "hover:text-foreground rounded-sm transition-colors")}
+                  className={cn(focusRing, "hover:text-primary rounded-sm transition-colors")}
                 >
                   {item.label}
                 </Link>

@@ -58,3 +58,18 @@ export const Cancelled: Story = {
     isFavorite: false,
   },
 };
+
+export const WithDistance: Story = {
+  name: "Avec la distance",
+  args: {
+    event: {
+      id: "soiree-jazz",
+      name: "Soirée jazz",
+      startDate: "2026-11-29T19:00:00Z",
+      location: "Le Cargo, Valence",
+      priceCents: 1000,
+      distanceKm: 2.4,
+    },
+    isFavorite: false,
+  },
+};
