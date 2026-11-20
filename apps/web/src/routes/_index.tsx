@@ -57,11 +57,11 @@ function toCardEvent({ location, city, ...event }: ApiEvent): EventCardEvent {
 }
 
 function useHomeEvents(search: HomeFilters) {
-  const today = new Date();
+  const now = new Date();
 
   return useInfiniteQuery({
-    queryKey: ["events", eventsQuery(search, today, 1)],
-    queryFn: ({ pageParam, signal }) => fetchEvents(eventsQuery(search, today, pageParam), signal),
+    queryKey: ["events", eventsQuery(search, now, 1)],
+    queryFn: ({ pageParam, signal }) => fetchEvents(eventsQuery(search, now, pageParam), signal),
     initialPageParam: 1,
     getNextPageParam: (_last, pages) => nextPage(pages),
     placeholderData: keepPreviousData,

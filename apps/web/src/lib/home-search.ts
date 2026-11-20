@@ -1,7 +1,8 @@
-import { fromIsoDay, toIsoDay } from "./format-date";
+import { fromIsoDay } from "./format-date";
 
 export const TONIGHT = "ce-soir";
 export const PAGE_SIZE = 12;
+const TONIGHT_HOUR = 18;
 const MAX_LENGTH = 100;
 
 export type HomeFilters = {
@@ -26,7 +27,7 @@ export function readHomeSearch(params: URLSearchParams): HomeFilters {
   };
 }
 
-export function writeHomeSearch(fields: HomeFilters): URLSearchParams {
+function toSearchParams(fields: Record<string, string | undefined>): URLSearchParams {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(fields)) {
     if (value) params.set(key, value);
@@ -34,22 +35,28 @@ export function writeHomeSearch(fields: HomeFilters): URLSearchParams {
   return params;
 }
 
-export function eventsQuery({ category, from, ...search }: HomeFilters, today: Date, page: number) {
-  // Le jour envoyé est le jour local du navigateur, mais le serveur lit `from` et `to`
-  // comme des jours UTC (00:00Z à 23:59Z). En France, « Ce soir » est donc décalé d'une
-  // ou deux heures : un événement à 0h30 heure locale tombe dans le mauvais jour.
-  const tonight = category === TONIGHT ? toIsoDay(today) : undefined;
-  const params = writeHomeSearch({
-    q: search.q,
-    city: search.city,
-    from: tonight ?? from,
-    category: tonight ? undefined : category,
-  });
+export function writeHomeSearch(fields: HomeFilters): URLSearchParams {
+  return toSearchParams(fields);
+}
 
-  if (tonight) params.set("to", tonight);
-  params.set("page", String(page));
-  params.set("pageSize", String(PAGE_SIZE));
-  return params.toString();
+function tonightRange(now: Date) {
+  const start = new Date(now);
+  start.setHours(Math.max(now.getHours(), TONIGHT_HOUR), 0, 0, 0);
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+  return { from: start.toISOString(), to: end.toISOString() };
+}
+
+export function eventsQuery({ category, from, ...search }: HomeFilters, now: Date, page: number) {
+  const tonight = category === TONIGHT ? tonightRange(now) : undefined;
+  return toSearchParams({
+    ...search,
+    from: tonight?.from ?? fromIsoDay(from)?.toISOString(),
+    to: tonight?.to,
+    category: tonight ? undefined : category,
+    page: String(page),
+    pageSize: String(PAGE_SIZE),
+  }).toString();
 }
 
 type LoadedPage = { events: readonly unknown[]; total: number };
