@@ -1,5 +1,5 @@
 import { Dialog } from "@base-ui/react/dialog";
-import { SlidersHorizontalIcon, XIcon } from "lucide-react";
+import { createLucideIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,13 @@ type FiltersDialogProps = {
   sort: Sort;
   onApply: (sort: Sort) => void;
 };
+
+const FiltersIcon = createLucideIcon("Filters", [
+  ["path", { d: "M4 6h9M17 6h3M4 12h3M11 12h9M4 18h10M18 18h2", key: "lines" }],
+  ["circle", { cx: "15", cy: "6", r: "2", key: "top" }],
+  ["circle", { cx: "9", cy: "12", r: "2", key: "middle" }],
+  ["circle", { cx: "16", cy: "18", r: "2", key: "bottom" }],
+]);
 
 const SORT_OPTIONS = [
   { value: "date", label: "Date" },
@@ -39,12 +46,11 @@ function FiltersDialog({ sort, onApply }: Readonly<FiltersDialogProps>) {
         render={
           <Button
             variant="outline"
-            size="sm"
-            className="hover:bg-transparent aria-expanded:bg-transparent"
+            className="border hover:bg-transparent aria-expanded:bg-transparent"
           />
         }
       >
-        <SlidersHorizontalIcon />
+        <FiltersIcon />
         Filtres
         {active ? (
           <span className="bg-primary text-primary-foreground grid size-5 place-items-center rounded-full text-xs">
