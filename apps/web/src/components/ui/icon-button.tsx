@@ -4,11 +4,16 @@ import { Button } from "./button";
 
 type IconButtonProps = Omit<ComponentProps<typeof Button>, "aria-label" | "variant" | "size"> & {
   "aria-label": string;
-  variant?: "default" | "outline" | "primary";
+  variant?: "default" | "outline" | "primary" | "ghost";
   size?: "default" | "lg";
 };
 
-const variants = { default: "secondary", outline: "outline", primary: "default" } as const;
+const variants = {
+  default: "secondary",
+  outline: "outline",
+  primary: "default",
+  ghost: "ghost",
+} as const;
 const sizes = { default: "icon", lg: "icon-lg" } as const;
 
 function IconButton({

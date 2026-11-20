@@ -120,7 +120,7 @@ function TextField({ config, defaultValue }: Readonly<TextFieldProps>) {
   };
 
   return (
-    <div className={cn("group/text flex min-w-0 flex-1 items-center", config.width)}>
+    <div className={cn("group/text flex min-w-0 flex-1 items-end", config.width)}>
       <label className={cn(field, "cursor-text")}>
         <span className={fieldLabel}>{config.label}</span>
         <input
@@ -132,15 +132,16 @@ function TextField({ config, defaultValue }: Readonly<TextFieldProps>) {
           defaultValue={defaultValue}
           className={cn(
             fieldText,
-            "text-foreground placeholder:text-muted-foreground bg-transparent outline-none focus:placeholder:text-transparent [&::-webkit-search-cancel-button]:appearance-none",
+            "text-foreground placeholder:text-muted-foreground bg-transparent outline-none focus:placeholder:text-transparent [&::-webkit-search-cancel-button]:hidden",
           )}
         />
       </label>
       <IconButton
         type="button"
+        variant="ghost"
         aria-label={config.clearLabel}
         onClick={clear}
-        className="mr-2 size-7 shrink-0 group-has-[input:placeholder-shown]/text:hidden"
+        className="text-muted-foreground hover:text-foreground mr-2 mb-1 size-7 shrink-0 group-has-[input:placeholder-shown]/text:hidden"
       >
         <XIcon className="size-3.5" strokeWidth={2.5} />
       </IconButton>
