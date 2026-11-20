@@ -39,6 +39,10 @@ function Calendar({ className, ...props }: DayPickerProps) {
         ),
         selected:
           "[&>button]:bg-primary [&>button]:text-primary-foreground [&>button]:hover:bg-primary",
+        range_start: "bg-primary/15 rounded-l-full",
+        range_end: "bg-primary/15 rounded-r-full",
+        range_middle:
+          "bg-primary/15 [&>button]:bg-transparent! [&>button]:text-foreground! [&>button]:hover:bg-muted!",
         today: "[&>button]:text-signal-text [&>button]:font-extrabold",
         outside: "text-muted-foreground opacity-50",
         disabled: "text-muted-foreground opacity-40",

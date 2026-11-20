@@ -63,6 +63,18 @@ describe("SearchBar", () => {
     expect(onSearch).toHaveBeenCalledExactlyOnceWith({ from: "2026-12-05" });
   });
 
+  it("choisit une période et l'affiche du premier au dernier jour", async () => {
+    const { onSearch } = renderSearchBar();
+
+    await userEvent.click(screen.getByRole("button", { name: /Quand/ }));
+    await userEvent.click(await screen.findByRole("button", { name: /5 décembre 2026/ }));
+    await userEvent.click(screen.getByRole("button", { name: /6 décembre 2026/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Rechercher" }));
+
+    expect(screen.getByRole("button", { name: /Quand/ })).toHaveTextContent("5 déc. - 6 déc.");
+    expect(onSearch).toHaveBeenCalledExactlyOnceWith({ from: "2026-12-05", to: "2026-12-06" });
+  });
+
   it("grise les jours passés", async () => {
     renderSearchBar();
 

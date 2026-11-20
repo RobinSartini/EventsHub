@@ -54,6 +54,12 @@ export function fromIsoDay(isoDay: string | undefined): Date | undefined {
   return toIsoDay(date) === isoDay ? date : undefined;
 }
 
+const shortDayFormatter = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" });
+
 export function formatDayLabel(date: Date): string {
   return dayLabelFormatter.format(date);
+}
+
+export function formatDaysLabel(from: Date, to: Date): string {
+  return `${shortDayFormatter.format(from)} - ${shortDayFormatter.format(to)}`;
 }

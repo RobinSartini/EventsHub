@@ -76,7 +76,7 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       });
     });
 
-    it("should fetch events from the date chosen in the search bar", async () => {
+    it("should fetch the events of the day chosen in the search bar", async () => {
       const fetchMock = stubFetch();
       const { user } = renderHome();
 
@@ -84,6 +84,9 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
 
       await waitFor(() => {
         expect(lastParam(fetchMock, "from")).toBe(new Date(2026, 11, 5).toISOString());
+        expect(lastParam(fetchMock, "to")).toBe(
+          new Date(2026, 11, 5, 23, 59, 59, 999).toISOString(),
+        );
       });
     });
 
