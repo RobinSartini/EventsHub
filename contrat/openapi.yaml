@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: EventsHub API
-  version: 1.4.0
+  version: 1.5.0
 paths:
   /events:
     get:
@@ -246,6 +246,297 @@ paths:
         "500":
           description: Erreur interne du serveur.
 
+  /me:
+    get:
+      summary: Récupérer mon profil
+      description: >
+        Profil de l'utilisateur connecté, avec ses statistiques.
+        Alimente l'écran Profil.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Profil récupéré.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeProfile"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+    patch:
+      summary: Modifier mon profil
+      description: >
+        Modifie les informations de l'utilisateur connecté. Au moins un champ est requis.
+        Le rôle, le statut et l'email ne sont pas modifiables ici.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Profil modifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeProfile"
+        "400":
+          description: Données invalides.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /me/deletion:
+    post:
+      summary: Supprimer mon compte
+      description: >
+        Supprime définitivement le compte de l'utilisateur connecté, ses sessions et ses données
+        personnelles, et détache ses moyens de paiement Stripe. Requis par l'App Store pour toute
+        application qui permet de créer un compte. Le mot de passe est redemandé pour confirmer.
+        C'est un POST et non un DELETE, car un DELETE avec corps n'a pas de sémantique définie en
+        OpenAPI 3.0 et certains proxys ou clients suppriment ce corps.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountDeletion"
+      responses:
+        "204":
+          description: Compte supprimé.
+        "400":
+          description: Mot de passe manquant ou incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >
+            Suppression impossible : l'utilisateur a des billets pour des événements à venir,
+            ou organise des événements à venir. Le message d'erreur en donne la raison.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: Stripe indisponible, le compte n'est pas supprimé.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /me/notification-preferences:
+    get:
+      summary: Récupérer mes préférences de notification
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Préférences récupérées.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPreferences"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+    patch:
+      summary: Modifier mes préférences de notification
+      description: Au moins un champ est requis. Les champs absents restent inchangés.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationPreferencesUpdate"
+      responses:
+        "200":
+          description: Préférences modifiées.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPreferences"
+        "400":
+          description: Données invalides.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /me/payment-methods:
+    get:
+      summary: Récupérer mes moyens de paiement
+      description: >
+        Cartes enregistrées chez Stripe. Seuls la marque, les 4 derniers chiffres et l'expiration
+        sont exposés. Seules les cartes bancaires (`type: card`) sont renvoyées, les autres
+        moyens de paiement Stripe sont ignorés. Triées par date d'ajout décroissante.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Moyens de paiement récupérés.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentMethod"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /me/payment-methods/setup:
+    post:
+      summary: Préparer l'ajout d'une carte
+      description: >
+        Crée un SetupIntent Stripe pour le client de l'utilisateur (le client Stripe est créé au
+        premier appel). L'app iOS passe ces valeurs au PaymentSheet de Stripe pour enregistrer la carte.
+        La carte apparaît ensuite dans `GET /me/payment-methods`.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: SetupIntent créé.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentMethodSetup"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: Stripe indisponible.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /me/payment-methods/{id}:
+    delete:
+      summary: Supprimer un moyen de paiement
+      description: Détache la carte du client Stripe. Seule une carte de l'utilisateur connecté peut être supprimée.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifiant Stripe de la carte (`pm_...`)
+      responses:
+        "204":
+          description: Carte supprimée.
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Carte introuvable ou appartenant à un autre utilisateur.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: Stripe indisponible.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /users/{id}/public:
+    get:
+      summary: Récupérer un profil public
+      description: >
+        Profil visible par tout utilisateur connecté. Répond 404 si l'utilisateur n'existe pas,
+        est suspendu ou a désactivé `publicProfile` (sans distinguer les cas, pour ne rien révéler).
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Profil public récupéré.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicProfile"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Profil introuvable ou privé.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
   /admin/events:
     get:
       summary: Récupérer tous les événements (admin)
@@ -424,6 +715,45 @@ paths:
           description: Déconnecté avec succès.
         "401":
           description: Aucune session active.
+
+  /api/auth/change-password:
+    post:
+      summary: "Changer le mot de passe"
+      description: >
+        Change le mot de passe de l'utilisateur connecté après vérification de l'ancien.
+        Avec `revokeOtherSessions`, toutes les autres sessions sont fermées et la réponse pose
+        un nouveau cookie de session (`Set-Cookie`) que le client doit conserver à la place de l'ancien.
+        Les erreurs suivent le schéma `Error`.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordChange"
+      responses:
+        "200":
+          description: Mot de passe changé (corps non utilisé).
+          headers:
+            Set-Cookie:
+              description: Présent uniquement avec `revokeOtherSessions`. Nouveau cookie de session.
+              schema:
+                type: string
+        "400":
+          description: Données invalides, ou ancien mot de passe incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
 
   /api/auth/get-session:
     get:
@@ -753,6 +1083,211 @@ components:
           type: integer
           description: Durée de validité en secondes.
           example: 900
+
+    ProfileStats:
+      type: object
+      required:
+        - outingsCount
+        - favoritesCount
+        - upcomingReservationsCount
+        - organizedEventsCount
+      properties:
+        outingsCount:
+          type: integer
+          minimum: 0
+          description: Nombre de billets de l'utilisateur pour des événements déjà passés.
+          example: 14
+        favoritesCount:
+          type: integer
+          minimum: 0
+          description: Nombre d'événements en favoris.
+          example: 5
+        upcomingReservationsCount:
+          type: integer
+          minimum: 0
+          description: Nombre de billets de l'utilisateur pour des événements à venir.
+          example: 3
+        organizedEventsCount:
+          type: integer
+          minimum: 0
+          description: >
+            Nombre d'événements créés par l'utilisateur (`organizerId`). L'app propose le mode
+            organisateur quand il est supérieur à 0.
+          example: 0
+
+    MeProfile:
+      description: >
+        L'utilisateur connecté (mêmes champs que `User`) enrichi des données du profil.
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          required:
+            - id
+            - name
+            - email
+            - emailVerified
+            - role
+            - status
+            - createdAt
+            - updatedAt
+            - city
+            - publicProfile
+            - stats
+          properties:
+            city:
+              type: string
+              nullable: true
+              maxLength: 100
+              example: Valence
+            publicProfile:
+              type: boolean
+              description: Si faux, `GET /users/{id}/public` répond 404.
+            stats:
+              $ref: "#/components/schemas/ProfileStats"
+
+    ProfileUpdate:
+      type: object
+      description: Au moins un champ. Aucun autre champ n'est accepté.
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 2
+        image:
+          type: string
+          format: uri
+          pattern: "^https://"
+          maxLength: 2048
+          nullable: true
+          description: URL https de l'avatar. `null` le retire (l'app affiche alors les initiales).
+        city:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+          description: "`null` pour effacer."
+        publicProfile:
+          type: boolean
+
+    PublicProfile:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        image:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Date d'inscription ("membre depuis ...").
+
+    NotificationPreferences:
+      type: object
+      required:
+        - reminderDayBefore
+      properties:
+        reminderDayBefore:
+          type: boolean
+          default: true
+          description: Rappel la veille d'un événement pour lequel l'utilisateur a un billet.
+
+    NotificationPreferencesUpdate:
+      type: object
+      description: Au moins un champ. Aucun autre champ n'est accepté.
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        reminderDayBefore:
+          type: boolean
+
+    PaymentMethod:
+      type: object
+      required:
+        - id
+        - brand
+        - last4
+        - expMonth
+        - expYear
+      properties:
+        id:
+          type: string
+          example: pm_1Pxxxxxxxx
+        brand:
+          type: string
+          description: Marque de la carte telle que renvoyée par Stripe.
+          example: visa
+        last4:
+          type: string
+          pattern: "^[0-9]{4}$"
+          example: "4242"
+        expMonth:
+          type: integer
+          minimum: 1
+          maximum: 12
+        expYear:
+          type: integer
+          example: 2029
+
+    PaymentMethodSetup:
+      type: object
+      description: >
+        Valeurs à transmettre au PaymentSheet de Stripe. La clé éphémère est créée avec la version
+        d'API Stripe du SDK iOS embarqué dans l'app.
+      required:
+        - publishableKey
+        - customerId
+        - customerEphemeralKeySecret
+        - setupIntentClientSecret
+      properties:
+        publishableKey:
+          type: string
+          example: pk_test_xxxxxxxx
+          description: Clé publique Stripe (mode test ou live selon l'environnement du serveur).
+        customerId:
+          type: string
+          example: cus_Pxxxxxxxx
+        customerEphemeralKeySecret:
+          type: string
+        setupIntentClientSecret:
+          type: string
+
+    AccountDeletion:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          format: password
+
+    PasswordChange:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+        revokeOtherSessions:
+          type: boolean
+          default: false
 
     Error:
       type: object
