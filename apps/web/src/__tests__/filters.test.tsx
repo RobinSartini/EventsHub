@@ -184,4 +184,58 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       });
     });
   });
+
+  describe("Fenêtre Filtres", () => {
+    function stubPosition(granted: boolean) {
+      const getCurrentPosition = vi.fn(
+        (onSuccess: PositionCallback, onError?: PositionErrorCallback | null) =>
+          granted
+            ? onSuccess({ coords: { latitude: 44.93, longitude: 4.89 } } as GeolocationPosition)
+            : onError?.({ code: 1 } as GeolocationPositionError),
+      );
+      Object.defineProperty(navigator, "geolocation", {
+        value: { getCurrentPosition },
+        configurable: true,
+      });
+    }
+
+    async function sortByDistance(user: ReturnType<typeof userEvent.setup>) {
+      await user.click(screen.getByRole("button", { name: /Filtres/ }));
+      await user.click(await screen.findByRole("button", { name: "Distance" }));
+      await user.click(screen.getByRole("button", { name: "Afficher les résultats" }));
+    }
+
+    afterEach(() => {
+      Reflect.deleteProperty(navigator, "geolocation");
+    });
+
+    it("should sort events around the user's position", async () => {
+      stubPosition(true);
+      const fetchMock = stubFetch();
+      const { user } = renderHome();
+
+      await sortByDistance(user);
+
+      await waitFor(() => {
+        const url = lastRequestedUrl(fetchMock);
+        expect(url).toContain("sort=distance");
+        expect(url).toContain("lat=44.93");
+        expect(url).toContain("lng=4.89");
+      });
+      expect(screen.getByText("Triés par distance")).toBeInTheDocument();
+    });
+
+    it("should fall back to date order when the position is refused", async () => {
+      stubPosition(false);
+      const fetchMock = stubFetch();
+      const { user } = renderHome();
+
+      await sortByDistance(user);
+
+      expect(await screen.findByText(/position indisponible/i)).toBeInTheDocument();
+      await waitFor(() => {
+        expect(lastRequestedUrl(fetchMock)).not.toContain("sort=");
+      });
+    });
+  });
 });

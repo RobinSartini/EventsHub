@@ -12,6 +12,7 @@ import {
 import { useSearchParams } from "react-router";
 
 import { EventCard, type EventCardEvent } from "@/components/event/event-card";
+import { FiltersDialog } from "@/components/form/filters-dialog";
 import { CategoryTabs } from "@/components/navigation/category-tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,6 +21,8 @@ import {
   eventsQuery,
   type HomeFilters,
   nextPage,
+  type Position,
+  type Sort,
   PAGE_SIZE,
   readHomeSearch,
   TONIGHT,
@@ -27,6 +30,7 @@ import {
 } from "@/lib/home-search";
 import { plural } from "@/lib/plural";
 import { pageWidth } from "@/lib/styles";
+import { usePosition } from "@/lib/use-position";
 import { cn } from "@/lib/utils";
 
 const ALL = "all";
@@ -51,17 +55,19 @@ export function meta() {
   ];
 }
 
-function toCardEvent({ location, city, ...event }: ApiEvent): EventCardEvent {
+function toCardEvent({ location, city, distanceKm, ...event }: ApiEvent): EventCardEvent {
   const place = location === city ? location : [location, city].filter(Boolean).join(", ");
-  return { ...event, location: place || undefined };
+  return { ...event, location: place || undefined, distanceKm: distanceKm ?? undefined };
 }
 
-function useHomeEvents(search: HomeFilters) {
+function useHomeEvents(search: HomeFilters, position: Position | undefined, enabled: boolean) {
   const now = new Date();
 
   return useInfiniteQuery({
-    queryKey: ["events", eventsQuery(search, now, 1)],
-    queryFn: ({ pageParam, signal }) => fetchEvents(eventsQuery(search, now, pageParam), signal),
+    queryKey: ["events", eventsQuery(search, now, 1, position)],
+    queryFn: ({ pageParam, signal }) =>
+      fetchEvents(eventsQuery(search, now, pageParam, position), signal),
+    enabled,
     initialPageParam: 1,
     getNextPageParam: (_last, pages) => nextPage(pages),
     placeholderData: keepPreviousData,
@@ -85,6 +91,11 @@ function useCategoryTabs() {
       icon: CATEGORY_ICONS[slug] ?? SparklesIcon,
     })),
   ];
+}
+
+function sortLabel({ pending, position }: ReturnType<typeof usePosition>) {
+  if (pending) return "Recherche de ta position";
+  return position ? "Triés par distance" : "Triés par date";
 }
 
 function CardSkeleton() {
@@ -136,7 +147,8 @@ function LoadMore({ remaining, loading, failed, onLoad }: Readonly<LoadMoreProps
 export default function Home() {
   const [params, setParams] = useSearchParams();
   const search = readHomeSearch(params);
-  const events = useHomeEvents(search);
+  const nearby = usePosition(search.sort === "distance");
+  const events = useHomeEvents(search, nearby.position, !nearby.pending);
   const tabs = useCategoryTabs();
 
   const hasFilters = Object.values(search).some(Boolean);
@@ -145,17 +157,21 @@ export default function Home() {
 
   const onCategory = (category: string) =>
     setParams(writeHomeSearch({ ...search, category: category === ALL ? undefined : category }));
+  const onSort = (sort: Sort) =>
+    setParams(writeHomeSearch({ ...search, sort: sort === "distance" ? sort : undefined }));
   const clearAll = () => setParams(new URLSearchParams());
 
   return (
     <div>
       <div className="bg-card border-b">
-        <div className={pageWidth}>
+        <div className={cn(pageWidth, "flex items-center gap-4")}>
           <CategoryTabs
             categories={tabs}
             value={search.category ?? ALL}
             onValueChange={onCategory}
+            className="min-w-0 flex-1"
           />
+          <FiltersDialog sort={search.sort ?? "date"} onApply={onSort} />
         </div>
       </div>
 
@@ -176,7 +192,13 @@ export default function Home() {
             )}
           </h1>
           <div className="flex items-baseline gap-4">
-            <p className="text-muted-foreground text-sm font-bold">Triés par date</p>
+            {search.sort && nearby.denied ? (
+              <p role="alert" className="text-signal-text text-sm font-bold">
+                Position indisponible, triés par date
+              </p>
+            ) : (
+              <p className="text-muted-foreground text-sm font-bold">{sortLabel(nearby)}</p>
+            )}
             {hasFilters ? (
               <Button variant="link" size="sm" onClick={clearAll}>
                 Tout effacer

@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 
 import { formatEventDate } from "@/lib/format-date";
+import { formatDistance } from "@/lib/format-distance";
 import { formatPrice } from "@/lib/format-price";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ type EventCardEvent = {
   location?: string;
   status?: "published" | "cancelled";
   priceCents?: number;
+  distanceKm?: number;
 };
 
 type EventCardProps = {
@@ -61,6 +63,8 @@ function Price({ priceCents }: Readonly<{ priceCents: number }>) {
 
 function EventCard({ event, isFavorite, onToggleFavorite, className }: Readonly<EventCardProps>) {
   const { theme, layout } = mediaLook(event.id);
+  const distance = event.distanceKm === undefined ? undefined : formatDistance(event.distanceKm);
+  const place = [event.location, distance].filter(Boolean).join(" - ");
 
   return (
     <article
@@ -96,7 +100,7 @@ function EventCard({ event, isFavorite, onToggleFavorite, className }: Readonly<
             {event.name}
           </Link>
         </h3>
-        {event.location ? <p className={meta}>{event.location}</p> : null}
+        {place ? <p className={meta}>{place}</p> : null}
         <p className={meta}>{formatEventDate(event.startDate)}</p>
         {event.priceCents === undefined ? null : <Price priceCents={event.priceCents} />}
       </div>

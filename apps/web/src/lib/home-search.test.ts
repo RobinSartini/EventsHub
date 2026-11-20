@@ -25,6 +25,11 @@ describe("readHomeSearch", () => {
   it("ignore une date mal formée", () => {
     expect(read("from=2026-02-31").from).toBeUndefined();
   });
+
+  it("ne garde que le tri par distance, le tri par date étant celui par défaut", () => {
+    expect(read("sort=distance").sort).toBe("distance");
+    expect(read("sort=prix").sort).toBeUndefined();
+  });
 });
 
 describe("writeHomeSearch", () => {

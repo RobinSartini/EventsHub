@@ -10,7 +10,12 @@ export type HomeFilters = {
   city?: string;
   from?: string;
   category?: string;
+  sort?: Sort;
 };
+
+export type Sort = "date" | "distance";
+
+export type Position = { lat: number; lng: number };
 
 function text(value: string | null): string | undefined {
   return value?.trim().slice(0, MAX_LENGTH) || undefined;
@@ -24,6 +29,7 @@ export function readHomeSearch(params: URLSearchParams): HomeFilters {
     city: text(params.get("city")),
     from: fromIsoDay(from) ? from : undefined,
     category: text(params.get("category")),
+    sort: params.get("sort") === "distance" ? "distance" : undefined,
   };
 }
 
@@ -47,13 +53,22 @@ function tonightRange(now: Date) {
   return { from: start.toISOString(), to: end.toISOString() };
 }
 
-export function eventsQuery({ category, from, ...search }: HomeFilters, now: Date, page: number) {
+export function eventsQuery(
+  { category, from, sort, ...search }: HomeFilters,
+  now: Date,
+  page: number,
+  position?: Position,
+) {
   const tonight = category === TONIGHT ? tonightRange(now) : undefined;
+  const near = sort === "distance" ? position : undefined;
   return toSearchParams({
     ...search,
     from: tonight?.from ?? fromIsoDay(from)?.toISOString(),
     to: tonight?.to,
     category: tonight ? undefined : category,
+    sort: near && sort,
+    lat: near && String(near.lat),
+    lng: near && String(near.lng),
     page: String(page),
     pageSize: String(PAGE_SIZE),
   }).toString();
