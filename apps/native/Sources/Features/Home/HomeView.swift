@@ -95,6 +95,7 @@ struct HomeView: View {
 // MARK: - Header
 
 private struct HomeHeader: View {
+    @Environment(AuthStore.self) private var auth: AuthStore?
     var body: some View {
         HStack {
             Button {} label: {
@@ -127,7 +128,11 @@ private struct HomeHeader: View {
                         }
                 }
                 .accessibilityLabel("Notifications")
-                Button {} label: {
+                Menu {
+                    Button("Se déconnecter", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {
+                        Task { await auth?.signOut() }
+                    }
+                } label: {
                     Image(systemName: "person.fill")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(Theme.onPrimary)

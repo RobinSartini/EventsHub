@@ -23,13 +23,16 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
       configs:
         Debug:
-          EVENTS_API_BASE_URL: http://localhost:4010
+          EVENTS_API_BASE_URL: http://localhost:3001
+          EVENTS_API_ORIGIN: http://localhost:3000
         Release:
           EVENTS_API_BASE_URL: ""
+          EVENTS_API_ORIGIN: ""
     info:
       path: Config/Info.plist
       properties:
         EventsAPIBaseURL: $(EVENTS_API_BASE_URL)
+        EventsAPIOrigin: $(EVENTS_API_ORIGIN)
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
     scheme:

@@ -20,6 +20,8 @@
 	<string>1</string>
 	<key>EventsAPIBaseURL</key>
 	<string>$(EVENTS_API_BASE_URL)</string>
+	<key>EventsAPIOrigin</key>
+	<string>$(EVENTS_API_ORIGIN)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
