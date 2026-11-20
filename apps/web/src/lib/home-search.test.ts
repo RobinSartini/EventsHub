@@ -34,20 +34,27 @@ describe("writeHomeSearch", () => {
 });
 
 describe("eventsQuery", () => {
-  it("transmet les filtres et demande 12 événements par page", () => {
-    const query = eventsQuery(read("q=jazz&city=Lyon&from=2026-12-05&category=musique"), today, 2);
+  const query = (search: string, now: Date, page = 1) =>
+    new URLSearchParams(eventsQuery(read(search), now, page));
 
-    expect(query).toBe("q=jazz&city=Lyon&from=2026-12-05&category=musique&page=2&pageSize=12");
+  it("transmet les filtres et demande 12 événements par page", () => {
+    const params = query("q=jazz&city=Lyon&category=musique", today, 2);
+
+    expect(params.toString()).toBe("q=jazz&city=Lyon&category=musique&page=2&pageSize=12");
   });
 
-  it("traduit « Ce soir » en événements du jour, à la place de la date choisie", () => {
-    const query = new URLSearchParams(
-      eventsQuery(read(`from=2026-12-05&category=${TONIGHT}`), today, 1),
-    );
+  it("traduit « Ce soir » en soirée locale, de 18h à minuit, à la place de la date choisie", () => {
+    const params = query(`from=2026-12-05&category=${TONIGHT}`, new Date(2026, 10, 17, 10, 30));
 
-    expect(query.get("from")).toBe("2026-11-17");
-    expect(query.get("to")).toBe("2026-11-17");
-    expect(query.has("category")).toBe(false);
+    expect(params.get("from")).toBe(new Date(2026, 10, 17, 18).toISOString());
+    expect(params.get("to")).toBe(new Date(2026, 10, 17, 23, 59, 59, 999).toISOString());
+    expect(params.has("category")).toBe(false);
+  });
+
+  it("fait partir « Ce soir » de l'heure en cours une fois 18h passées", () => {
+    const params = query(`category=${TONIGHT}`, new Date(2026, 10, 17, 20, 35));
+
+    expect(params.get("from")).toBe(new Date(2026, 10, 17, 20).toISOString());
   });
 });
 

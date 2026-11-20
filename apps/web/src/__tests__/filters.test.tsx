@@ -20,6 +20,8 @@ const parisJazzEvents = [
 
 const stubFetch = () => stubApi({ events: parisJazzEvents });
 const lastRequestedUrl = lastEventsUrl;
+const lastParam = (fetchMock: ReturnType<typeof stubFetch>, name: string) =>
+  new URL(lastRequestedUrl(fetchMock) ?? "", "http://localhost").searchParams.get(name);
 
 function renderHome() {
   const queryClient = new QueryClient({
@@ -81,7 +83,7 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       await pickDate(user);
 
       await waitFor(() => {
-        expect(lastRequestedUrl(fetchMock)).toContain("from=2026-12-05");
+        expect(lastParam(fetchMock, "from")).toBe(new Date(2026, 11, 5).toISOString());
       });
     });
 
@@ -107,7 +109,7 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       await waitFor(() => {
         const url = lastRequestedUrl(fetchMock);
         expect(url).toMatch(/category=sport/i);
-        expect(url).toContain("from=2026-12-05");
+        expect(lastParam(fetchMock, "from")).toBe(new Date(2026, 11, 5).toISOString());
         expect(url).toContain("city=Paris");
       });
     });
@@ -141,9 +143,10 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       await user.click(screen.getByRole("radio", { name: "Ce soir" }));
 
       await waitFor(() => {
-        const url = lastRequestedUrl(fetchMock);
-        expect(url).toContain("from=2026-11-16");
-        expect(url).toContain("to=2026-11-16");
+        expect(lastParam(fetchMock, "from")).toBe(new Date(2026, 10, 16, 18).toISOString());
+        expect(lastParam(fetchMock, "to")).toBe(
+          new Date(2026, 10, 16, 23, 59, 59, 999).toISOString(),
+        );
       });
     });
 
