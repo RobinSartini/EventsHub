@@ -9,9 +9,7 @@ const NUIT_FLUO: EventCardEvent = {
   id: "evt_1",
   name: "Nuit Fluo",
   startDate: "2026-11-14T20:00:00Z",
-  location: "Les Docks",
-  capacity: 80,
-  ticketsSold: 62,
+  location: "Les Docks, Valence",
   priceCents: 1200,
 };
 
@@ -33,27 +31,29 @@ describe("EventCard", () => {
     );
   });
 
-  it("affiche le prix seul, hors jauge, sans capacité", () => {
-    renderCard({ event: { ...NUIT_FLUO, capacity: null } });
+  it("affiche le prix par personne", () => {
+    renderCard();
 
-    const price = screen.getByText(/^12\s€$/);
-    expect(price.closest('[data-slot="capacity-bar"]')).toBeNull();
-    expect(price.parentElement?.children).toHaveLength(1);
+    expect(screen.getByText(/^12\s€$/).parentElement).toHaveTextContent(/^12\s€ par personne$/);
   });
 
-  it("s'affiche sans description, date de fin, lieu, prix ni capacité", () => {
+  it("affiche Gratuit sans « par personne »", () => {
+    renderCard({ event: { ...NUIT_FLUO, priceCents: 0 } });
+
+    expect(screen.getByText("Gratuit").parentElement).toHaveTextContent(/^Gratuit$/);
+  });
+
+  it("s'affiche avec seulement un nom et une date", () => {
     renderCard({ event: { id: "evt_2", name: "Jam session", startDate: "2026-11-13T19:30:00Z" } });
 
     expect(screen.getByRole("heading", { name: "Jam session" })).toBeInTheDocument();
-    expect(screen.getByText("20:30")).toBeInTheDocument();
-    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    expect(screen.getByText("Ven. 13 nov - 20:30")).toBeInTheDocument();
   });
 
-  it("affiche Annulé et cache la jauge pour un événement annulé", () => {
+  it("signale un événement annulé", () => {
     renderCard({ event: { ...NUIT_FLUO, status: "cancelled" } });
 
     expect(screen.getByText("Annulé")).toBeInTheDocument();
-    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
   });
 
   it("donne au cœur le nom de l'événement et prévient le parent au clic", async () => {

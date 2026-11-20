@@ -27,17 +27,27 @@ const TEXT_FIELDS = [
     label: "Quoi",
     type: "search",
     placeholder: "Concert, atelier...",
-    width: "md:flex-[1.4]",
+    width: "col-span-4 md:flex-[1.4]",
+    separator: "col-span-4 mx-4 mb-1.5 h-px md:mx-0 md:mb-0 md:h-10 md:w-px",
     maxLength: 100,
   },
-  { name: "city", label: "Où", type: "text", placeholder: "Une ville", width: "", maxLength: 100 },
+  {
+    name: "city",
+    label: "Où",
+    type: "text",
+    placeholder: "Une ville",
+    width: "",
+    separator: "h-10 w-px",
+    maxLength: 100,
+  },
 ] as const;
 
 const SEARCH_KEYS = ["q", "city", "from"] as const;
 
-const field = "flex min-w-0 flex-1 flex-col gap-1 rounded-full px-6 py-3 md:px-8";
-const fieldLabel = "text-foreground text-sm font-extrabold";
-const fieldText = "w-full truncate text-base leading-6";
+const field = "group/field flex min-w-0 flex-1 flex-col rounded-full px-4 py-2 md:px-6";
+const fieldLabel =
+  "text-foreground group-focus-within/field:text-primary group-data-popup-open/field:text-primary text-xs font-extrabold transition-colors";
+const fieldText = "w-full truncate text-base leading-5";
 
 function DateField({ defaultValue }: Readonly<{ defaultValue?: string }>) {
   const [open, setOpen] = useState(false);
@@ -66,7 +76,7 @@ function DateField({ defaultValue }: Readonly<{ defaultValue?: string }>) {
           collisionAvoidance={{ side: "none", fallbackAxisSide: "none" }}
           className="z-50"
         >
-          <Popover.Popup className="bg-card shadow-float flex flex-col gap-2 rounded-[26px] p-3 outline-none">
+          <Popover.Popup className="bg-card shadow-float ease-signature flex origin-(--transform-origin) flex-col gap-2 rounded-[26px] p-3 transition-[opacity,scale] duration-200 outline-none data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
             <Calendar
               mode="single"
               selected={day}
@@ -110,35 +120,33 @@ function SearchBar({ defaultValues, onSearch, className }: Readonly<SearchBarPro
       data-slot="search-bar"
       onSubmit={handleSubmit}
       className={cn(
-        "bg-card shadow-float flex w-full max-w-3xl flex-col gap-2 rounded-3xl border p-2 md:flex-row md:items-center md:rounded-full md:p-1.5",
+        "bg-card shadow-raised focus-within:shadow-float rounded-card grid w-full max-w-[40rem] grid-cols-[2fr_auto_3fr_auto] items-center border p-1.5 transition-shadow duration-300 md:flex md:rounded-full",
         className,
       )}
     >
-      <div className="flex flex-1 flex-col md:flex-row md:items-center">
-        {TEXT_FIELDS.map((textField) => (
-          <Fragment key={textField.name}>
-            <label className={cn(field, "cursor-text", textField.width)}>
-              <span className={fieldLabel}>{textField.label}</span>
-              <input
-                name={textField.name}
-                type={textField.type}
-                placeholder={textField.placeholder}
-                maxLength={textField.maxLength}
-                defaultValue={defaultValues?.[textField.name]}
-                className={cn(
-                  fieldText,
-                  "text-foreground placeholder:text-muted-foreground bg-transparent outline-none focus:placeholder:text-transparent",
-                )}
-              />
-            </label>
-            <span aria-hidden="true" className="bg-border mx-6 h-px md:mx-0 md:h-12 md:w-px" />
-          </Fragment>
-        ))}
-        <DateField defaultValue={defaultValues?.from} />
-      </div>
-      <Button type="submit" className="md:size-16 md:shrink-0 md:px-0">
-        <SearchIcon className="md:size-6" strokeWidth={2.5} />
-        <span className="md:sr-only">Rechercher</span>
+      {TEXT_FIELDS.map((textField) => (
+        <Fragment key={textField.name}>
+          <label className={cn(field, "cursor-text", textField.width)}>
+            <span className={fieldLabel}>{textField.label}</span>
+            <input
+              name={textField.name}
+              type={textField.type}
+              placeholder={textField.placeholder}
+              maxLength={textField.maxLength}
+              defaultValue={defaultValues?.[textField.name]}
+              className={cn(
+                fieldText,
+                "text-foreground placeholder:text-muted-foreground bg-transparent outline-none focus:placeholder:text-transparent",
+              )}
+            />
+          </label>
+          <span aria-hidden="true" className={cn("bg-border", textField.separator)} />
+        </Fragment>
+      ))}
+      <DateField defaultValue={defaultValues?.from} />
+      <Button type="submit" className="mr-0.5 size-12 shrink-0 px-0 md:mr-0">
+        <SearchIcon className="size-5" strokeWidth={2.5} />
+        <span className="sr-only">Rechercher</span>
       </Button>
     </form>
   );

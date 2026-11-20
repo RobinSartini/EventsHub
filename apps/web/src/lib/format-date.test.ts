@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDateBadge, formatDayLabel, formatTime, fromIsoDay, toIsoDay } from "./format-date";
+import {
+  formatDateBadge,
+  formatDayLabel,
+  formatEventDate,
+  formatTime,
+  fromIsoDay,
+  toIsoDay,
+} from "./format-date";
 
 describe("formatDateBadge", () => {
   it("affiche le jour, la date et le mois en capitales", () => {
@@ -13,6 +20,16 @@ describe("formatDateBadge", () => {
 
   it("garde les accents des mois", () => {
     expect(formatDateBadge("2026-12-05T10:00:00Z")).toBe("SAM 5 DÉC");
+  });
+});
+
+describe("formatEventDate", () => {
+  it("affiche le jour, la date et l'heure de Paris, comme sur la carte", () => {
+    expect(formatEventDate("2026-11-28T20:00:00Z")).toBe("Sam. 28 nov - 21:00");
+  });
+
+  it("passe au lendemain à Paris quand l'heure UTC est tardive", () => {
+    expect(formatEventDate("2026-12-05T23:30:00Z")).toBe("Dim. 6 déc - 00:30");
   });
 });
 

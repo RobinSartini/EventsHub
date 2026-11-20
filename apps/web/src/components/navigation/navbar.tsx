@@ -1,8 +1,9 @@
-import { MenuIcon, UserIcon } from "lucide-react";
-import { Link, NavLink } from "react-router";
+import { UserIcon } from "lucide-react";
+import { type ReactNode, useRef } from "react";
+import { Link } from "react-router";
 
 import { useDarkTheme } from "@/components/theme-switch";
-import { focusRing } from "@/lib/styles";
+import { focusRing, pageWidth } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
 import { Avatar } from "@/components/ui/avatar";
@@ -22,16 +23,45 @@ type NavBarLink = {
 };
 
 type NavBarProps = {
-  links: readonly NavBarLink[];
+  links?: readonly NavBarLink[];
   user: { name: string } | null;
   onSignOut: () => void;
   className?: string;
+  children?: ReactNode;
 };
 
-const menuItem = "rounded-xl px-3 py-2.5 text-sm font-bold";
+const menuItem =
+  "ease-signature px-4 py-3 text-sm font-bold transition-[color,translate] duration-200 focus:translate-x-1 focus:bg-transparent focus:text-primary";
+const burgerLine =
+  "ease-signature absolute h-0.5 w-[18px] rounded-full bg-current transition-[translate,rotate,opacity] duration-300";
 
-function AccountMenu({ links, user, onSignOut }: Readonly<Omit<NavBarProps, "className">>) {
+function BurgerIcon() {
+  return (
+    <span aria-hidden="true" className="relative grid size-5 place-items-center">
+      <span
+        className={cn(
+          burgerLine,
+          "-translate-y-1.5 group-data-popup-open/burger:translate-y-0 group-data-popup-open/burger:rotate-45",
+        )}
+      />
+      <span className={cn(burgerLine, "group-data-popup-open/burger:opacity-0")} />
+      <span
+        className={cn(
+          burgerLine,
+          "translate-y-1.5 group-data-popup-open/burger:translate-y-0 group-data-popup-open/burger:-rotate-45",
+        )}
+      />
+    </span>
+  );
+}
+
+function AccountMenu({
+  links = [],
+  user,
+  onSignOut,
+}: Readonly<Omit<NavBarProps, "className" | "children">>) {
   const [dark, setDark] = useDarkTheme();
+  const pill = useRef<HTMLDivElement>(null);
   const linkItem = (to: string, label: string) => (
     <DropdownMenuItem key={to} className={menuItem} render={<Link to={to} />}>
       {label}
@@ -39,24 +69,28 @@ function AccountMenu({ links, user, onSignOut }: Readonly<Omit<NavBarProps, "cla
   );
 
   return (
-    <div className="flex items-center gap-1 rounded-full border p-1 pl-2">
+    <div
+      ref={pill}
+      className="hover:shadow-raised has-[[data-popup-open]]:shadow-raised flex items-center gap-1 justify-self-end rounded-full border p-1 pl-2 transition-shadow duration-300"
+    >
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label="Menu"
           className={cn(
             focusRing,
-            "hover:bg-secondary grid size-8 place-items-center rounded-full",
+            "group/burger hover:text-primary data-popup-open:text-primary grid size-8 place-items-center rounded-full transition-colors",
           )}
         >
-          <MenuIcon className="size-5" />
+          <BurgerIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent
+          anchor={pill}
           align="end"
           sideOffset={8}
-          className="bg-card shadow-float w-60 rounded-3xl p-2 ring-0"
+          className="bg-card shadow-float rounded-card rounded-tr-anchor w-60 p-2 ring-0"
         >
           {links.map((link) => linkItem(link.to, link.label))}
-          <DropdownMenuSeparator className="my-1" />
+          {links.length > 0 ? <DropdownMenuSeparator className="mx-4 my-1" /> : null}
           <DropdownMenuCheckboxItem className={menuItem} checked={dark} onCheckedChange={setDark}>
             Thème sombre
           </DropdownMenuCheckboxItem>
@@ -87,30 +121,26 @@ function AccountMenu({ links, user, onSignOut }: Readonly<Omit<NavBarProps, "cla
   );
 }
 
-function NavBar({ links, user, onSignOut, className }: Readonly<NavBarProps>) {
+function NavBar({ links, user, onSignOut, className, children }: Readonly<NavBarProps>) {
   return (
     <header data-slot="navbar" className={cn("bg-card border-b", className)}>
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-3 md:px-8">
+      <div
+        className={cn(
+          pageWidth,
+          "flex flex-wrap items-center justify-between gap-x-6 gap-y-3",
+          children ? "pt-6 pb-3 lg:grid lg:grid-cols-[1fr_auto_1fr]" : "py-3",
+        )}
+      >
         <Logo />
-        <nav aria-label="Navigation principale" className="hidden gap-1 md:flex">
-          {links.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end
-              className={cn(
-                focusRing,
-                "hover:bg-secondary aria-[current=page]:bg-foreground aria-[current=page]:text-background rounded-full px-4 py-2.5 text-sm font-bold whitespace-nowrap transition-colors",
-              )}
-            >
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
+        {children ? (
+          <div className="order-last flex w-full justify-center lg:order-none lg:w-[40rem]">
+            {children}
+          </div>
+        ) : null}
         <AccountMenu links={links} user={user} onSignOut={onSignOut} />
       </div>
     </header>
   );
 }
 
-export { NavBar, type NavBarLink };
+export { NavBar };

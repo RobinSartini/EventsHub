@@ -1,41 +1,16 @@
-// it.fails : rouge tant que la fonctionnalité n'est pas développée. Retirer .fails au fur et à mesure.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { HomeSearch } from "@/components/navigation/home-search";
 import Home from "@/routes/_index";
 
-// Les filtres vivent sur l'accueil : SearchBar (Quoi, Où, Quand) et panneau Catégories.
-// `to` (GET /events?to=) n'a pas de champ dans l'interface actuelle, donc pas de test ici.
+import { lastEventsUrl, stubApi } from "./stub-api";
 
-// --- tRPC mock : construit l'URL de GET /events à partir des filtres (contrat/openapi.yaml) ---
-vi.mock("@/utils/trpc", () => ({
-  trpc: {
-    events: {
-      list: {
-        queryOptions: (
-          params: { category?: string; from?: string; to?: string; city?: string } = {},
-        ) => ({
-          queryKey: ["events", "list", params],
-          queryFn: () => {
-            const url = new URL("/events", "http://localhost");
-            if (params.category) url.searchParams.set("category", params.category);
-            if (params.from) url.searchParams.set("from", params.from);
-            if (params.to) url.searchParams.set("to", params.to);
-            if (params.city) url.searchParams.set("city", params.city);
-            return fetch(url.toString()).then(async (res) => {
-              if (!res.ok) throw new Error("Failed to fetch events");
-              return res.json();
-            });
-          },
-        }),
-      },
-    },
-  },
-  queryClient: null,
-}));
+// Les filtres vivent sur l'accueil : SearchBar (Quoi, Où, Quand) et onglets de catégories.
+// `to` (GET /events?to=) n'a pas de champ dans l'interface actuelle, donc pas de test ici.
 
 // --- Fixtures ---
 const parisJazzEvents = [
@@ -43,19 +18,8 @@ const parisJazzEvents = [
   { id: "2", name: "Jazz Club Marais", organizerId: "o1", startDate: "2026-12-15T21:00:00Z" },
 ];
 
-function stubFetch() {
-  const fetchMock = vi.fn().mockResolvedValue({
-    ok: true,
-    status: 200,
-    json: async () => parisJazzEvents,
-  });
-  vi.stubGlobal("fetch", fetchMock);
-  return fetchMock;
-}
-
-function lastRequestedUrl(fetchMock: ReturnType<typeof stubFetch>) {
-  return fetchMock.mock.calls.at(-1)?.[0] as string | undefined;
-}
+const stubFetch = () => stubApi({ events: parisJazzEvents });
+const lastRequestedUrl = lastEventsUrl;
 
 function renderHome() {
   const queryClient = new QueryClient({
@@ -66,6 +30,7 @@ function renderHome() {
     ...render(
       <MemoryRouter>
         <QueryClientProvider client={queryClient}>
+          <HomeSearch />
           <Home />
         </QueryClientProvider>
       </MemoryRouter>,
@@ -98,7 +63,7 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
   });
 
   describe("Requête GET /events", () => {
-    it.fails("should fetch events with the city typed in the search bar", async () => {
+    it("should fetch events with the city typed in the search bar", async () => {
       const fetchMock = stubFetch();
       const { user } = renderHome();
 
@@ -109,7 +74,7 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       });
     });
 
-    it.fails("should fetch events from the date chosen in the search bar", async () => {
+    it("should fetch events from the date chosen in the search bar", async () => {
       const fetchMock = stubFetch();
       const { user } = renderHome();
 
@@ -120,22 +85,22 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       });
     });
 
-    it.fails("should fetch events of the category checked in the filter panel", async () => {
+    it("should fetch events of the category chosen in the tabs", async () => {
       const fetchMock = stubFetch();
       const { user } = renderHome();
 
-      await user.click(screen.getByRole("checkbox", { name: /Sport/ }));
+      await user.click(await screen.findByRole("radio", { name: "Sport" }));
 
       await waitFor(() => {
         expect(lastRequestedUrl(fetchMock)).toMatch(/category=sport/i);
       });
     });
 
-    it.fails("should combine category, date and city filters in one request", async () => {
+    it("should combine category, date and city filters in one request", async () => {
       const fetchMock = stubFetch();
       const { user } = renderHome();
 
-      await user.click(screen.getByRole("checkbox", { name: /Sport/ }));
+      await user.click(await screen.findByRole("radio", { name: "Sport" }));
       await pickDate(user);
       await searchCity(user, "Paris");
 
@@ -147,11 +112,11 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       });
     });
 
-    it.fails("should display the events returned for the combined filters", async () => {
+    it("should display the events returned for the combined filters", async () => {
       stubFetch();
       const { user } = renderHome();
 
-      await user.click(screen.getByRole("checkbox", { name: /Sport/ }));
+      await user.click(await screen.findByRole("radio", { name: "Sport" }));
       await searchCity(user, "Paris");
 
       await waitFor(() => {
@@ -161,41 +126,58 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
     });
   });
 
-  describe("Filtres actifs", () => {
-    it("should display a checked category as a removable tag", async () => {
+  describe("Catégories", () => {
+    it("should select « Tout » by default", async () => {
       stubFetch();
-      const { user } = renderHome();
+      renderHome();
 
-      await user.click(screen.getByRole("checkbox", { name: /Sport/ }));
-
-      expect(screen.getByRole("button", { name: "Retirer le filtre Sport" })).toBeInTheDocument();
+      expect(await screen.findByRole("radio", { name: "Tout" })).toBeChecked();
     });
 
-    it("should uncheck the category when its tag is removed", async () => {
-      stubFetch();
-      const { user } = renderHome();
-      await user.click(screen.getByRole("checkbox", { name: /Sport/ }));
-
-      await user.click(screen.getByRole("button", { name: "Retirer le filtre Sport" }));
-
-      expect(screen.getByRole("checkbox", { name: /Sport/ })).not.toBeChecked();
-      expect(
-        screen.queryByRole("button", { name: "Retirer le filtre Sport" }),
-      ).not.toBeInTheDocument();
-    });
-
-    it.fails("should clear all filters and request events without category when reset is clicked", async () => {
+    it("should fetch tonight's events with « Ce soir »", async () => {
       const fetchMock = stubFetch();
       const { user } = renderHome();
-      await user.click(screen.getByRole("checkbox", { name: /Sport/ }));
+
+      await user.click(screen.getByRole("radio", { name: "Ce soir" }));
+
+      await waitFor(() => {
+        const url = lastRequestedUrl(fetchMock);
+        expect(url).toContain("from=2026-11-16");
+        expect(url).toContain("to=2026-11-16");
+      });
+    });
+
+    it("should keep the category when only the city is cleared", async () => {
+      const fetchMock = stubFetch();
+      const { user } = renderHome();
+      await user.click(await screen.findByRole("radio", { name: "Sport" }));
+      await searchCity(user, "Paris");
+
+      await user.clear(screen.getByLabelText("Où"));
+      await user.click(screen.getByRole("button", { name: "Rechercher" }));
+
+      expect(screen.getByRole("radio", { name: "Sport" })).toBeChecked();
+      await waitFor(() => {
+        const url = lastRequestedUrl(fetchMock);
+        expect(url).toMatch(/category=sport/i);
+        expect(url).not.toContain("city=");
+      });
+    });
+
+    it("should clear all filters and request events without category when reset is clicked", async () => {
+      const fetchMock = stubFetch();
+      const { user } = renderHome();
+      await user.click(await screen.findByRole("radio", { name: "Sport" }));
+      await searchCity(user, "Paris");
 
       await user.click(screen.getByRole("button", { name: "Tout effacer" }));
 
-      expect(screen.queryByRole("button", { name: /Retirer le filtre/ })).not.toBeInTheDocument();
+      expect(screen.getByRole("radio", { name: "Tout" })).toBeChecked();
+      expect(screen.getByLabelText("Où")).toHaveValue("");
       await waitFor(() => {
         const url = lastRequestedUrl(fetchMock);
-        expect(url).toBeDefined();
         expect(url).not.toContain("category=");
+        expect(url).not.toContain("city=");
       });
     });
   });

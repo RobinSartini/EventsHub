@@ -35,6 +35,7 @@
   --live: #c21a30;
   --live-foreground: #ffffff;
   --success: #0a7f58;
+  --shadow-raised: 0 1px 2px rgb(11 21 51 / 0.06), 0 4px 12px rgb(11 21 51 / 0.08);
   --shadow-float: 0 8px 24px rgb(11 21 51 / 0.14);
 
   --chart-1: oklch(0.809 0.105 251.813);
@@ -83,6 +84,7 @@
   --live: #ff5468;
   --live-foreground: #070b1a;
   --success: #3dd9a0;
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 12px rgb(0 0 0 / 0.3);
   --shadow-float: 0 8px 24px rgb(0 0 0 / 0.5);
 
   --chart-1: oklch(0.809 0.105 251.813);
@@ -114,6 +116,7 @@
   --color-live: var(--live);
   --color-live-foreground: var(--live-foreground);
   --color-success: var(--success);
+  --shadow-raised: var(--shadow-raised);
   --shadow-float: var(--shadow-float);
 
   --color-sidebar-ring: var(--sidebar-ring);
@@ -162,23 +165,26 @@
 
   --ease-signature: cubic-bezier(0.16, 1, 0.3, 1);
 
-  --animate-morph: morph 12s ease-in-out infinite;
+  --animate-rise: rise 0.5s var(--ease-signature) both;
 
-  @keyframes morph {
-    0%,
-    100% {
-      border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
-    }
-    33% {
-      border-radius: 63% 37% 38% 62% / 55% 61% 39% 45%;
-    }
-    66% {
-      border-radius: 35% 65% 52% 48% / 64% 36% 64% 36%;
+  @keyframes rise {
+    from {
+      opacity: 0;
+      translate: 0 12px;
     }
   }
 }
 
 @layer base {
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-delay: 0s !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
   * {
     @apply border-border outline-ring/50;
   }
@@ -197,4 +203,12 @@
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M18 6 6 18M6 6l12 12'/%3E%3C/svg%3E")
       center / contain no-repeat;
   }
+}
+
+@utility clip-media {
+  overflow: clip;
+  clip-path: inset(
+    0 round var(--radius-card) var(--radius-card) var(--radius-card) var(--radius-anchor)
+  );
+  mask-image: linear-gradient(#000, #000);
 }

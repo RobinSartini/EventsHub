@@ -12,12 +12,14 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
   useNavigate,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 
 import { ThemeProvider } from "./components/theme-provider";
+import { HomeSearch } from "./components/navigation/home-search";
 import { NavBar } from "./components/navigation/navbar";
 import { Toaster } from "./components/ui/sonner";
 import { authClient } from "./lib/auth-client";
@@ -41,14 +43,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-const NAV_LINKS = [{ to: "/", label: "Explorer" }] as const;
-
 function AppNavBar() {
   const { data: session } = authClient.useSession();
   const navigate = useNavigate();
+  const isHome = useLocation().pathname === "/";
   const user = session?.user ? { name: session.user.name } : null;
   const signOut = () => authClient.signOut({ fetchOptions: { onSuccess: () => navigate("/") } });
-  return <NavBar links={NAV_LINKS} user={user} onSignOut={signOut} />;
+  return (
+    <NavBar
+      user={user}
+      onSignOut={signOut}
+      className={isHome ? "relative z-10 border-b-0" : undefined}
+    >
+      {isHome ? <HomeSearch /> : null}
+    </NavBar>
+  );
 }
 
 export default function App() {

@@ -1,282 +1,227 @@
-import { useState } from "react";
+import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  BikeIcon,
+  DramaIcon,
+  LayoutGridIcon,
+  type LucideIcon,
+  MoonStarIcon,
+  MusicIcon,
+  PaletteIcon,
+  SparklesIcon,
+} from "lucide-react";
+import { useSearchParams } from "react-router";
 
+import { EventCard, type EventCardEvent } from "@/components/event/event-card";
+import { CategoryTabs } from "@/components/navigation/category-tabs";
 import { Button } from "@/components/ui/button";
-import { CheckboxField, CheckboxGroup } from "@/components/form/checkbox";
-import { RemovableChip } from "@/components/ui/chip";
-import type { EventCardEvent } from "@/components/event/event-card";
-import { EventCard } from "@/components/event/event-card";
-import type { MapMarker } from "@/components/event/events-map";
-import { EventsMap } from "@/components/event/events-map";
-import { RangeSlider } from "@/components/form/range-slider";
-import { SearchBar } from "@/components/form/search-bar";
-import { SegmentedControl } from "@/components/form/segmented-control";
-import { Select } from "@/components/form/select";
-import { Switch } from "@/components/form/switch";
-import { formatPrice } from "@/lib/format-price";
+import { Skeleton } from "@/components/ui/skeleton";
+import { type ApiEvent, fetchCategories, fetchEvents } from "@/lib/events-api";
+import {
+  eventsQuery,
+  type HomeFilters,
+  nextPage,
+  PAGE_SIZE,
+  readHomeSearch,
+  TONIGHT,
+  writeHomeSearch,
+} from "@/lib/home-search";
+import { plural } from "@/lib/plural";
+import { pageWidth } from "@/lib/styles";
+import { cn } from "@/lib/utils";
 
-const MOCK_EVENTS: EventCardEvent[] = [
-  {
-    id: "1",
-    name: "Nuit Fluo",
-    startDate: "2026-11-14T20:00:00Z",
-    location: "Les Docks · 1,2 km",
-    capacity: 60,
-    ticketsSold: 32,
-    status: "published",
-  },
-  {
-    id: "2",
-    name: "Jam session acoustique",
-    startDate: "2026-11-13T19:30:00Z",
-    location: "Studio 26 · 2,1 km",
-    capacity: 26,
-    ticketsSold: 0,
-    status: "published",
-  },
-  {
-    id: "3",
-    name: "Soirée salsa",
-    startDate: "2026-11-12T19:30:00Z",
-    location: "Salle Tempo · 3,4 km",
-    capacity: 80,
-    ticketsSold: 75,
-    status: "published",
-  },
-  {
-    id: "4",
-    name: "Atelier DJ débutant",
-    startDate: "2026-11-14T14:00:00Z",
-    location: "Studio 26 · 900 m",
-    capacity: 10,
-    ticketsSold: 6,
-    status: "published",
-  },
-  {
-    id: "5",
-    name: "Blind test années 2000",
-    startDate: "2026-11-13T21:00:00Z",
-    location: "Le Comptoir · 600 m",
-    capacity: 50,
-    ticketsSold: 0,
-    status: "published",
-  },
-  {
-    id: "6",
-    name: "Open mic",
-    startDate: "2026-11-15T18:00:00Z",
-    location: "Café des Arts · 1,8 km",
-    capacity: 18,
-    ticketsSold: 0,
-    status: "published",
-  },
+const ALL = "all";
+const grid = "grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  atelier: PaletteIcon,
+  musique: MusicIcon,
+  sport: BikeIcon,
+  theatre: DramaIcon,
+};
+
+const FIXED_TABS = [
+  { value: ALL, label: "Tout", icon: LayoutGridIcon },
+  { value: TONIGHT, label: "Ce soir", icon: MoonStarIcon },
 ];
-
-const CATEGORIES = [
-  { label: "Musique", count: 12 },
-  { label: "Ateliers", count: 8 },
-  { label: "Sport", count: 4 },
-  { label: "Conventions", count: 3 },
-  { label: "Expos", count: 9 },
-  { label: "Food & boissons", count: 10 },
-];
-
-const SORT_OPTIONS = [
-  { value: "date", label: "Date" },
-  { value: "distance", label: "Distance" },
-  { value: "relevance", label: "Pertinence" },
-] as const;
-
-type SortValue = "date" | "distance" | "relevance";
-
-const VIEW_OPTIONS = [
-  { value: "list", label: "Liste" },
-  { value: "list-map", label: "Liste + carte" },
-] as const;
-
-type ViewValue = "list" | "list-map";
-
-const MOCK_MARKERS: MapMarker[] = [
-  { id: "1", lat: 44.937, lng: 4.882, label: formatPrice(12) },
-  { id: "2", lat: 44.93, lng: 4.896, label: formatPrice(8) },
-  { id: "3", lat: 44.928, lng: 4.904, label: formatPrice(null), free: true },
-  { id: "4", lat: 44.935, lng: 4.912, label: formatPrice(15) },
-  { id: "5", lat: 44.924, lng: 4.887, label: formatPrice(null), free: true },
-  { id: "6", lat: 44.941, lng: 4.899, label: formatPrice(null), free: true },
-];
-
-const CITY = "Valence";
-const TOTAL_RESULTS = 48;
-const RADIUS_KM = 10;
 
 export function meta() {
   return [
     { title: "Événements - EventsHub" },
-    { name: "description", content: `Découvrez les événements autour de ${CITY}` },
+    { name: "description", content: "Tous les événements près de chez toi" },
   ];
 }
 
-export default function Home() {
-  const [view, setView] = useState<ViewValue>("list-map");
-  const [sortBy, setSortBy] = useState<SortValue>("date");
-  const [priceMax, setPriceMax] = useState(15);
-  const [freeOnly, setFreeOnly] = useState(false);
-  const [availableOnly, setAvailableOnly] = useState(true);
-  const [accessible, setAccessible] = useState(false);
-  const [kidsAdapted, setKidsAdapted] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(["Musique"]);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+function toCardEvent({ location, city, ...event }: ApiEvent): EventCardEvent {
+  const place = location === city ? location : [location, city].filter(Boolean).join(", ");
+  return { ...event, location: place || undefined };
+}
 
-  function toggleCategory(label: string, checked: boolean) {
-    setSelectedCategories((prev) => (checked ? [...prev, label] : prev.filter((c) => c !== label)));
-  }
+function useHomeEvents(search: HomeFilters) {
+  const today = new Date();
 
-  function toggleFavorite(id: string) {
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }
+  return useInfiniteQuery({
+    queryKey: ["events", eventsQuery(search, today, 1)],
+    queryFn: ({ pageParam, signal }) => fetchEvents(eventsQuery(search, today, pageParam), signal),
+    initialPageParam: 1,
+    getNextPageParam: (_last, pages) => nextPage(pages),
+    placeholderData: keepPreviousData,
+    meta: { silent: true },
+  });
+}
 
-  const activeFilters = [
-    ...selectedCategories.map((c) => ({
-      key: `cat-${c}`,
-      label: c,
-      onRemove: () => toggleCategory(c, false),
+function useCategoryTabs() {
+  const categories = useQuery({
+    queryKey: ["categories"],
+    queryFn: ({ signal }) => fetchCategories(signal),
+    staleTime: Number.POSITIVE_INFINITY,
+    meta: { silent: true },
+  });
+
+  return [
+    ...FIXED_TABS,
+    ...(categories.data ?? []).map(({ slug, name }) => ({
+      value: slug,
+      label: name,
+      icon: CATEGORY_ICONS[slug] ?? SparklesIcon,
     })),
-    ...(priceMax < 50
-      ? [{ key: "price", label: `≤ ${priceMax} €`, onRemove: () => setPriceMax(50) }]
-      : []),
-    ...(availableOnly
-      ? [{ key: "available", label: "Places disponibles", onRemove: () => setAvailableOnly(false) }]
-      : []),
   ];
+}
 
-  function clearAllFilters() {
-    setSelectedCategories([]);
-    setPriceMax(50);
-    setFreeOnly(false);
-    setAvailableOnly(false);
-    setAccessible(false);
-    setKidsAdapted(false);
-  }
+function CardSkeleton() {
+  return (
+    <div className="flex flex-col gap-3">
+      <Skeleton className="rounded-card rounded-bl-anchor aspect-[20/19]" />
+      <Skeleton className="h-4 w-2/3 rounded-full" />
+      <Skeleton className="h-3 w-1/2 rounded-full" />
+    </div>
+  );
+}
+
+function EventGrid({ events, busy }: Readonly<{ events: ApiEvent[]; busy: boolean }>) {
+  return (
+    <ul aria-busy={busy} className={cn(grid, "transition-opacity aria-busy:opacity-60")}>
+      {events.map((event, index) => (
+        <li
+          key={event.id}
+          className="animate-rise"
+          style={{ animationDelay: `${(index % PAGE_SIZE) * 40}ms` }}
+        >
+          <EventCard event={toCardEvent(event)} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+type LoadMoreProps = { remaining: number; loading: boolean; failed: boolean; onLoad: () => void };
+
+function LoadMore({ remaining, loading, failed, onLoad }: Readonly<LoadMoreProps>) {
+  return (
+    <div className="flex flex-col items-center gap-3 pt-4">
+      <p className="text-muted-foreground text-sm font-bold">
+        Encore {remaining} {plural(remaining, "événement")} à découvrir
+      </p>
+      <Button variant="outline" disabled={loading} onClick={onLoad}>
+        {loading ? "Chargement" : "Afficher plus"}
+      </Button>
+      {failed ? (
+        <p role="alert" className="text-signal-text text-sm font-bold">
+          Une erreur est survenue, réessaie.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+export default function Home() {
+  const [params, setParams] = useSearchParams();
+  const search = readHomeSearch(params);
+  const events = useHomeEvents(search);
+  const tabs = useCategoryTabs();
+
+  const hasFilters = Object.values(search).some(Boolean);
+  const list = events.data?.pages.flatMap((page) => page.events) ?? [];
+  const total = events.data?.pages[0]?.total ?? 0;
+
+  const onCategory = (category: string) =>
+    setParams(writeHomeSearch({ ...search, category: category === ALL ? undefined : category }));
+  const clearAll = () => setParams(new URLSearchParams());
 
   return (
-    <div className="flex h-full overflow-hidden">
-      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto px-10 py-6">
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="font-display text-3xl font-extrabold sm:text-4xl">
-              Événements autour de <span className="text-primary">{CITY}</span>
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {TOTAL_RESULTS} résultats · cette semaine · dans un rayon de {RADIUS_KM} km
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-3 pt-1">
-            <Select
-              label="Trier par"
-              options={SORT_OPTIONS}
-              value={sortBy}
-              onValueChange={setSortBy}
-            />
-            <SegmentedControl
-              label="Affichage"
-              options={VIEW_OPTIONS}
-              value={view}
-              onValueChange={setView}
-            />
-          </div>
-        </div>
-
-        <SearchBar defaultValues={{ city: CITY }} onSearch={() => {}} className="mb-4" />
-
-        {activeFilters.length > 0 && (
-          <div className="mb-6 flex flex-wrap items-center gap-2">
-            <span className="text-muted-foreground text-sm font-bold">Filtres actifs :</span>
-            {activeFilters.map((filter) => (
-              <RemovableChip key={filter.key} label={filter.label} onRemove={filter.onRemove} />
-            ))}
-            <Button variant="link" size="sm" onClick={clearAllFilters}>
-              Tout effacer
-            </Button>
-          </div>
-        )}
-
-        <div className="grid grid-cols-[220px_1fr] gap-6">
-          <aside className="flex flex-col gap-6">
-            <CheckboxGroup legend="Catégories">
-              {CATEGORIES.map(({ label, count }) => (
-                <CheckboxField
-                  key={label}
-                  checked={selectedCategories.includes(label)}
-                  onCheckedChange={(checked) => toggleCategory(label, checked)}
-                  label={label}
-                  count={count}
-                />
-              ))}
-            </CheckboxGroup>
-
-            <RangeSlider
-              label="Prix max"
-              min={0}
-              max={50}
-              step={1}
-              value={priceMax}
-              onValueChange={setPriceMax}
-              format={(v) => formatPrice(v === 0 ? null : v)}
-            />
-
-            <CheckboxField
-              checked={freeOnly}
-              onCheckedChange={setFreeOnly}
-              label="Gratuit uniquement"
-            />
-
-            <div className="flex flex-col gap-3">
-              <Switch
-                label="Places disponibles"
-                checked={availableOnly}
-                onCheckedChange={setAvailableOnly}
-              />
-              <Switch label="Accessible PMR" checked={accessible} onCheckedChange={setAccessible} />
-              <Switch
-                label="Adapté aux enfants"
-                checked={kidsAdapted}
-                onCheckedChange={setKidsAdapted}
-              />
-            </div>
-          </aside>
-
-          <main>
-            <div className={view === "list" ? "grid grid-cols-3 gap-4" : "grid grid-cols-2 gap-4"}>
-              {MOCK_EVENTS.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  isFavorite={favorites.has(event.id)}
-                  onToggleFavorite={() => toggleFavorite(event.id)}
-                />
-              ))}
-            </div>
-            <div className="mt-8 flex justify-center">
-              <Button variant="outline">
-                Voir {TOTAL_RESULTS - MOCK_EVENTS.length} événements de plus
-              </Button>
-            </div>
-          </main>
+    <div>
+      <div className="bg-card border-b">
+        <div className={pageWidth}>
+          <CategoryTabs
+            categories={tabs}
+            value={search.category ?? ALL}
+            onValueChange={onCategory}
+          />
         </div>
       </div>
 
-      {view === "list-map" && (
-        <aside className="w-[420px] shrink-0 py-6 pr-10">
-          <EventsMap markers={MOCK_MARKERS} className="h-full w-full rounded-2xl overflow-hidden" />
-        </aside>
-      )}
+      <main className={cn(pageWidth, "flex flex-col gap-6 py-8")}>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+          <h1
+            aria-live="polite"
+            className="font-display text-3xl font-extrabold text-balance md:text-4xl"
+          >
+            {events.data ? `${total} ${plural(total, "événement")}` : "Événements"}
+            {search.city ? (
+              <>
+                {" à "}
+                <span className="text-primary">{search.city}</span>
+              </>
+            ) : (
+              " à venir"
+            )}
+          </h1>
+          <div className="flex items-baseline gap-4">
+            <p className="text-muted-foreground text-sm font-bold">Triés par date</p>
+            {hasFilters ? (
+              <Button variant="link" size="sm" onClick={clearAll}>
+                Tout effacer
+              </Button>
+            ) : null}
+          </div>
+        </div>
+
+        {events.isError && !events.data ? (
+          <div role="alert" className="flex flex-col items-start gap-3">
+            <p>Une erreur est survenue pendant le chargement des événements.</p>
+            <Button variant="outline" onClick={() => events.refetch()}>
+              Réessayer
+            </Button>
+          </div>
+        ) : null}
+
+        {events.isPending ? (
+          <div aria-hidden="true" className={grid}>
+            {Array.from({ length: PAGE_SIZE }, (_, index) => (
+              <CardSkeleton key={index} />
+            ))}
+          </div>
+        ) : null}
+
+        {events.data && list.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-16 text-center">
+            <p className="text-lg font-bold">Aucun événement ne correspond à ta recherche.</p>
+            <p className="text-muted-foreground text-sm">
+              Essaie une autre ville, une autre date ou une autre catégorie.
+            </p>
+          </div>
+        ) : null}
+
+        {list.length > 0 ? <EventGrid events={list} busy={events.isPlaceholderData} /> : null}
+
+        {events.hasNextPage ? (
+          <LoadMore
+            remaining={total - list.length}
+            loading={events.isFetchingNextPage}
+            failed={events.isFetchNextPageError}
+            onLoad={() => events.fetchNextPage()}
+          />
+        ) : null}
+      </main>
     </div>
   );
 }

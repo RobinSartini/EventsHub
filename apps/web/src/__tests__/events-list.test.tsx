@@ -1,10 +1,13 @@
-// it.fails : rouge tant que la fonctionnalité n'est pas développée. Retirer .fails au fur et à mesure.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { HomeSearch } from "@/components/navigation/home-search";
 import Home from "@/routes/_index";
+
+import { lastEventsUrl, stubApi } from "./stub-api";
 
 const mockEvents = [
   { id: "1", name: "Concert Jazz", organizerId: "o1", startDate: "2026-12-01T20:00:00Z" },
@@ -12,35 +15,21 @@ const mockEvents = [
   { id: "3", name: "Marathon Paris", organizerId: "o2", startDate: "2026-12-10T08:00:00Z" },
 ];
 
-vi.mock("@/utils/trpc", () => ({
-  trpc: {
-    events: {
-      list: {
-        queryOptions: () => ({
-          queryKey: ["events", "list"],
-          queryFn: () =>
-            fetch("/events").then(async (res) => {
-              if (!res.ok) throw new Error("Failed to fetch events");
-              return res.json();
-            }),
-        }),
-      },
-    },
-  },
-  queryClient: null,
-}));
-
-function renderHome() {
+function renderHome(url = "/") {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  return render(
-    <MemoryRouter>
-      <QueryClientProvider client={queryClient}>
-        <Home />
-      </QueryClientProvider>
-    </MemoryRouter>,
-  );
+  return {
+    user: userEvent.setup(),
+    ...render(
+      <MemoryRouter initialEntries={[url]}>
+        <QueryClientProvider client={queryClient}>
+          <HomeSearch />
+          <Home />
+        </QueryClientProvider>
+      </MemoryRouter>,
+    ),
+  };
 }
 
 describe("US-02 – Parcourir les événements à l'accueil", () => {
@@ -48,15 +37,8 @@ describe("US-02 – Parcourir les événements à l'accueil", () => {
     vi.unstubAllGlobals();
   });
 
-  it.fails("should display events list without being authenticated", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => mockEvents,
-      }),
-    );
+  it("should display events list without being authenticated", async () => {
+    stubApi({ events: mockEvents });
 
     renderHome();
 
@@ -65,18 +47,49 @@ describe("US-02 – Parcourir les événements à l'accueil", () => {
       expect(screen.getByText("Expo Photo")).toBeInTheDocument();
       expect(screen.getByText("Marathon Paris")).toBeInTheDocument();
     });
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("3 événements à venir");
   });
 
-  it.fails("500 – should display an error message", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => null }),
-    );
+  it("500 – should display an error message", async () => {
+    stubApi({ status: 500 });
 
     renderHome();
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(/erreur/i);
+    });
+  });
+
+  it("should display an empty state when no event matches", async () => {
+    stubApi({ events: [] });
+
+    renderHome("/?q=introuvable");
+
+    expect(await screen.findByText(/aucun événement/i)).toBeInTheDocument();
+  });
+
+  describe("Afficher plus", () => {
+    it("should append the next events below the first ones", async () => {
+      const fetchMock = stubApi({ events: mockEvents, total: 30 });
+      const { user } = renderHome();
+
+      expect(await screen.findByText("Encore 27 événements à découvrir")).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "Afficher plus" }));
+
+      await waitFor(() => {
+        expect(screen.getAllByText("Concert Jazz")).toHaveLength(2);
+      });
+      expect(lastEventsUrl(fetchMock)).toContain("page=2");
+      expect(screen.getByText("Encore 24 événements à découvrir")).toBeInTheDocument();
+    });
+
+    it("should hide the button when everything is loaded", async () => {
+      stubApi({ events: mockEvents });
+
+      renderHome();
+
+      await screen.findByText("Concert Jazz");
+      expect(screen.queryByRole("button", { name: "Afficher plus" })).not.toBeInTheDocument();
     });
   });
 });
