@@ -1,0 +1,1316 @@
+openapi: 3.0.3
+info:
+  title: EventsHub API
+  version: 1.5.0
+paths:
+  /events:
+    get:
+      summary: Récupérer la liste des événements
+      description: >
+        Récupère les événements publiés, avec filtrage optionnel. Triés par date de début croissante,
+        ou par distance avec `sort=distance`. Le tri s'applique avant la pagination.
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+          description: >
+            Recherche par mot-clé, insensible à la casse, dans le nom, la description, le lieu,
+            la ville et le nom de la catégorie. Avec plusieurs mots, chaque mot doit correspondre.
+            Une recherche vide est ignorée. Aucun résultat : tableau vide et `X-Total-Count: 0`.
+        - name: category
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+          description: Filtrer par catégorie (slug ou id)
+        - name: from
+          in: query
+          schema:
+            type: string
+          examples:
+            date:
+              value: "2027-01-10"
+            localDay:
+              value: "2027-01-10T00:00:00+01:00"
+          description: >
+            Borne basse incluse sur `startDate`. Une date seule (`AAAA-MM-JJ`) vaut le début de
+            la journée **UTC**. Pour une journée locale, envoyer une date-heure RFC 3339 avec
+            décalage (`2027-01-10T00:00:00+01:00` ou `Z`) : elle est prise telle quelle. Le `+`
+            doit être encodé en `%2B` dans l'URL. Une date-heure sans décalage est refusée (400).
+        - name: to
+          in: query
+          schema:
+            type: string
+          examples:
+            date:
+              value: "2027-01-10"
+            localDay:
+              value: "2027-01-10T23:59:59.999+01:00"
+          description: >
+            Borne haute incluse sur `startDate`. Une date seule (`AAAA-MM-JJ`) vaut la fin de la
+            journée **UTC** (`23:59:59.999Z`). Une date-heure RFC 3339 avec décalage est prise
+            telle quelle (même règle que `from`). `from` doit être antérieur ou égal à `to`,
+            sinon 400.
+        - name: city
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+          description: Filtrer par ville (insensible à la casse)
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [date, distance]
+            default: date
+          description: >
+            `date` : date de début croissante. `distance` : du plus proche au plus loin de `lat`/`lng`
+            (obligatoires), à date égale par date de début ; les événements sans coordonnées sont en dernier.
+        - name: lat
+          in: query
+          schema:
+            type: number
+            format: float
+            minimum: -90
+            maximum: 90
+          description: Latitude de l'utilisateur. Toujours avec `lng`.
+        - name: lng
+          in: query
+          schema:
+            type: number
+            format: float
+            minimum: -180
+            maximum: 180
+          description: Longitude de l'utilisateur. Toujours avec `lat`.
+        - $ref: "#/components/parameters/Page"
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 12
+          description: Nombre d'événements par page
+      responses:
+        "200":
+          description: Liste des événements récupérée.
+          headers:
+            X-Total-Count:
+              $ref: "#/components/headers/XTotalCount"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+        "400":
+          description: >
+            Paramètres invalides (page, pageSize, date malformée, from après to, `q`, `category` ou `city` de plus de
+            100 caractères, `lat` sans `lng`
+            ou l'inverse, `sort=distance` sans position).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /events/{id}:
+    get:
+      summary: Récupérer la fiche d'un événement
+      description: >
+        Renvoie un événement par son id, publié ou annulé (`status` permet d'afficher l'annulation).
+        Public, sans authentification.
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Fiche de l'événement.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          description: Événement introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /categories:
+    get:
+      summary: Récupérer les catégories
+      description: Toutes les catégories, triées par nom. Public, sans pagination.
+      security: []
+      responses:
+        "200":
+          description: Liste des catégories.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+        "500":
+          description: Erreur interne du serveur.
+
+  /users:
+    get:
+      summary: Récupérer la liste des utilisateurs (admin)
+      description: Réservé aux administrateurs. Triée par date de création décroissante.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Nombre d'utilisateurs par page
+      responses:
+        "200":
+          description: Liste des utilisateurs récupérée.
+          headers:
+            X-Total-Count:
+              $ref: "#/components/headers/XTotalCount"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "400":
+          description: Paramètres invalides.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+        "403":
+          description: Accès refusé (rôle admin requis).
+        "500":
+          description: Erreur interne du serveur.
+
+  /users/{id}:
+    patch:
+      summary: Modifier le rôle ou le statut d'un utilisateur (admin)
+      description: >
+        Réservé aux administrateurs. Un administrateur ne peut pas modifier son propre compte.
+        Passer un utilisateur en `suspended` supprime toutes ses sessions et bloque ses connexions.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Utilisateur modifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Données invalides, ou modification de son propre compte.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+        "403":
+          description: Accès refusé (rôle admin requis).
+        "404":
+          description: Utilisateur introuvable.
+        "500":
+          description: Erreur interne du serveur.
+
+  /me:
+    get:
+      summary: Récupérer mon profil
+      description: >
+        Profil de l'utilisateur connecté, avec ses statistiques.
+        Alimente l'écran Profil.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Profil récupéré.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeProfile"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+    patch:
+      summary: Modifier mon profil
+      description: >
+        Modifie les informations de l'utilisateur connecté. Au moins un champ est requis.
+        Le rôle, le statut et l'email ne sont pas modifiables ici.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Profil modifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeProfile"
+        "400":
+          description: Données invalides.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /me/deletion:
+    post:
+      summary: Supprimer mon compte
+      description: >
+        Supprime définitivement le compte de l'utilisateur connecté, ses sessions et ses données
+        personnelles, et détache ses moyens de paiement Stripe. Requis par l'App Store pour toute
+        application qui permet de créer un compte. Le mot de passe est redemandé pour confirmer.
+        C'est un POST et non un DELETE, car un DELETE avec corps n'a pas de sémantique définie en
+        OpenAPI 3.0 et certains proxys ou clients suppriment ce corps.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountDeletion"
+      responses:
+        "204":
+          description: Compte supprimé.
+        "400":
+          description: Mot de passe manquant ou incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >
+            Suppression impossible : l'utilisateur a des billets pour des événements à venir,
+            ou organise des événements à venir. Le message d'erreur en donne la raison.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: Stripe indisponible, le compte n'est pas supprimé.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /me/notification-preferences:
+    get:
+      summary: Récupérer mes préférences de notification
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Préférences récupérées.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPreferences"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+    patch:
+      summary: Modifier mes préférences de notification
+      description: Au moins un champ est requis. Les champs absents restent inchangés.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationPreferencesUpdate"
+      responses:
+        "200":
+          description: Préférences modifiées.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPreferences"
+        "400":
+          description: Données invalides.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /me/payment-methods:
+    get:
+      summary: Récupérer mes moyens de paiement
+      description: >
+        Cartes enregistrées chez Stripe. Seuls la marque, les 4 derniers chiffres et l'expiration
+        sont exposés. Seules les cartes bancaires (`type: card`) sont renvoyées, les autres
+        moyens de paiement Stripe sont ignorés. Triées par date d'ajout décroissante.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Moyens de paiement récupérés.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentMethod"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /me/payment-methods/setup:
+    post:
+      summary: Préparer l'ajout d'une carte
+      description: >
+        Crée un SetupIntent Stripe pour le client de l'utilisateur (le client Stripe est créé au
+        premier appel). L'app iOS passe ces valeurs au PaymentSheet de Stripe pour enregistrer la carte.
+        La carte apparaît ensuite dans `GET /me/payment-methods`.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: SetupIntent créé.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentMethodSetup"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: Stripe indisponible.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /me/payment-methods/{id}:
+    delete:
+      summary: Supprimer un moyen de paiement
+      description: Détache la carte du client Stripe. Seule une carte de l'utilisateur connecté peut être supprimée.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifiant Stripe de la carte (`pm_...`)
+      responses:
+        "204":
+          description: Carte supprimée.
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Carte introuvable ou appartenant à un autre utilisateur.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: Stripe indisponible.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /users/{id}/public:
+    get:
+      summary: Récupérer un profil public
+      description: >
+        Profil visible par tout utilisateur connecté. Répond 404 si l'utilisateur n'existe pas,
+        est suspendu ou a désactivé `publicProfile` (sans distinguer les cas, pour ne rien révéler).
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Profil public récupéré.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicProfile"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Profil introuvable ou privé.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /admin/events:
+    get:
+      summary: Récupérer tous les événements (admin)
+      description: Réservé aux administrateurs. Inclut les événements annulés. Triés par date de début décroissante.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Nombre d'événements par page
+      responses:
+        "200":
+          description: Liste des événements récupérée.
+          headers:
+            X-Total-Count:
+              $ref: "#/components/headers/XTotalCount"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+        "400":
+          description: Paramètres de pagination invalides.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+        "403":
+          description: Accès refusé (rôle admin requis).
+        "500":
+          description: Erreur interne du serveur.
+
+  /admin/events/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    patch:
+      summary: Modifier n'importe quel événement (admin)
+      description: >
+        Réservé aux administrateurs. Seuls les champs envoyés sont modifiés.
+        La date de fin ne peut pas précéder la date de début (comparée aux dates enregistrées si une seule est envoyée).
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUpdate"
+      responses:
+        "200":
+          description: Événement modifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "400":
+          description: Données invalides (corps vide, champ inconnu, valeur hors bornes, dates inversées, catégorie inconnue).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+        "403":
+          description: Accès refusé (rôle admin requis).
+        "404":
+          description: Événement introuvable.
+        "500":
+          description: Erreur interne du serveur.
+    delete:
+      summary: Supprimer n'importe quel événement (admin)
+      description: Réservé aux administrateurs. Supprime aussi les billets et favoris de l'événement.
+      security:
+        - cookieAuth: []
+      responses:
+        "204":
+          description: Événement supprimé.
+        "401":
+          description: Non authentifié.
+        "403":
+          description: Accès refusé (rôle admin requis).
+        "404":
+          description: Événement introuvable.
+        "500":
+          description: Erreur interne du serveur.
+
+  /api/auth/sign-up/email:
+    post:
+      summary: "Inscription d'un utilisateur"
+      description: Crée un nouveau compte (rôle `user`, statut `active`) via Better Auth. La session est établie via un cookie httpOnly.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegister"
+      responses:
+        "200":
+          description: "Compte créé, session ouverte."
+          headers:
+            Set-Cookie:
+              description: Cookie de session httpOnly posé par Better Auth.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Données invalides (champ manquant, email malformé…).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: "L'email est déjà utilisé."
+        "500":
+          description: Erreur interne du serveur.
+
+  /api/auth/sign-in/email:
+    post:
+      summary: "Connexion d'un utilisateur"
+      description: Authentifie un utilisateur via Better Auth. La session est établie via un cookie httpOnly.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLogin"
+      responses:
+        "200":
+          description: Authentification réussie.
+          headers:
+            Set-Cookie:
+              description: Cookie de session httpOnly posé par Better Auth.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Données invalides.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Identifiants incorrects.
+        "403":
+          description: Compte suspendu.
+        "500":
+          description: Erreur interne du serveur.
+
+  /api/auth/sign-out:
+    post:
+      summary: "Déconnexion"
+      description: Invalide la session courante.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Déconnecté avec succès.
+        "401":
+          description: Aucune session active.
+
+  /api/auth/change-password:
+    post:
+      summary: "Changer le mot de passe"
+      description: >
+        Change le mot de passe de l'utilisateur connecté après vérification de l'ancien.
+        Avec `revokeOtherSessions`, toutes les autres sessions sont fermées et la réponse pose
+        un nouveau cookie de session (`Set-Cookie`) que le client doit conserver à la place de l'ancien.
+        Les erreurs suivent le schéma `Error`.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordChange"
+      responses:
+        "200":
+          description: Mot de passe changé (corps non utilisé).
+          headers:
+            Set-Cookie:
+              description: Présent uniquement avec `revokeOtherSessions`. Nouveau cookie de session.
+              schema:
+                type: string
+        "400":
+          description: Données invalides, ou ancien mot de passe incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Non authentifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur interne du serveur.
+
+  /api/auth/get-session:
+    get:
+      summary: "Récupérer la session courante"
+      description: Retourne l'utilisateur et la session associés au cookie présent.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Session valide.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Non authentifié.
+
+  /api/auth/refresh:
+    post:
+      summary: "Obtenir un access token"
+      description: >
+        La session (cookie httpOnly) sert de refresh token. Retourne un access token JWT
+        de courte durée (15 min), signé en EdDSA et vérifiable avec les clés de `/api/auth/jwks`.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Access token émis.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshResponse"
+        "401":
+          description: Aucune session active.
+
+  /api/auth/jwks:
+    get:
+      summary: "Clés publiques de signature des access tokens"
+      description: JSON Web Key Set servant à vérifier les access tokens émis par `/api/auth/refresh`.
+      responses:
+        "200":
+          description: Jeu de clés publiques.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      type: object
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: Numéro de page
+
+  headers:
+    XTotalCount:
+      description: Nombre total d'éléments correspondant aux filtres, toutes pages confondues.
+      schema:
+        type: integer
+
+  schemas:
+    Event:
+      type: object
+      required:
+        - id
+        - name
+        - organizerId
+        - startDate
+      properties:
+        id:
+          type: string
+          example: "cuid_abc123"
+        name:
+          type: string
+          example: Hackathon 2026
+        description:
+          type: string
+          nullable: true
+        categoryId:
+          type: string
+          nullable: true
+        organizerId:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+          nullable: true
+        location:
+          type: string
+          example: Paris
+        city:
+          type: string
+          example: Paris
+        priceCents:
+          type: integer
+          minimum: 0
+        isAccessible:
+          type: boolean
+        isKidFriendly:
+          type: boolean
+        latitude:
+          type: number
+          format: float
+          nullable: true
+        longitude:
+          type: number
+          format: float
+          nullable: true
+        capacity:
+          type: integer
+          nullable: true
+        status:
+          type: string
+          enum: [published, cancelled]
+          default: published
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        distanceKm:
+          type: number
+          format: float
+          nullable: true
+          description: >
+            Distance en kilomètres depuis `lat`/`lng`. Présent seulement quand la position est fournie ;
+            `null` si l'événement n'a pas de coordonnées.
+
+    Category:
+      type: object
+      required: [id, name, slug]
+      properties:
+        id:
+          type: string
+          example: "cuid_cat123"
+        name:
+          type: string
+          example: Musique
+        slug:
+          type: string
+          example: musique
+
+    EventUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          nullable: true
+        categoryId:
+          type: string
+          nullable: true
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+          nullable: true
+        location:
+          type: string
+          minLength: 1
+        city:
+          type: string
+          minLength: 1
+        latitude:
+          type: number
+          format: float
+          nullable: true
+        longitude:
+          type: number
+          format: float
+          nullable: true
+        capacity:
+          type: integer
+          minimum: 1
+          nullable: true
+        status:
+          type: string
+          enum: [published, cancelled]
+        priceCents:
+          type: integer
+          minimum: 0
+        isAccessible:
+          type: boolean
+        isKidFriendly:
+          type: boolean
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "cuid_abc123"
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        emailVerified:
+          type: boolean
+        image:
+          type: string
+          nullable: true
+        role:
+          type: string
+          enum: [user, admin]
+          default: user
+        status:
+          type: string
+          enum: [active, suspended]
+          default: active
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserUpdate:
+      type: object
+      description: Au moins un des deux champs. Aucun autre champ n'est accepté.
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        role:
+          type: string
+          enum: [user, admin]
+        status:
+          type: string
+          enum: [active, suspended]
+
+    UserRegister:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          minLength: 2
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+
+    UserLogin:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        ipAddress:
+          type: string
+          nullable: true
+        userAgent:
+          type: string
+          nullable: true
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        session:
+          $ref: "#/components/schemas/Session"
+
+    RefreshResponse:
+      type: object
+      required:
+        - accessToken
+        - tokenType
+        - expiresIn
+      properties:
+        accessToken:
+          type: string
+          description: "JWT à envoyer dans l'en-tête `Authorization: Bearer <token>`."
+        tokenType:
+          type: string
+          enum: [Bearer]
+        expiresIn:
+          type: integer
+          description: Durée de validité en secondes.
+          example: 900
+
+    ProfileStats:
+      type: object
+      required:
+        - outingsCount
+        - favoritesCount
+        - upcomingReservationsCount
+        - organizedEventsCount
+      properties:
+        outingsCount:
+          type: integer
+          minimum: 0
+          description: Nombre de billets de l'utilisateur pour des événements déjà passés.
+          example: 14
+        favoritesCount:
+          type: integer
+          minimum: 0
+          description: Nombre d'événements en favoris.
+          example: 5
+        upcomingReservationsCount:
+          type: integer
+          minimum: 0
+          description: Nombre de billets de l'utilisateur pour des événements à venir.
+          example: 3
+        organizedEventsCount:
+          type: integer
+          minimum: 0
+          description: >
+            Nombre d'événements créés par l'utilisateur (`organizerId`). L'app propose le mode
+            organisateur quand il est supérieur à 0.
+          example: 0
+
+    MeProfile:
+      description: >
+        L'utilisateur connecté (mêmes champs que `User`) enrichi des données du profil.
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          required:
+            - id
+            - name
+            - email
+            - emailVerified
+            - role
+            - status
+            - createdAt
+            - updatedAt
+            - city
+            - publicProfile
+            - stats
+          properties:
+            city:
+              type: string
+              nullable: true
+              maxLength: 100
+              example: Valence
+            publicProfile:
+              type: boolean
+              description: Si faux, `GET /users/{id}/public` répond 404.
+            stats:
+              $ref: "#/components/schemas/ProfileStats"
+
+    ProfileUpdate:
+      type: object
+      description: Au moins un champ. Aucun autre champ n'est accepté.
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 2
+        image:
+          type: string
+          format: uri
+          pattern: "^https://"
+          maxLength: 2048
+          nullable: true
+          description: URL https de l'avatar. `null` le retire (l'app affiche alors les initiales).
+        city:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+          description: "`null` pour effacer."
+        publicProfile:
+          type: boolean
+
+    PublicProfile:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        image:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Date d'inscription ("membre depuis ...").
+
+    NotificationPreferences:
+      type: object
+      required:
+        - reminderDayBefore
+      properties:
+        reminderDayBefore:
+          type: boolean
+          default: true
+          description: Rappel la veille d'un événement pour lequel l'utilisateur a un billet.
+
+    NotificationPreferencesUpdate:
+      type: object
+      description: Au moins un champ. Aucun autre champ n'est accepté.
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        reminderDayBefore:
+          type: boolean
+
+    PaymentMethod:
+      type: object
+      required:
+        - id
+        - brand
+        - last4
+        - expMonth
+        - expYear
+      properties:
+        id:
+          type: string
+          example: pm_1Pxxxxxxxx
+        brand:
+          type: string
+          description: Marque de la carte telle que renvoyée par Stripe.
+          example: visa
+        last4:
+          type: string
+          pattern: "^[0-9]{4}$"
+          example: "4242"
+        expMonth:
+          type: integer
+          minimum: 1
+          maximum: 12
+        expYear:
+          type: integer
+          example: 2029
+
+    PaymentMethodSetup:
+      type: object
+      description: >
+        Valeurs à transmettre au PaymentSheet de Stripe. La clé éphémère est créée avec la version
+        d'API Stripe du SDK iOS embarqué dans l'app.
+      required:
+        - publishableKey
+        - customerId
+        - customerEphemeralKeySecret
+        - setupIntentClientSecret
+      properties:
+        publishableKey:
+          type: string
+          example: pk_test_xxxxxxxx
+          description: Clé publique Stripe (mode test ou live selon l'environnement du serveur).
+        customerId:
+          type: string
+          example: cus_Pxxxxxxxx
+        customerEphemeralKeySecret:
+          type: string
+        setupIntentClientSecret:
+          type: string
+
+    AccountDeletion:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          format: password
+
+    PasswordChange:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+        revokeOtherSessions:
+          type: boolean
+          default: false
+
+    Error:
+      type: object
+      required:
+        - success
+        - status
+        - error
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: Invalid query
+        details:
+          type: object
+          description: >
+            Erreurs de validation par champ (`{ "champ": ["message"] }`). Les erreurs qui ne
+            concernent pas un champ précis sont sous la clé `_form`.
+          additionalProperties:
+            type: array
+            items:
+              type: string

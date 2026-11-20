@@ -1,32 +1,28 @@
 ---
-title: Hello World
-description: |
-  Your first `document`
-  You'll love it!
+title: EventsHub
+description: Plateforme de découverte, de création et de gestion d'événements locaux.
 ---
 
-Hey there! Fumadocs is the docs framework that also works on React Router!
+EventsHub est un monorepo qui regroupe le front web, l'API, l'app iOS et la base de données.
 
-## Heading
+## Architecture
 
-Hello World
+| Dossier         | Rôle                                          |
+| --------------- | --------------------------------------------- |
+| `apps/web`      | Front web (React Router, Tailwind, shadcn/ui) |
+| `apps/server`   | API REST (Hono, Better Auth)                  |
+| `apps/native`   | App iOS (SwiftUI)                             |
+| `apps/fumadocs` | Cette documentation                           |
+| `packages/db`   | Schéma Prisma et accès PostgreSQL             |
+| `packages/auth` | Configuration Better Auth                     |
+| `packages/env`  | Validation des variables d'environnement      |
+| `contrat`       | Contrat d'API OpenAPI                         |
 
 <Cards>
-  <Card title="Learn more about React Router" href="https://reactrouter.com" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
+  <Card title="Démarrer le projet" href="/docs/demarrage" />
+  <Card title="API" href="/docs/api" />
+  <Card title="Contrat d'API" href="/docs/contrat" />
+  <Card title="Décisions" href="/docs/decisions" />
+  <Card title="CI" href="/docs/ci" />
+  <Card title="Tests" href="/docs/test" />
 </Cards>
-
-```ts
-console.log("I love React!");
-```
-
-### Heading
-
-#### Heading
-
-| Head                            | Description                         |
-| ------------------------------- | ----------------------------------- |
-| `hello`                         | Hello World                         |
-| very **important**              | Hey                                 |
-| _Surprisingly_                  | Fumadocs                            |
-| very long text that looks weird | hello world hello world hello world |

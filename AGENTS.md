@@ -35,13 +35,6 @@ This file provides context about the project for AI assistants.
 ### Additional Features
 
 - Testing: vitest-playwright
-- AI: anthropic-sdk
-- Email: resend
-- Payments: stripe
-- Job Queue: bullmq
-- Caching: redis
-- Logging: pino
-- Observability: sentry
 
 ## Project Structure
 
@@ -61,7 +54,7 @@ EventsHub/
 - `bun install` - Install dependencies
 - `bun dev` - Start development server
 - `bun build` - Build for production
-- `bun test` - Run tests
+- `bun run test` - Run tests
 - `bun db:push` - Push database schema
 - `bun db:studio` - Open database UI
 
@@ -73,22 +66,12 @@ EventsHub/
 
 - `aiTooling:universal:ruler`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `aiTooling:universal:skills`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `backend.ai:typescript:anthropic-sdk`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `backend.api:typescript:trpc`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `backend.auth:typescript:better-auth`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `backend.backendUtilities:typescript:backend-utils`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `backend.caching:typescript:redis`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `backend.deploy:typescript:docker`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `backend.email:typescript:resend`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `backend.fileStorage:typescript:s3`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `backend.jobQueue:typescript:bullmq`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `backend.logging:typescript:pino`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `backend.observability:typescript:sentry`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `backend.orm:typescript:prisma`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `backend.payments:typescript:stripe`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `backend.rateLimit:typescript:upstash-ratelimit`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `backend.runtime:typescript:bun`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `backend.search:typescript:typesense`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `backend.testing:typescript:vitest-playwright`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `backend.validation:typescript:zod`. It belongs to `backend:typescript:hono`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `backend:typescript:hono`. Its generated target is `apps/server`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
@@ -96,14 +79,9 @@ EventsHub/
 - `continuousIntegration:universal:github-actions`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `database.dbSetup:universal:docker`. It belongs to `database:universal:postgres`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `database:universal:postgres`. Its generated target is `packages/db`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `developerEnvironment:universal:devcontainer`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `documentation:universal:fumadocs`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `frontend.analytics:typescript:posthog`. It belongs to `frontend:typescript:react-router`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `frontend.animation:typescript:framer-motion`. It belongs to `frontend:typescript:react-router`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `frontend.css:typescript:tailwind`. It belongs to `frontend:typescript:react-router`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `frontend.deploy:typescript:docker`. It belongs to `frontend:typescript:react-router`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `frontend.forms:typescript:react-hook-form`. It belongs to `frontend:typescript:react-router`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
-- `frontend.i18n:typescript:i18next`. It belongs to `frontend:typescript:react-router`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `frontend.ui:typescript:shadcn-ui`. It belongs to `frontend:typescript:react-router`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `frontend:typescript:react-router`. Its generated target is `apps/web`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.
 - `mobile:swift:swiftui`. Its generated target is `apps/native`. Evidence is `listed` with `unverified` freshness. Verification maintainer: @Marve10s.

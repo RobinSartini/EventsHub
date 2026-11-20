@@ -1,0 +1,10 @@
+# Advisories accepted after review, shared by Trivy and `bun audit` (CI reads the GHSA ids).
+# Each entry expires: re-check it, or upgrade, before the date.
+
+# Dev tooling only (vite-plus, via oxfmt/tinypool), never shipped in an image.
+GHSA-587h-7wmj-h5pm exp:2026-12-31
+GHSA-5gmw-xhrv-c9v3 exp:2026-12-31
+GHSA-85c8-ppgw-ccpr exp:2026-12-31
+
+# picomatch ReDoS on attacker-controlled globs, no patched release yet; pulled only by build/test tooling.
+GHSA-fc5q-39xc-vjpf exp:2026-12-31

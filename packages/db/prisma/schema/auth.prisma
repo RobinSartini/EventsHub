@@ -1,13 +1,28 @@
+enum Role {
+  user
+  admin
+}
+
+enum UserStatus {
+  active
+  suspended
+}
+
 model User {
-  id            String    @id
+  id            String     @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean    @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   sessions      Session[]
   accounts      Account[]
+  role          Role       @default(user)
+  status        UserStatus @default(active)
+  events        Event[]    @relation("OrganizedEvents")
+  tickets       Ticket[]
+  favorites     Favorite[]
 
   @@unique([email])
   @@map("user")
@@ -61,3 +76,14 @@ model Verification {
   @@map("verification")
 }
 
+model Jwks {
+  id         String    @id
+  publicKey  String
+  privateKey String
+  createdAt  DateTime
+  expiresAt  DateTime?
+  alg        String?
+  crv        String?
+
+  @@map("jwks")
+}

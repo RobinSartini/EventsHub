@@ -21,7 +21,7 @@ Captures d'écran (pour tout changement visuel) : avant / après
 
 ## Checklist
 
-- [ ] La branche est à jour avec `master` et nommée `type/description`
+- [ ] La branche est à jour avec `dev` et nommée `type/description`
 - [ ] Les commits et le titre de la PR respectent Conventional Commits
 - [ ] `check`, `check-types`, `test` et `build` passent en local, la CI est verte
 - [ ] Les tests couvrent le changement

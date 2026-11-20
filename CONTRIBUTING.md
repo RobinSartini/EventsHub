@@ -1,6 +1,6 @@
-# Contribuer à EventHub
+# Contribuer à EventsHub
 
-Merci de l'intérêt que vous portez à EventHub ! Ce guide décrit comment proposer un changement : de la branche à la pull request.
+Merci de l'intérêt que vous portez à EventsHub ! Ce guide décrit comment proposer un changement : de la branche à la pull request.
 
 English version: [CONTRIBUTING.en.md](./CONTRIBUTING.en.md). Si vous utilisez un assistant IA, lisez aussi la [politique de contribution IA](./CONTRIBUTING.ai.md) (en anglais).
 
@@ -54,18 +54,15 @@ bun dev       # lance le web et le serveur
 
 Variables d'environnement du serveur (`apps/server/.env.example`) :
 
-| Variable                                              | Rôle                                      |
-| ----------------------------------------------------- | ----------------------------------------- |
-| `DATABASE_URL`                                        | Connexion PostgreSQL                      |
-| `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL`              | Authentification (secret de 32 car. min.) |
-| `CORS_ORIGIN`                                         | Origine autorisée du front                |
-| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`         | Paiements                                 |
-| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Redis et rate limiting                    |
-| `ANTHROPIC_API_KEY`                                   | API Anthropic                             |
+| Variable                                 | Rôle                                      |
+| ---------------------------------------- | ----------------------------------------- |
+| `DATABASE_URL`                           | Connexion PostgreSQL                      |
+| `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL` | Authentification (secret de 32 car. min.) |
+| `CORS_ORIGIN`                            | Origine autorisée du front                |
 
 Ces variables sont validées par Zod dans `packages/env` : toute nouvelle variable s'y déclare et s'ajoute au `.env.example` **et** à la section `env` de `.github/workflows/ci.yml`. Ne committez jamais un `.env`.
 
-Alternatives : le **Dev Container** (`.devcontainer/`) ou `docker-compose.yml` fournissent un environnement prêt à l'emploi. Pour le mobile (macOS uniquement) : `cd apps/native && xcodegen generate`, puis ouvrez le projet dans Xcode.
+Alternative : `docker-compose.yml` fournit un environnement prêt à l'emploi. Ses valeurs sensibles (identifiants PostgreSQL `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`) viennent du `.env` à la racine, créé par `bun dev` à partir de `.env.example` : n'écrivez jamais de secret en dur dans un `docker-compose.yml` ou un `Dockerfile`. Si vous changez `POSTGRES_PASSWORD`, reportez-le dans `DATABASE_URL` de `apps/server/.env`. Pour forcer l'architecture des images Docker, renseignez `DOCKER_PLATFORM` dans ce même `.env` (`linux/arm64` sur Mac Apple Silicon, `linux/amd64` sur Windows, Linux ou serveur) ; vide, Docker utilise l'architecture de la machine. Pour le mobile (macOS uniquement) : `cd apps/native && xcodegen generate`, puis ouvrez le projet dans Xcode.
 
 Commandes utiles : `bun db:studio` (interface base de données), `bun db:generate` / `bun db:migrate` (Prisma), `bun dev:web`, `bun dev:server`, `bun dev:docs`.
 
@@ -89,9 +86,10 @@ eventhub/
 
 ## Workflow Git
 
-1. Créez une branche depuis `master` à jour.
+1. Créez une branche depuis `dev` à jour.
 2. Committez par petits changements cohérents.
-3. Poussez et ouvrez une pull request vers `master`.
+3. Poussez et ouvrez une pull request vers `dev`.
+4. `dev` est ensuite promue vers `staging`, puis vers `main`.
 
 ### Nommage des branches
 
@@ -138,7 +136,7 @@ Avant de pousser :
 ```bash
 bun check         # lint + formatage (vp check)
 bun check-types   # typage TypeScript
-bun test          # tests (Vitest, Playwright)
+bun run test      # tests (Vitest)
 bun build         # build de production
 bun secrets:scan  # détection de secrets (Gitleaks)
 ```
@@ -147,7 +145,7 @@ Ajoutez ou mettez à jour des tests pour tout comportement nouveau ou corrigé. 
 
 ### Intégration continue (CI)
 
-La CI GitHub Actions (`.github/workflows/ci.yml`) se déclenche sur chaque push et chaque PR vers `master`. Elle exécute dans l'ordre : `vp check`, `vp run -r check-types`, `vp run -r build`, puis `vp run -r test`.
+La CI GitHub Actions (`.github/workflows/ci.yml`) se déclenche sur chaque push et chaque PR vers `main`, `staging` et `dev`. Elle exécute dans l'ordre : l'audit des dépendances, le scan Trivy du dépôt, `vp check`, `vp run -r check-types`, `vp run -r build`, puis `vp run -r test`.
 
 - **Une PR ne peut être fusionnée que si la CI est verte.** Une CI rouge ou en cours bloque le merge, même avec une approbation.
 - Si la CI échoue, corrigez sur votre branche et poussez ; ne relancez pas en boucle une exécution qui échoue pour une vraie raison.
@@ -155,11 +153,34 @@ La CI GitHub Actions (`.github/workflows/ci.yml`) se déclenche sur chaque push 
 - Un test instable (_flaky_) ne se désactive pas en silence : ouvrez une issue et référencez-la.
 - Les variables d'environnement de la CI sont factices ; n'y mettez jamais de vrai secret.
 
+### Images Docker et rollback
+
+Après une CI verte sur un push vers `dev`, `staging` ou `main`, la CI publie les images `server` et `web` sur GHCR (`ghcr.io/robinsartini/eventshub-server` et `-web`) avec deux tags : `<branche>-<sha court>` (fixe, ex. `dev-3d566f6`) et `<branche>` (la dernière version de la branche).
+
+Pour déployer une version, ou revenir à une version précédente, sur une machine connectée à GHCR (`docker login ghcr.io`) :
+
+```bash
+EVENTSHUB_TAG=dev-3d566f6 docker compose pull server web
+EVENTSHUB_TAG=dev-3d566f6 docker compose up -d --no-build server web
+```
+
+Sans `EVENTSHUB_TAG`, `docker compose up --build` construit en local comme avant (tag `local`). Réglage du dépôt : la variable `VITE_SERVER_URL` (URL de l'API compilée dans l'image web, `http://localhost:3001` par défaut).
+
+### Sécurité (audit et Trivy)
+
+La CI bloque sur toute faille de sévérité haute ou critique :
+
+- `vp pm audit --level high` : failles connues des dépendances npm (`bun audit`) ;
+- Trivy sur le dépôt : secrets et erreurs de configuration (Dockerfiles, compose, workflows) ;
+- Trivy sur chaque image avant publication : paquets système et dépendances embarquées (failles corrigées en amont uniquement).
+
+Une faille non exploitable chez nous peut être acceptée dans `.trivyignore` (lu aussi par l'audit), avec la justification et une date d'expiration (`exp:AAAA-MM-JJ`). Sinon, mettez à jour la dépendance.
+
 ## Pull requests et review
 
 Avant d'ouvrir la PR :
 
-- [ ] la branche est à jour avec `master` ;
+- [ ] la branche est à jour avec `dev` ;
 - [ ] les commits respectent Conventional Commits ;
 - [ ] `check`, `check-types`, `test` et `build` passent en local, et la CI est verte sur la PR ;
 - [ ] les tests couvrent le changement ;
