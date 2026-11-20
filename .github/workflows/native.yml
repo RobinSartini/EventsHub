@@ -1,0 +1,46 @@
+name: Native
+
+on:
+  push:
+    branches: ["main", "staging", "dev"]
+    paths:
+      - "apps/native/**"
+      - ".github/workflows/native.yml"
+  pull_request:
+    branches: ["main", "staging", "dev"]
+    paths:
+      - "apps/native/**"
+      - ".github/workflows/native.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Native iOS Tests
+    runs-on: xcode-27
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_27.2.app
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: apps/native
+        run: xcodegen generate
+
+      - name: Test
+        working-directory: apps/native
+        run: |
+          DEST_ID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k in sorted(d, reverse=True) if 'iOS' in k for x in d[k] if x['name'].startswith('iPhone')))")
+          xcodebuild test \
+            -project EventsHub.xcodeproj \
+            -scheme EventsHub \
+            -destination "id=$DEST_ID" \
+            CODE_SIGNING_ALLOWED=NO
