@@ -153,7 +153,7 @@ describe("US-06 – Filtrer par catégorie, dates et ville", () => {
       await user.click(await screen.findByRole("radio", { name: "Sport" }));
       await searchCity(user, "Paris");
 
-      await user.clear(screen.getByLabelText("Où"));
+      await user.click(screen.getByRole("button", { name: "Effacer la ville" }));
       await user.click(screen.getByRole("button", { name: "Rechercher" }));
 
       expect(screen.getByRole("radio", { name: "Sport" })).toBeChecked();
