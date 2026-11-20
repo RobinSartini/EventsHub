@@ -71,6 +71,19 @@ describe("SearchBar", () => {
     expect(await screen.findByRole("button", { name: /10 novembre 2026/ })).toBeDisabled();
   });
 
+  it.each([
+    ["Quoi", "Effacer la recherche"],
+    ["Où", "Effacer la ville"],
+  ])("vide le champ %s, y remet le focus et ne lance pas la recherche", async (label, clear) => {
+    const { onSearch } = renderSearchBar({ q: "jazz", city: "Lyon" });
+
+    await userEvent.click(screen.getByRole("button", { name: clear }));
+
+    expect(screen.getByLabelText(label)).toHaveValue("");
+    expect(screen.getByLabelText(label)).toHaveFocus();
+    expect(onSearch).not.toHaveBeenCalled();
+  });
+
   it("efface la date choisie", async () => {
     const { onSearch } = renderSearchBar({ from: "2026-12-05" });
 

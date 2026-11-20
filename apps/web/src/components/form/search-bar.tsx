@@ -1,6 +1,6 @@
 import { Popover } from "@base-ui/react/popover";
-import { SearchIcon } from "lucide-react";
-import { type FormEvent, Fragment, useState } from "react";
+import { SearchIcon, XIcon } from "lucide-react";
+import { type FormEvent, Fragment, useRef, useState } from "react";
 
 import { formatDayLabel, fromIsoDay, toIsoDay } from "@/lib/format-date";
 import { focusRing } from "@/lib/styles";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { IconButton } from "@/components/ui/icon-button";
 
 type SearchValues = {
   q?: string;
@@ -27,6 +28,7 @@ const TEXT_FIELDS = [
     label: "Quoi",
     type: "search",
     placeholder: "Concert, atelier...",
+    clearLabel: "Effacer la recherche",
     width: "col-span-4 md:flex-[1.4]",
     separator: "col-span-4 mx-4 mb-1.5 h-px md:mx-0 md:mb-0 md:h-10 md:w-px",
     maxLength: 100,
@@ -36,6 +38,7 @@ const TEXT_FIELDS = [
     label: "Où",
     type: "text",
     placeholder: "Une ville",
+    clearLabel: "Effacer la ville",
     width: "",
     separator: "h-10 w-px",
     maxLength: 100,
@@ -102,6 +105,49 @@ function DateField({ defaultValue }: Readonly<{ defaultValue?: string }>) {
   );
 }
 
+type TextFieldProps = {
+  config: (typeof TEXT_FIELDS)[number];
+  defaultValue?: string;
+};
+
+function TextField({ config, defaultValue }: Readonly<TextFieldProps>) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const clear = () => {
+    if (!inputRef.current) return;
+    inputRef.current.value = "";
+    inputRef.current.focus();
+  };
+
+  return (
+    <div className={cn("group/text flex min-w-0 flex-1 items-center", config.width)}>
+      <label className={cn(field, "cursor-text")}>
+        <span className={fieldLabel}>{config.label}</span>
+        <input
+          ref={inputRef}
+          name={config.name}
+          type={config.type}
+          placeholder={config.placeholder}
+          maxLength={config.maxLength}
+          defaultValue={defaultValue}
+          className={cn(
+            fieldText,
+            "text-foreground placeholder:text-muted-foreground bg-transparent outline-none focus:placeholder:text-transparent [&::-webkit-search-cancel-button]:appearance-none",
+          )}
+        />
+      </label>
+      <IconButton
+        type="button"
+        aria-label={config.clearLabel}
+        onClick={clear}
+        className="mr-2 size-7 shrink-0 group-has-[input:placeholder-shown]/text:hidden"
+      >
+        <XIcon className="size-3.5" strokeWidth={2.5} />
+      </IconButton>
+    </div>
+  );
+}
+
 function SearchBar({ defaultValues, onSearch, className }: Readonly<SearchBarProps>) {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -124,23 +170,10 @@ function SearchBar({ defaultValues, onSearch, className }: Readonly<SearchBarPro
         className,
       )}
     >
-      {TEXT_FIELDS.map((textField) => (
-        <Fragment key={textField.name}>
-          <label className={cn(field, "cursor-text", textField.width)}>
-            <span className={fieldLabel}>{textField.label}</span>
-            <input
-              name={textField.name}
-              type={textField.type}
-              placeholder={textField.placeholder}
-              maxLength={textField.maxLength}
-              defaultValue={defaultValues?.[textField.name]}
-              className={cn(
-                fieldText,
-                "text-foreground placeholder:text-muted-foreground bg-transparent outline-none focus:placeholder:text-transparent",
-              )}
-            />
-          </label>
-          <span aria-hidden="true" className={cn("bg-border", textField.separator)} />
+      {TEXT_FIELDS.map((config) => (
+        <Fragment key={config.name}>
+          <TextField config={config} defaultValue={defaultValues?.[config.name]} />
+          <span aria-hidden="true" className={cn("bg-border", config.separator)} />
         </Fragment>
       ))}
       <DateField defaultValue={defaultValues?.from} />
