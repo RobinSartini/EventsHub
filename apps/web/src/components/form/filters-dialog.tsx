@@ -35,7 +35,15 @@ function FiltersDialog({ sort, onApply }: Readonly<FiltersDialogProps>) {
 
   return (
     <Dialog.Root open={open} onOpenChange={changeOpen}>
-      <Dialog.Trigger render={<Button variant="outline" size="sm" />}>
+      <Dialog.Trigger
+        render={
+          <Button
+            variant="outline"
+            size="sm"
+            className="hover:bg-transparent aria-expanded:bg-transparent"
+          />
+        }
+      >
         <SlidersHorizontalIcon />
         Filtres
         {active ? (
