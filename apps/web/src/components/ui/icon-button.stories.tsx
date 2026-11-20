@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { MinusIcon, PlusIcon, Share2Icon } from "lucide-react";
+import { MinusIcon, PlusIcon, Share2Icon, XIcon } from "lucide-react";
 
 import { IconButton } from "./icon-button";
 
@@ -26,4 +26,9 @@ export const OutlineLarge: Story = {
     size: "lg",
     children: <Share2Icon />,
   },
+};
+
+export const Ghost: Story = {
+  name: "Discret",
+  args: { "aria-label": "Effacer la recherche", variant: "ghost", children: <XIcon /> },
 };

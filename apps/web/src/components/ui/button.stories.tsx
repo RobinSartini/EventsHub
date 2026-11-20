@@ -41,6 +41,11 @@ export const Outline: Story = {
   args: { variant: "outline", children: "Plus tard" },
 };
 
+export const Link: Story = {
+  name: "Lien",
+  args: { variant: "link", size: "sm", children: "Tout effacer" },
+};
+
 export const Surface: Story = {
   name: "Surface",
   args: { variant: "surface", size: "sm", children: "Voir la liste" },
