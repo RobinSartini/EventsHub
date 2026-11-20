@@ -92,7 +92,7 @@ function EventCard({ event, isFavorite, onToggleFavorite, className }: Readonly<
         ) : null}
       </div>
       <div className="flex flex-col gap-0.5">
-        <h3 className="text-base leading-snug font-bold group-hover/card:underline">
+        <h3 className="text-base leading-snug font-bold">
           <Link
             to={`/events/${encodeURIComponent(event.id)}`}
             className="outline-none after:absolute after:inset-0 after:rounded-card"
